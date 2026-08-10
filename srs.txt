@@ -1,0 +1,349 @@
+1 Website Content Management Requirements
+
+1.1 Overview
+
+The AddisPay website shall use the existing AddisPay Admin Dashboard as its
+content management platform. No separate administration portal shall be
+developed for the website. Website content shall be managed through dedicated
+permissions within the existing admin system.
+
+Only authorized administrators with the Website Content Management permission
+shall be allowed to create, modify, publish, or remove website content.
+
+1.2 Admin Authentication
+
+FR-ADM-001: Website Content Management Authentication
+
+The website need an admin Dashboard to manage the website content and to add a carrer post  and news post.
+
+Description
+
+The admin need a separate login or authentication module for
+website content management.
+
+Acceptance Criteria
+
+      Website content management needs admin authentication to access the website content management features.
+      Only authenticated users with the Website Content Management permission
+       shall access website content management features.
+      Unauthorized users shall be denied access.
+   -   The admin dashboard should have 3 role: Super Admin,Content Manager and Carrer Manager.
+   -   The Super Admin should have all the permissions to manage the website content and to add a carrer post and news post.
+   -   The Content Manager should have the permissions to manage the website content and to add a news post.
+   -   The Carrer Manager should have the permissions to manage the carrer post.
+
+
+1.3 News Feed Management
+
+The website shall include a dynamic News Feed module that allows administrators to
+publish company announcements and updates.
+
+FR-ADM-002: Create News Article
+
+Authorized administrators shall be able to create a news article from the existing
+AddisPay Admin Dashboard.
+
+Each news article shall contain the following information:
+
+
+                Field                          Required
+Title                                  Yes
+Short Description                      Yes
+Full Content (Rich Text)               Yes
+Cover Image                            Optional
+Publish Date                           Yes
+Publication Status (Draft /
+                                       Yes
+Published)
+
+
+
+FR-ADM-003: Instant Publishing
+
+When an administrator publishes a news article, the article shall immediately
+become available on the public website without requiring:
+
+       Application deployment
+       Server restart
+       Manual cache refresh
+
+Published articles shall automatically appear on:
+
+       Homepage Latest News section
+       News Listing page
+FR-ADM-004: Draft Management
+
+The system shall allow administrators to save news articles as Draft.
+
+Draft articles:
+
+       Shall not be visible on the public website.
+       Shall remain editable until published.
+
+FR-ADM-005: Edit News
+
+Authorized administrators shall be able to edit any existing news article.
+
+Changes made to published articles shall be reflected immediately on the website
+after saving.
+
+FR-ADM-006: Delete News
+
+Authorized administrators shall be able to permanently delete news articles.
+
+Deleted articles shall:
+
+       Be removed from the Homepage.
+       Be removed from the News page.
+       No longer be accessible through the public website.
+
+FR-ADM-007: News Ordering
+
+The system shall display news articles in descending order based on the publication
+date.
+
+The administrator shall also be able to designate one article as Featured News.
+
+The featured article shall always appear first on the Homepage regardless of
+publication date.
+FR-ADM-008: Rich Text Editor
+
+The news editor shall provide a rich-text editing interface supporting at minimum:
+
+      Bold
+      Italic
+      Underline
+      Ordered Lists
+      Unordered Lists
+      Tables
+      Hyperlinks
+      Image Embedding
+      Text Alignment
+      Headings (H1–H6)
+      Block Quotes
+
+FR-ADM-009: Cover Image Upload
+
+The system shall allow administrators to upload a cover image for each news article.
+
+Supported Formats
+
+      JPG
+      JPEG
+      PNG
+      WebP
+
+Constraints
+
+      Maximum file size: 5 MB
+      Images shall be automatically optimized for web delivery.
+      Invalid file formats shall be rejected.
+FR-ADM-010: Activity Logging
+
+The system shall maintain an audit trail for all news management activities.
+
+Each audit record shall contain:
+
+      Administrator Name
+      Administrator ID
+      Action Performed
+      News Article Title
+      Date
+      Time
+
+The following actions shall be logged:
+
+      Create
+      Edit
+      Publish
+      Unpublish
+      Delete
+
+1. Dynamic Website Requirements
+
+The AddisPay website shall operate as a dynamic website, retrieving content from
+backend services rather than relying on static content.
+
+FR-DYN-001 Dynamic News Retrieval
+
+The website shall retrieve all published news articles through backend APIs.
+
+No news content shall be hardcoded within the frontend application.
+
+FR-DYN-002 Homepage News Display
+
+The Homepage shall automatically display the latest three (3) to five (5) published
+news articles.
+The number of displayed articles shall be configurable.
+
+FR-DYN-003 News Listing Page
+
+The website shall provide a dedicated News page containing all published news
+articles.
+
+The News page shall support:
+
+        Pagination
+        Search by title
+        Search by keyword
+        Sorting by publication date
+
+FR-DYN-004 Empty State
+
+If no published news articles exist, the system shall display a configurable message
+such as:
+
+         "No news available at this time."
+
+The message shall be editable by an administrator.
+
+2. Functional Requirements
+
+The AddisPay website shall provide the following functionality.
+
+
+                      ID                                      Requirement
+FR-001                                       Display Homepage content.
+FR-002                                       Display Business Solutions.
+FR-003                                       Display Products and Services.
+FR-005                                       Display Developer Documentation links.
+FR-006                                       Display Blogs.
+FR-007                                       Display Company information.
+FR-008
+FR-009                           Display Contact information.
+                                 Display Frequently Asked Questions
+FR-010
+                                 (FAQs).
+FR-011                           Display the latest News dynamically.
+FR-012                           Display Testimonials.
+FR-013                           Display Partner and Client logos.
+                                 Support multilingual content (English and
+FR-015
+                                 Amharic).
+                                 Provide responsive layouts across
+FR-016
+                                 desktop, tablet, and mobile devices.
+                                 Include modern UI animations and
+FR-017
+                                 transitions.
+                                 Redirect users to the AddisPay Merchant
+FR-018                           Portal for merchant registration and
+                                 login.
+                                 Retrieve website content dynamically
+FR-019
+                                 through backend APIs.
+
+
+FR-ADM-011: Carrer Job post management
+
+create, update and delete and apply job only accesiblt for Carrer Manager
+
+
+3. Non-Functional Requirements
+
+3.1 Performance Requirements
+
+
+                 ID                             Requirement
+                                 Lighthouse Performance score shall be
+NFR-PERF-001
+                                 greater than or equal to 90.
+                                 Average page load time shall not exceed
+NFR-PERF-002                     2 seconds under normal network
+                                 conditions.
+                                 Images shall be optimized using WebP or
+NFR-PERF-003
+                                 AVIF formats where supported.
+                               Images below the fold shall use lazy
+NFR-PERF-004
+                               loading.
+                               JavaScript bundles shall use code
+NFR-PERF-005                   splitting and lazy loading where
+                               applicable.
+
+
+
+3.2 Usability
+
+Requirements
+
+
+                   ID                          Requirement
+                               The website shall follow a mobile-first
+NFR-USE-001
+                               design approach.
+                               The user interface shall consistently
+NFR-USE-002
+                               follow AddisPay branding guidelines.
+                               Navigation shall be intuitive and
+NFR-USE-003
+                               consistent across all pages.
+                               Call-to-action buttons shall remain
+NFR-USE-004
+                               clearly visible throughout the website.
+
+
+
+3.3 Reliability Requirements
+
+
+                   ID                          Requirement
+                               The website shall achieve at least 99.9%
+NFR-REL-001
+                               availability.
+                               The system shall gracefully handle
+NFR-REL-002                    unexpected errors and display user-
+                               friendly error messages.
+3.4 Security Requirements
+
+
+                  ID                              Requirement
+NFR-SEC-001                        All website traffic shall use HTTPS.
+                                   The system shall protect against Cross-
+NFR-SEC-002
+                                   Site Scripting (XSS).
+                                   The system shall implement Cross-Site
+NFR-SEC-003                        Request Forgery (CSRF) protection where
+                                   applicable.
+                                   Backend APIs shall require secure
+NFR-SEC-004
+                                   authentication and authorization.
+                                   All user inputs shall be validated and
+NFR-SEC-005
+                                   sanitized before processing.
+
+
+
+3.5 Maintainability Requirements
+
+
+                  ID                              Requirement
+                                   The frontend shall be implemented using
+NFR-MNT-001
+                                   modular, reusable components.
+                                   UI components shall follow a consistent
+NFR-MNT-002
+                                   design system.
+                                   Source code shall follow agreed coding
+NFR-MNT-003
+                                   standards and best practices.
+                                   Source code shall be maintained using
+NFR-MNT-004
+                                   Git version control.
+8.6 Accessibility Requirements
+
+
+                  ID                           Requirement
+                                 The website shall comply with WCAG 2.1
+NFR-ACC-001
+                                 Level AA guidelines.
+                                 All interactive elements shall support
+NFR-ACC-002
+                                 keyboard navigation.
+                                 All images shall include descriptive
+NFR-ACC-003
+                                 alternative text.
+                                 Text and UI elements shall meet
+NFR-ACC-004
+                                 minimum color contrast requirements.
+
