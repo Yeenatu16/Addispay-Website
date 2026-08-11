@@ -1,12 +1,5 @@
-import { PageContent } from "@/components/common/PageContent";
+import BlogPage from "@/app/blog/page";
 
-export default function BlogsPage({ params }: { params: { locale: string } }) {
-  return (
-    <PageContent
-      title="Blogs"
-      description="Read the latest blog posts from AddisPay."
-    >
-      <p className="text-sm text-slate-700">Locale: {params.locale}</p>
-    </PageContent>
-  );
+export default function LocaleBlogPage() {
+  return <BlogPage />;
 }

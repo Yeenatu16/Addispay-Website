@@ -1,12 +1,5 @@
-import { PageContent } from "@/components/common/PageContent";
+import Home from "@/app/page";
 
-export default function HomePage({ params }: { params: { locale: string } }) {
-  return (
-    <PageContent
-      title="Home"
-      description="Welcome to the AddisPay home page."
-    >
-      <p className="text-sm text-slate-700">Locale: {params.locale}</p>
-    </PageContent>
-  );
+export default function LocaleHomePage() {
+  return <Home />;
 }

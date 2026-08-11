@@ -1,12 +1,5 @@
-import { PageContent } from "@/components/common/PageContent";
+import ProductsPage from "@/app/products/page";
 
-export default function ProductsPage({ params }: { params: { locale: string } }) {
-  return (
-    <PageContent
-      title="Products"
-      description="Explore our product and solution offerings."
-    >
-      <p className="text-sm text-slate-700">Locale: {params.locale}</p>
-    </PageContent>
-  );
+export default function LocaleProductsPage() {
+  return <ProductsPage />;
 }

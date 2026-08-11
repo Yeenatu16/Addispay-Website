@@ -1,12 +1,5 @@
-import { PageContent } from "@/components/common/PageContent";
+import AboutPage from "@/app/about/page";
 
-export default function AboutusPage({ params }: { params: { locale: string } }) {
-  return (
-    <PageContent
-      title="About Us"
-      description="Learn more about AddisPay and our mission."
-    >
-      <p className="text-sm text-slate-700">Locale: {params.locale}</p>
-    </PageContent>
-  );
+export default function LocaleAboutPage() {
+  return <AboutPage />;
 }

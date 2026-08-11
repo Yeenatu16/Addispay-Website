@@ -1,12 +1,5 @@
-import { PageContent } from "@/components/common/PageContent";
+import BlogPage from "@/app/blog/page";
 
-export default function NewsPage({ params }: { params: { locale: string } }) {
-  return (
-    <PageContent
-      title="News"
-      description="Read the latest news and updates."
-    >
-      <p className="text-sm text-slate-700">Locale: {params.locale}</p>
-    </PageContent>
-  );
+export default function LocaleNewsPage() {
+  return <BlogPage />;
 }
