@@ -1,12 +1,5 @@
-import { PageContent } from "@/components/common/PageContent";
+import CareersPage from "@/app/careers/page";
 
-export default function CarrersPage({ params }: { params: { locale: string } }) {
-  return (
-    <PageContent
-      title="Careers"
-      description="Join our team and explore open positions."
-    >
-      <p className="text-sm text-slate-700">Locale: {params.locale}</p>
-    </PageContent>
-  );
+export default function LocaleCareersPage() {
+  return <CareersPage />;
 }

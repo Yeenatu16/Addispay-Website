@@ -1,12 +1,5 @@
-import { PageContent } from "@/components/common/PageContent";
+import ContactPage from "@/app/contact/page";
 
-export default function ContactusPage({ params }: { params: { locale: string } }) {
-  return (
-    <PageContent
-      title="Contact Us"
-      description="Find the best way to contact AddisPay."
-    >
-      <p className="text-sm text-slate-700">Locale: {params.locale}</p>
-    </PageContent>
-  );
+export default function LocaleContactPage() {
+  return <ContactPage />;
 }
