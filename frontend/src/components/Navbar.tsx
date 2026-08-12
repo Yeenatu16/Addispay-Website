@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ChevronDown, Menu, X, Check, ExternalLink, ShieldAlert } from 'lucide-react';
+import { ChevronDown, Menu, X, Check, ExternalLink } from 'lucide-react';
 import AddisPayLogo from './AddisPayLogo';
 import { useLanguage } from '@/context/LanguageContext';
 import { Language } from '@/data/translations';
@@ -25,12 +25,11 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Removed /products (Kibrom) and /blog (Lidet) links per team assignment
   const navLinks = [
     { name: t('nav.home'), href: '/' },
-    { name: t('nav.products'), href: '/products' },
     { name: t('nav.careers'), href: '/careers' },
     { name: t('nav.about'), href: '/about' },
-    { name: t('nav.blog'), href: '/blog' },
   ];
 
   const handleSelectLang = (code: Language) => {
@@ -188,7 +187,7 @@ export default function Navbar() {
                   className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
                     language === lang.code
                       ? 'bg-[#00A36D] text-white shadow-xs'
-                      : 'bg-white text-gray-700 hover:bg-gray-100'
+                      : 'bg-[#F8FDFB] text-gray-700 hover:bg-gray-100'
                   }`}
                 >
                   <span>{lang.flag}</span>

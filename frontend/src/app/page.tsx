@@ -1,10 +1,7 @@
 import { Hero } from '@/components/Home/Hero';
 import { PartnersMarquee } from '@/components/Home/PartnersMarquee';
-import { ProductsGrid } from '@/components/Home/ProductsGrid';
-import { HowItWorksSection } from '@/components/Home/HowItWorksSection';
-import { BlogNewsSection } from '@/components/Home/BlogNewsSection';
 import { CustomerStoriesSection } from '@/components/Home/CustomerStoriesSection';
-import { FAQSection } from '@/components/Home/FAQSection';
+import { CtaSection } from '@/components/home/CtaSection';
 
 export default function Home() {
   return (
@@ -12,23 +9,14 @@ export default function Home() {
       {/* 1. Hero Section */}
       <Hero />
 
-      {/* 2. Partners Marquee */}
+      {/* 2. Partner / Client Logos */}
       <PartnersMarquee />
 
-      {/* 3. Products Grid */}
-      <ProductsGrid />
-
-      {/* 4. How It Works */}
-      <HowItWorksSection />
-
-      {/* 5. Blog & News */}
-      <BlogNewsSection />
-
-      {/* 6. Customer Stories */}
+      {/* 3. Testimonials & Customer Stories */}
       <CustomerStoriesSection />
 
-      {/* 7. FAQ */}
-      <FAQSection />
+      {/* 4. CTA Banner Section */}
+      <CtaSection locale="en" />
     </div>
   );
 }

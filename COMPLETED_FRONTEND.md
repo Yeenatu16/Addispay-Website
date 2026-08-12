@@ -1,6 +1,16 @@
-# AddisPay Website Frontend Implementation Report
+# AddisPay Website Frontend Implementation Report (Eyuel's Scope)
 
-This document summarizes the comprehensive frontend implementation completed for the **AddisPay Website** repository according to the project Software Requirements Specification (SRS) and standard design guidelines.
+This document summarizes the frontend implementation completed for **Eyuel's assigned cards** on the project Kanban board according to the AddisPay SRS specification and team task delegation guidelines.
+
+---
+
+## Team Task Allocation Overview
+
+| Team Member | Assigned Responsibilities | Status in this PR |
+|---|---|---|
+| **Eyuel (EG)** | Design System, Global Layout, Homepage Framework, Responsive Design, Performance Optimization | **Completed** |
+| **Kibrom (KG)** | Business + Product + Sections & Company Section | *Excluded for Kibrom's PR* |
+| **Lidet (LA)** | News Section | *Excluded for Lidet's PR* |
 
 ---
 
@@ -42,12 +52,10 @@ A modular, reusable, and accessible design system was constructed in `src/compon
 
 Constructed in `src/components/layout/` and integrated into the Next.js App Router:
 
-- **Header & Navigation** (`Header.tsx`):
+- **Header & Navigation** (`Navbar.tsx` & `Header.tsx`):
   - Sticky glassmorphism header with AddisPay logo, active link highlighting, language switcher, and a direct Merchant Portal CTA.
-- **Navigation** (`Navigation.tsx`):
-  - Responsive desktop navigation links for Home, Products, Business, News, Blogs, Careers, About Us, and Contact Us.
 - **Footer** (`Footer.tsx`):
-  - 4-column rich footer with company overview, PCI-DSS security badges, product links, contact info, newsletter subscription form, copyright, and legal links.
+  - Multi-column footer with company overview, PCI-DSS security badges, quick links (Home, About, Careers, Contact), contact info, newsletter subscription form, copyright, and legal links.
 - **Mobile Navigation** (`MobileNav.tsx`):
   - Animated slide-out drawer menu with smooth backdrop blur and touch targets (>44px).
 - **Breadcrumbs** (`Breadcrumbs.tsx`):
@@ -61,26 +69,18 @@ Constructed in `src/components/layout/` and integrated into the Next.js App Rout
 
 ---
 
-## 3. Homepage
+## 3. Homepage (Eyuel's Scope)
 
-The homepage is composed of 8 high-converting, interactive sections in `src/components/home/`:
-
-1. **Hero Section** (`HeroSection.tsx`):
-   - Bold title ("Empowering Digital Payments in Ethiopia & Beyond"), animated subtitle, dual CTAs, micro-stats banner ($5B+ volume, 99.99% uptime), and an interactive **Live Payment Simulator** widget (Telebirr / CBE Birr / Visa).
+1. **Hero Section** (`Hero.tsx` & `HeroSection.tsx`):
+   - Hero title, subtitle, dual CTAs, micro-stats banner ($5B+ volume, 99.99% uptime), and an interactive **Live Payment Simulator** widget (Telebirr / CBE Birr / Visa).
 2. **CTA Sections** (`CtaSection.tsx`):
    - High-converting onboarding banner with direct merchant portal link and sales contact options.
-3. **Business Solutions Preview** (`BusinessSolutionsSection.tsx`):
-   - Interactive tabbed interface previewing solutions for E-Commerce, Retail & POS, Subscriptions, Enterprise Payouts, and Schools.
-4. **Products & Services Preview** (`ProductsServicesSection.tsx`):
-   - Interactive grid showcasing the Payment Gateway, Mobile Money Aggregator, QR Pay, Smart Invoicing, Developer SDKs, and Instant Payout Engine.
-5. **Latest News** (`LatestNewsSection.tsx`):
-   - SRS FR-DYN-002 compliant display of the latest 3 news items with featured badges, cover images, read times, and SRS FR-DYN-004 empty state fallback.
-6. **Testimonials** (`TestimonialsSection.tsx`):
-   - Reviews from Ethiopian business founders with star ratings, quotes, and avatars.
-7. **Partner / Client Logos** (`PartnerLogosSection.tsx`):
-   - Partner marquee featuring Telebirr, Commercial Bank of Ethiopia, CBE Birr, Awash Bank, Dashen Bank, EthSwitch, and Bank of Abyssinia.
-8. **Company Information & Security** (`SecuritySection.tsx`):
-   - Detailed cards highlighting PCI-DSS Level 1 certification, 256-bit payload encryption, real-time fraud alerts, and 24/7 Ethiopian support.
+3. **Testimonials & Customer Stories** (`CustomerStoriesSection.tsx` & `TestimonialsSection.tsx`):
+   - Customer quotes from Ethiopian business leaders with star ratings, roles, and avatars.
+4. **Partner / Client Logos** (`PartnersMarquee.tsx` & `PartnerLogosSection.tsx`):
+   - Marquee featuring Telebirr, Commercial Bank of Ethiopia, CBE Birr, Awash Bank, Dashen Bank, EthSwitch, and Bank of Abyssinia.
+
+*(Note: Business Solutions and Product Grid are excluded for Kibrom's PR; News Section is excluded for Lidet's PR).*
 
 ---
 
@@ -94,17 +94,7 @@ The homepage is composed of 8 high-converting, interactive sections in `src/comp
 
 ## 5. Performance Optimization
 
-- **Static Generation (SSG)**: All 44 static page routes (English and Amharic) pre-rendered cleanly via `npm run build`.
 - **Skeleton Screens**: Custom content skeletons during initial loading.
 - **Image Optimization**: WebP image formatting with `loading="lazy"` attributes.
+- **Code Splitting**: Dynamic imports and component-level memoization.
 - **Fast Page Load**: Page load target <= 2s under normal conditions and Lighthouse score >= 90.
-
----
-
-## Summary of Verification
-
-The production build was verified using:
-```bash
-npm run build
-```
-Result: **44/44 pages successfully generated without errors or warnings.**

@@ -3,18 +3,15 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, ExternalLink, ArrowRight } from "lucide-react";
+import { Menu, ExternalLink } from "lucide-react";
 import { getDictionary } from "@/lib/dictionary";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { MobileNav } from "./MobileNav";
 import { Button } from "../ui/Button";
 
+// Removed products & business (assigned to Kibrom) and news/blogs (assigned to Lidet)
 const navItems = [
   { labelKey: "home", href: "home", defaultLabel: "Home" },
-  { labelKey: "products", href: "products", defaultLabel: "Products" },
-  { labelKey: "business", href: "business", defaultLabel: "Business Solutions" },
-  { labelKey: "news", href: "news", defaultLabel: "News" },
-  { labelKey: "blogs", href: "blogs", defaultLabel: "Blogs" },
   { labelKey: "careers", href: "carrers", defaultLabel: "Careers" },
   { labelKey: "aboutus", href: "aboutus", defaultLabel: "About Us" },
   { labelKey: "contactus", href: "contactus", defaultLabel: "Contact Us" },
