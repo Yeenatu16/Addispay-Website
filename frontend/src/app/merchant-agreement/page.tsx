@@ -53,7 +53,7 @@ export default function MerchantAgreementPage() {
             </button>
 
             <a
-              href="https://dashboard.addispay.et/signup"
+              href="https://uat.dashboard.addispay.et/signup"
               target="_blank"
               rel="noopener noreferrer"
               className="px-6 py-2.5 rounded-2xl bg-[#00A36D] hover:bg-[#008959] text-white font-bold text-xs shadow-md shadow-[#00A36D]/20 transition-all flex items-center gap-2"

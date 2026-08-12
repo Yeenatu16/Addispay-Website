@@ -160,7 +160,7 @@ export default function ProductsPage() {
                 </div>
 
                 <a
-                  href="https://dashboard.addispay.et/signup"
+                  href="https://uat.dashboard.addispay.et/signup"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full py-3 rounded-xl bg-gray-50 hover:bg-[#00A36D] text-gray-800 hover:text-white font-bold text-xs transition-colors flex items-center justify-center gap-2 group/btn"

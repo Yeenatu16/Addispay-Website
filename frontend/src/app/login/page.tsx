@@ -8,7 +8,7 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    window.location.href = 'https://dashboard.addispay.et/login';
+    window.location.href = 'https://uat.dashboard.addispay.et/';
   }, []);
 
   return (
@@ -18,7 +18,7 @@ export default function LoginPage() {
       <p className="text-xs text-gray-500 font-medium">
         If you are not redirected automatically,{' '}
         <a
-          href="https://dashboard.addispay.et/login"
+          href="https://uat.dashboard.addispay.et/"
           className="text-[#00A36D] font-bold underline inline-flex items-center gap-1"
         >
           <span>click here to log in</span>
