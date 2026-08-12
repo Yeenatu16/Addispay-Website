@@ -97,4 +97,55 @@ Constructed in `src/components/layout/` and integrated into the Next.js App Rout
 - **Skeleton Screens**: Custom content skeletons during initial loading.
 - **Image Optimization**: WebP image formatting with `loading="lazy"` attributes.
 - **Code Splitting**: Dynamic imports and component-level memoization.
+- **Lighthouse Score**: Optimization target for high-performance layout rendering.
 - **Fast Page Load**: Page load target <= 2s under normal conditions and Lighthouse score >= 90.
+
+---
+
+## 6. UAT Subdomain Redirects, Admin Portals & Social Upgrades
+
+The following changes were made to support the UAT testing scope, split workspace dashboard requirements, social media links synchronization, and CV file upload handling:
+
+### Modified Files:
+- **`src/app/layout.tsx`** ([`layout.tsx`](file:///home/latexjo/Projects/underdev/Addispay-Website/frontend/src/app/layout.tsx)):
+  - Configured high-resolution `addispay_logo_icon.svg` as the primary favicon with `.ico` fallback.
+  - Simplified document title metadata to display `"Addispay"` cleanly without text additions.
+  - Updated schema profiles (`sameAs` array) with the correct social link destinations.
+- **`src/components/Navbar.tsx`** ([`Navbar.tsx`](file:///home/latexjo/Projects/underdev/Addispay-Website/frontend/src/components/Navbar.tsx)):
+  - Re-ordered navigation links to position **Careers** last but right before **Documentation**.
+  - Updated documentation portal redirection to `https://devportal.addispay.et/`.
+  - Updated login/signup link targets to the base UAT dashboard subdomain `https://uat.dashboard.addispay.et/`.
+- **`src/app/login/page.tsx`** ([`page.tsx`](file:///home/latexjo/Projects/underdev/Addispay-Website/frontend/src/app/login/page.tsx)):
+  - Changed automatically triggered redirect URL and fallback button href to the base UAT dashboard.
+- **`src/app/products/page.tsx`** ([`page.tsx`](file:///home/latexjo/Projects/underdev/Addispay-Website/frontend/src/app/products/page.tsx)):
+  - Updated action button href to the UAT dashboard signup URL.
+- **`src/app/merchant-agreement/page.tsx`** ([`page.tsx`](file:///home/latexjo/Projects/underdev/Addispay-Website/frontend/src/app/merchant-agreement/page.tsx)):
+  - Updated action button href to the UAT dashboard signup URL.
+- **`src/app/faq/page.tsx`** ([`page.tsx`](file:///home/latexjo/Projects/underdev/Addispay-Website/frontend/src/app/faq/page.tsx)):
+  - Updated signup URLs inside FAQ items and references to target UAT.
+- **`src/components/Footer.tsx`** ([`Footer.tsx`](file:///home/latexjo/Projects/underdev/Addispay-Website/frontend/src/components/Footer.tsx)):
+  - Changed merchant signup link to target the UAT subdomain.
+  - Updated the Soft POS Play Store download link to `id=com.addispayspos`.
+  - Synchronized social links: Facebook (`addispaysc`), Twitter (`addispay`), LinkedIn (custom query feed), Telegram (`addispaysc`), and added a new Instagram profile link (`addispay`) with a custom brand SVG icon.
+- **`src/components/Home/Hero.tsx`** ([`Hero.tsx`](file:///home/latexjo/Projects/underdev/Addispay-Website/frontend/src/components/Home/Hero.tsx)):
+  - Updated signup button href to target the UAT dashboard.
+  - Updated the Soft POS Play Store download link to `id=com.addispayspos`.
+  - Replaced the white Google Play logo paths with custom filled paths matching Addispay Green and Orange/Yellow.
+- **`src/components/Home/BusinessSection.tsx`** ([`BusinessSection.tsx`](file:///home/latexjo/Projects/underdev/Addispay-Website/frontend/src/components/Home/BusinessSection.tsx)):
+  - Updated mockup browser URL text to `uat.dashboard.addispay.et/merchant`.
+- **`src/app/careers/page.tsx`** ([`page.tsx`](file:///home/latexjo/Projects/underdev/Addispay-Website/frontend/src/app/careers/page.tsx)):
+  - Built a custom CV upload file selector inside the job application modal form, complete with status hook displaying the selected filename, clear button support, and automatic input resets on successful submission.
+- **`src/app/admin/page.tsx`** ([`page.tsx`](file:///home/latexjo/Projects/underdev/Addispay-Website/frontend/src/app/admin/page.tsx)):
+  - Overwrote the page to serve as an automatic gatekeeper, checking logged-in session roles and routing Super Admin to `/admin/super`, Blog Writer to `/admin/blog`, and Career Writer to `/admin/careers`.
+- **`src/app/admin/login/page.tsx`** ([`page.tsx`](file:///home/latexjo/Projects/underdev/Addispay-Website/frontend/src/app/admin/login/page.tsx)):
+  - Restored Quick Demo Role selector buttons layout for convenient local testing.
+- **`src/context/AdminContext.tsx`** ([`AdminContext.tsx`](file:///home/latexjo/Projects/underdev/Addispay-Website/frontend/src/context/AdminContext.tsx)):
+  - Enhanced `loginAs` mock auth to automatically assign appropriate access roles based on email keywords (e.g. `blog` -> Blog Writer, `career` -> Career Writer, other/admin -> Super Admin) for testing convenience.
+
+### New Files:
+- **`src/app/admin/super/page.tsx`** ([`super/page.tsx`](file:///home/latexjo/Projects/underdev/Addispay-Website/frontend/src/app/admin/super/page.tsx)):
+  - Created a dedicated dashboard for Super Admins. It displays Blog articles, Jobs openings, and Team permission databases together on a single page, eliminating the need to toggle navigation tabs.
+- **`src/app/admin/blog/page.tsx`** ([`blog/page.tsx`](file:///home/latexjo/Projects/underdev/Addispay-Website/frontend/src/app/admin/blog/page.tsx)):
+  - Created a dedicated dashboard for Blog Writers showing only Blog articles management tools.
+- **`src/app/admin/careers/page.tsx`** ([`careers/page.tsx`](file:///home/latexjo/Projects/underdev/Addispay-Website/frontend/src/app/admin/careers/page.tsx)):
+  - Created a dedicated dashboard for Career Writers showing only Job openings management tools.

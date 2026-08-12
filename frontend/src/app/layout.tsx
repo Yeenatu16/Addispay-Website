@@ -8,10 +8,7 @@ import { AdminProvider } from '@/context/AdminContext';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://addispay.et'),
-  title: {
-    default: 'Addispay | Transforming Commerce Across Ethiopia',
-    template: '%s | Addispay',
-  },
+  title: 'Addispay',
   description: 'Addispay Financial Technology Share Company provides seamless, NBE-licensed payment solutions, merchant acquiring, instant transfers, mobile money, and POS integrations across Ethiopia.',
   keywords: [
     'Addispay',
@@ -38,7 +35,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://addispay.et',
     siteName: 'Addispay',
-    title: 'Addispay | Transforming Transactions & Empowering Ethiopian Businesses',
+    title: 'Addispay',
     description: 'NBE-licensed payment platform empowering 50,000+ merchants in Ethiopia with instant checkout, mobile money, and business banking tools.',
     images: [
       {
@@ -51,7 +48,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Addispay | Digital Payments for Ethiopia',
+    title: 'Addispay',
     description: 'Accept mobile money, bank transfers, and QR payments in seconds with Addispay.',
     images: ['/og-image.jpg'],
     creator: '@addispay',
@@ -68,7 +65,10 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: '/favicon.ico',
+    icon: [
+      { url: '/addispay_logo_icon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: 'any' }
+    ],
   },
 };
 
@@ -93,8 +93,10 @@ const organizationSchema = {
   hasCredential: 'NBE License NPS/PSO/007/2022',
   sameAs: [
     'https://twitter.com/addispay',
-    'https://linkedin.com/company/addispay',
-    'https://facebook.com/addispay'
+    'https://www.linkedin.com/company/addispay/posts/?feedView=all&viewAsMember=true',
+    'https://facebook.com/addispaysc',
+    'https://instagram.com/addispay',
+    'https://t.me/addispaysc'
   ]
 };
 

@@ -79,22 +79,30 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       return true;
     }
 
-    // Fallback: If logging in with demo hint role
+    // Dynamic role mapping based on email keyword to allow easy login
+    let assignedRole: AdminRole = 'Super Admin';
+    const lowerEmail = email.toLowerCase();
+    
     if (roleHint) {
-      const demoUser: TeamMember = {
-        id: `usr-${Date.now()}`,
-        email,
-        name: email.split('@')[0].toUpperCase(),
-        role: roleHint,
-        status: 'Active',
-        addedDate: new Date().toISOString().split('T')[0],
-      };
-      setCurrentUser(demoUser);
-      localStorage.setItem('addispay_admin_user', JSON.stringify(demoUser));
-      return true;
+      assignedRole = roleHint;
+    } else if (lowerEmail.includes('blog') || lowerEmail.includes('writer')) {
+      assignedRole = 'Blog Writer';
+    } else if (lowerEmail.includes('career') || lowerEmail.includes('hr') || lowerEmail.includes('job') || lowerEmail.includes('recruit')) {
+      assignedRole = 'Career Writer';
     }
 
-    return false;
+    const demoUser: TeamMember = {
+      id: `usr-${Date.now()}`,
+      email,
+      name: email.split('@')[0].toUpperCase(),
+      role: assignedRole,
+      status: 'Active',
+      addedDate: new Date().toISOString().split('T')[0],
+    };
+
+    setCurrentUser(demoUser);
+    localStorage.setItem('addispay_admin_user', JSON.stringify(demoUser));
+    return true;
   };
 
   const logout = () => {

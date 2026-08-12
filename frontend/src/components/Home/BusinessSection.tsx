@@ -102,7 +102,7 @@ export const BusinessSection: React.FC = () => {
                   <div className="w-3 h-3 rounded-full bg-emerald-400" />
                 </div>
                 <div className="bg-white px-6 py-1 rounded-md text-xs font-bold text-gray-600 border border-gray-200">
-                  dashboard.addispay.et/merchant
+                  uat.dashboard.addispay.et/merchant
                 </div>
                 <div className="w-12" />
               </div>

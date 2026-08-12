@@ -2,24 +2,12 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Play, Apple, Smartphone, ShieldCheck, CheckCircle2, Loader2, Sparkles } from 'lucide-react';
+import { ArrowRight, Play, Smartphone, ShieldCheck, Volume2, VolumeX } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 
 export const Hero: React.FC = () => {
   const { t } = useLanguage();
-  const [selectedProvider, setSelectedProvider] = useState<'telebirr' | 'cbe' | 'awash' | 'mpesa'>('telebirr');
-  const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success'>('idle');
-
-  const handleSimulatePayment = () => {
-    setPaymentStatus('processing');
-    setTimeout(() => {
-      setPaymentStatus('success');
-    }, 1800);
-  };
-
-  const handleResetSim = () => {
-    setPaymentStatus('idle');
-  };
+  const [isMuted, setIsMuted] = useState(true);
 
   return (
     <section className="bg-[#F8FDFB] pt-10 pb-20 lg:pt-16 lg:pb-28 px-4 sm:px-6 lg:px-12 relative overflow-hidden border-b border-gray-100">
@@ -57,7 +45,7 @@ export const Hero: React.FC = () => {
           {/* Action CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
             <a
-              href="https://dashboard.addispay.et/signup"
+              href="https://uat.dashboard.addispay.et/signup"
               target="_blank"
               rel="noopener noreferrer"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl bg-[#F5A414] hover:bg-[#e0930f] text-white font-bold text-base shadow-lg shadow-[#F5A414]/25 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
@@ -78,7 +66,7 @@ export const Hero: React.FC = () => {
           {/* Soft POS / Google Play Download Badges */}
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
             <a
-              href="https://play.google.com/store/apps/details?id=com.addispay.merchant"
+              href="https://play.google.com/store/apps/details?id=com.addispayspos"
               target="_blank"
               rel="noopener noreferrer"
               className="bg-[#00A36D] hover:bg-[#008959] text-white px-5 py-2.5 rounded-2xl flex items-center gap-3 transition-all duration-200 shadow-md shadow-[#00A36D]/20 hover:-translate-y-0.5 border border-[#00A36D]"
@@ -98,9 +86,15 @@ export const Hero: React.FC = () => {
               href="https://play.google.com/store/apps/details?id=com.addispay.app"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-[#101828] hover:bg-black text-white px-5 py-2.5 rounded-2xl flex items-center gap-3 transition-all duration-200 shadow-md hover:-translate-y-0.5 border border-gray-800"
+              className="bg-[#101828] hover:bg-[#1e293b] text-white px-5 py-2.5 rounded-2xl flex items-center gap-3 transition-all duration-200 shadow-md hover:-translate-y-0.5 border border-slate-800"
             >
-              <Smartphone className="w-6 h-6 text-white" />
+              {/* Theme Compatible Google Play Store Icon */}
+              <svg className="w-6 h-6 shrink-0" viewBox="0 0 512 512">
+                <path fill="#00A36D" d="M47.2 24.2C41.7 29.8 38.6 38.3 38.6 49.3v413.4c0 11 3.1 19.5 8.6 25.1l1.4 1.3L277 260.6v-5.2L48.6 22.9l-1.4 1.3z" />
+                <path fill="#F5A414" d="M355.7 339.3l-78.7-78.7v-5.2l78.7-78.7 1.8 1 93.3 53c26.6 15.1 26.6 39.9 0 55.1l-93.3 53-1.8 0.5z" />
+                <path fill="#00A36D" d="M277 255.4L47.2 488.1c8.7 9.2 23 10.3 39 1.3l269.5-150.1-78.7-78.7-1.8-5.2z" />
+                <path fill="#F5A414" d="M277 256.6l78.7-78.7L86.2 27.8C70.2 18.7 55.9 19.8 47.2 29L277 256.6z" />
+              </svg>
               <div className="text-left">
                 <div className="text-[10px] uppercase font-medium text-gray-300 leading-tight">
                   {t('hero.google_play')}
@@ -114,128 +108,28 @@ export const Hero: React.FC = () => {
 
         </div>
 
-        {/* Right Column: Animated Phone Mockup & Interactive Live Payment Simulator */}
+        {/* Right Column: Clean Embedded Video Frame */}
         <div className="lg:w-1/2 flex flex-col items-center w-full relative">
-          
-          {/* Animated Decorative Floating Badges */}
-          <div className="absolute -top-4 -left-4 bg-white/90 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-gray-200 shadow-xl z-30 hidden sm:flex items-center gap-3 animate-float">
-            <div className="w-3 h-3 rounded-full bg-emerald-500 animate-ping" />
-            <div className="text-xs font-bold text-gray-800">
-              <span className="text-[#00A36D]">Live:</span> 99.99% Uptime
-            </div>
-          </div>
-
-          <div className="relative w-full max-w-[350px] bg-[#101828] rounded-[2.8rem] border-[10px] border-[#101828] p-4 shadow-2xl overflow-hidden shadow-[#00A36D]/20 transform hover:scale-[1.01] transition-transform duration-300">
+          <div className="relative w-full max-w-[540px] aspect-video bg-[#101828] rounded-3xl border-4 border-[#101828] shadow-2xl overflow-hidden shadow-[#00A36D]/20 transform hover:scale-[1.01] transition-transform duration-300">
             
-            {/* Phone Notch */}
-            <div className="absolute top-0 inset-x-0 h-5 bg-[#101828] rounded-b-xl w-36 mx-auto z-20" />
+            {/* Embedded YouTube Fintech Overview Video */}
+            <iframe
+              src={`https://www.youtube-nocookie.com/embed/3Q1fE4Y6F3w?autoplay=1&mute=${isMuted ? 1 : 0}&loop=1&playlist=3Q1fE4Y6F3w&controls=1&modestbranding=1&rel=0`}
+              title="AddisPay Fintech Platform Video"
+              className="w-full h-full object-cover rounded-2xl pointer-events-auto"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
 
-            {/* Total Balance Card */}
-            <div className="bg-gradient-to-br from-[#00A36D] to-[#008959] rounded-2xl p-6 text-white relative overflow-hidden shadow-lg mt-2">
-              <div className="absolute -right-6 -top-6 w-28 h-28 bg-white/15 rounded-full blur-xl pointer-events-none" />
-              
-              <div className="relative z-10 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="text-xs text-emerald-100 font-medium tracking-wide">
-                    {t('hero.total_balance')}
-                  </div>
-                  <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-bold uppercase">
-                    Addispay Merchant
-                  </span>
-                </div>
-
-                <div className="text-3xl font-black tracking-tight">
-                  ETB 45,250.00
-                </div>
-
-                <div className="flex gap-3 pt-1">
-                  <button className="flex-1 bg-white/20 hover:bg-white/30 text-white font-bold py-2 rounded-xl text-xs transition-colors shadow-inner flex items-center justify-center gap-1">
-                    <span>{t('hero.send')}</span>
-                  </button>
-                  <button className="flex-1 bg-white/20 hover:bg-white/30 text-white font-bold py-2 rounded-xl text-xs transition-colors shadow-inner flex items-center justify-center gap-1">
-                    <span>{t('hero.receive')}</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Interactive Payment Checkout Simulator Card */}
-            <div className="bg-white rounded-2xl p-4 mt-4 shadow-xs space-y-3">
-              <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-[#101828]">
-                  <Sparkles className="w-3.5 h-3.5 text-[#F5A414]" />
-                  <span>{t('hero.sim_title')}</span>
-                </div>
-                {paymentStatus !== 'idle' && (
-                  <button
-                    onClick={handleResetSim}
-                    className="text-[10px] text-[#00A36D] font-bold underline"
-                  >
-                    Reset
-                  </button>
-                )}
-              </div>
-
-              {paymentStatus === 'idle' && (
-                <div className="space-y-3">
-                  <div className="text-[11px] text-gray-500 font-semibold">
-                    {t('hero.sim_choose_provider')}
-                  </div>
-
-                  {/* Provider Selector Grid */}
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
-                      { id: 'telebirr', name: t('hero.sim_telebirr'), color: 'bg-blue-50 text-blue-700 border-blue-200' },
-                      { id: 'cbe', name: t('hero.sim_cbe'), color: 'bg-purple-50 text-purple-700 border-purple-200' },
-                      { id: 'awash', name: t('hero.sim_awash'), color: 'bg-amber-50 text-amber-700 border-amber-200' },
-                      { id: 'mpesa', name: t('hero.sim_mpesa'), color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-                    ].map((p) => (
-                      <button
-                        key={p.id}
-                        onClick={() => setSelectedProvider(p.id as any)}
-                        className={`px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all text-left flex items-center justify-between ${
-                          selectedProvider === p.id
-                            ? `${p.color} ring-2 ring-[#00A36D]`
-                            : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
-                        }`}
-                      >
-                        <span>{p.name}</span>
-                        {selectedProvider === p.id && <div className="w-2 h-2 rounded-full bg-[#00A36D]" />}
-                      </button>
-                    ))}
-                  </div>
-
-                  <button
-                    onClick={handleSimulatePayment}
-                    className="w-full py-2.5 rounded-xl bg-[#00A36D] hover:bg-[#008959] text-white font-bold text-xs shadow-md shadow-[#00A36D]/20 transition-all flex items-center justify-center gap-1.5"
-                  >
-                    <span>{t('hero.sim_pay_now')}</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              )}
-
-              {paymentStatus === 'processing' && (
-                <div className="py-6 text-center space-y-3">
-                  <Loader2 className="w-8 h-8 text-[#00A36D] animate-spin mx-auto" />
-                  <div className="text-xs font-bold text-gray-700">
-                    {t('hero.sim_processing')}
-                  </div>
-                </div>
-              )}
-
-              {paymentStatus === 'success' && (
-                <div className="py-4 text-center space-y-2 bg-[#E5F5EE] rounded-xl border border-[#00A36D]/30 animate-in zoom-in-95 duration-200">
-                  <CheckCircle2 className="w-9 h-9 text-[#00A36D] mx-auto animate-bounce" />
-                  <div className="text-xs font-black text-[#101828]">
-                    {t('hero.sim_success')}
-                  </div>
-                  <div className="text-[10px] text-[#00A36D] font-bold">
-                    {t('hero.sim_ref')}
-                  </div>
-                </div>
-              )}
-
+            {/* Sound Toggle Button */}
+            <div className="absolute top-3 right-3 z-10 pointer-events-auto">
+              <button
+                onClick={() => setIsMuted(!isMuted)}
+                className="p-2 rounded-xl bg-black/60 hover:bg-black/90 text-white backdrop-blur-md transition-colors cursor-pointer"
+                aria-label="Toggle Sound"
+              >
+                {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              </button>
             </div>
 
           </div>

@@ -31,7 +31,7 @@ const officialAddispayFaqs: FaqItem[] = [
     id: 'faq-1',
     category: 'Merchant Onboarding',
     question: 'How do I sign up as a merchant with Addispay?',
-    answer: 'Signing up as a merchant with Addispay is easy. Simply visit our website, click on "Sign Up" (https://dashboard.addispay.et/signup), fill in your business registration details, TIN, and bank account information. Once approved, you can start accepting digital payments immediately.',
+    answer: 'Signing up as a merchant with Addispay is easy. Simply visit our website, click on "Sign Up" (https://uat.dashboard.addispay.et/signup), fill in your business registration details, TIN, and bank account information. Once approved, you can start accepting digital payments immediately.',
   },
   {
     id: 'faq-2',
@@ -206,7 +206,7 @@ export default function OfficialFaqPage() {
                     <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between text-xs font-semibold text-[#00A36D]">
                       <span>Category: {faq.category}</span>
                       <a
-                        href="https://dashboard.addispay.et/signup"
+                        href="https://uat.dashboard.addispay.et/signup"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="hover:underline flex items-center gap-1"

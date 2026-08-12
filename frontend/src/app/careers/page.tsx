@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Briefcase, MapPin, Clock, ArrowRight, CheckCircle2, Search, Sparkles, Send, X } from 'lucide-react';
+import { Briefcase, MapPin, Clock, ArrowRight, CheckCircle2, Search, Sparkles, Send, X, Upload } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 
 export interface JobOpening {
@@ -94,6 +94,7 @@ export default function CareersPage() {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [activeJobModal, setActiveJobModal] = useState<JobOpening | null>(null);
   const [applied, setApplied] = useState<boolean>(false);
+  const [cvFile, setCvFile] = useState<File | null>(null);
 
   const departments = ['All', 'Engineering', 'Product & Design', 'Operations & Sales', 'Compliance & Legal'];
 
@@ -109,6 +110,7 @@ export default function CareersPage() {
     setApplied(true);
     setTimeout(() => {
       setApplied(false);
+      setCvFile(null);
       setActiveJobModal(null);
     }, 2200);
   };
@@ -298,6 +300,48 @@ export default function CareersPage() {
                   placeholder="Cover Note / Why Addispay?"
                   className="w-full bg-[#F8FDFB] px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#00A36D] text-xs font-medium"
                 />
+
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-gray-700 uppercase">
+                    Upload CV/Resume *
+                  </label>
+                  <div className="relative">
+                    <label
+                      htmlFor="cv-file"
+                      className="w-full bg-[#F8FDFB] px-4 py-3 rounded-xl border border-dashed border-gray-200 hover:border-[#00A36D] focus:outline-none transition-all flex items-center justify-between cursor-pointer text-xs font-medium text-gray-500"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Upload className="w-4 h-4 text-[#00A36D]" />
+                        <span>{cvFile ? cvFile.name : 'Upload PDF or Word Document (Max 5MB)'}</span>
+                      </div>
+                      {cvFile && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setCvFile(null);
+                          }}
+                          className="p-1 rounded-full hover:bg-gray-200 text-gray-400 hover:text-gray-600"
+                          title="Remove file"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </label>
+                    <input
+                      type="file"
+                      id="cv-file"
+                      required
+                      accept=".pdf,.doc,.docx"
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          setCvFile(e.target.files[0]);
+                        }
+                      }}
+                      className="hidden"
+                    />
+                  </div>
+                </div>
 
                 <button
                   type="submit"

@@ -28,9 +28,9 @@ export default function Navbar() {
   const navLinks = [
     { name: t('nav.home'), href: '/' },
     { name: t('nav.products'), href: '/products' },
-    { name: t('nav.careers'), href: '/careers' },
     { name: t('nav.about'), href: '/about' },
     { name: t('nav.blog'), href: '/blog' },
+    { name: t('nav.careers'), href: '/careers' },
   ];
 
   const handleSelectLang = (code: Language) => {
@@ -67,7 +67,7 @@ export default function Navbar() {
 
             {/* External Documentation Link */}
             <a
-              href="https://docs.addispay.et"
+              href="https://devportal.addispay.et/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm font-bold text-gray-700 hover:text-[#00A36D] transition-colors flex items-center gap-1"
@@ -131,7 +131,7 @@ export default function Navbar() {
 
             {/* External Log In Button */}
             <a
-              href="https://dashboard.addispay.et/login"
+              href="https://uat.dashboard.addispay.et/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm font-bold text-gray-700 hover:text-[#00A36D] transition-colors px-2 py-1"
@@ -141,7 +141,7 @@ export default function Navbar() {
 
             {/* External Sign Up Button */}
             <a
-              href="https://dashboard.addispay.et/signup"
+              href="https://uat.dashboard.addispay.et/signup"
               target="_blank"
               rel="noopener noreferrer"
               className="bg-[#00A36D] hover:bg-[#008959] text-white text-sm font-bold px-6 py-2.5 rounded-full shadow-md shadow-[#00A36D]/20 hover:shadow-lg hover:shadow-[#00A36D]/30 hover:-translate-y-0.5 transition-all duration-200"
@@ -212,7 +212,7 @@ export default function Navbar() {
             ))}
 
             <a
-              href="https://docs.addispay.et"
+              href="https://devportal.addispay.et/"
               target="_blank"
               rel="noopener noreferrer"
               className="block px-3 py-2.5 rounded-xl text-base font-semibold text-gray-800 hover:text-[#00A36D] hover:bg-[#F8FDFB] transition-colors flex items-center justify-between"
@@ -225,7 +225,7 @@ export default function Navbar() {
 
           <div className="pt-2 border-t border-gray-100 flex flex-col gap-2.5">
             <a
-              href="https://dashboard.addispay.et/login"
+              href="https://uat.dashboard.addispay.et/"
               target="_blank"
               rel="noopener noreferrer"
               className="w-full text-center py-3 rounded-full border border-gray-200 text-gray-800 font-bold text-sm hover:bg-gray-50 transition-colors"
@@ -233,7 +233,7 @@ export default function Navbar() {
               {t('nav.login')}
             </a>
             <a
-              href="https://dashboard.addispay.et/signup"
+              href="https://uat.dashboard.addispay.et/signup"
               target="_blank"
               rel="noopener noreferrer"
               className="w-full text-center py-3 rounded-full bg-[#00A36D] text-white font-bold text-sm shadow-md transition-colors"

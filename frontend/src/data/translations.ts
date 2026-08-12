@@ -259,7 +259,7 @@ export const translations: Record<Language, Record<string, string>> = {
     // Hero Section
     'hero.badge': 'በኢትዮጵያ ብሔራዊ ባንክ ፈቃድ ያለው የክፍያ ስርዓት',
     'hero.title_welcome': 'እንኳን ወደ',
-    'hero.title_brand': 'አዲስፔ',
+    'hero.title_brand': 'አዲስፔይ',
     'hero.subtitle': 'የተሳለጠ የዲጂታል ንግድ መፍትሔዎ። ከየትኛውም የኢትዮጵያ ክፍል ክፍያዎችን በፍጥነት፣ በደህነነት እና በቀላሉ ይቀበሉ።',
     'hero.cta_signup': 'በነጻ ይመዝገቡ',
     'hero.cta_demo': 'ቪዲዮ ይመልከቱ',
@@ -335,7 +335,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'admin.new_job': 'አዲስ የሥራ ማስታወቂያ አውጣ',
 
     // Features Section
-    'features.badge': 'ለማን አዲስፔ?',
+    'features.badge': 'ለማን አዲስፔይ?',
     'features.title': 'ለኢትዮጵያ የዲጂታል ንግድ እድገት የተገነባ',
     'features.f1_title': 'በብሔራዊ ባንክ ፈቃድ ያለው',
     'features.f1_desc': 'በኢትዮጵያ ብሔራዊ ባንክ ሙሉ ፈቃድ የተሰጠው ህጋዊ የክፍያ ስርዓት (NPS/PSO/007/2022)።',
@@ -363,23 +363,23 @@ export const translations: Record<Language, Record<string, string>> = {
     // Customer Stories
     'stories.badge': 'የደንበኞች ምስክርነት',
     'stories.title': 'በ50,000+ የንግድ ድርጅቶች የታመነ',
-    'stories.quote1': 'አዲስፔን መጠቀም ከጀመርን ወዲህ የኦንላይን ሽያጣችን በ40% ጨምሯል። ደንበኞቻችን በቴሌብር እና ሲቢኢ ብር መክፈል በመቻላቸው በጣም ደስተኛ ናቸው።',
+    'stories.quote1': 'አዲስፔይን መጠቀም ከጀመርን ወዲህ የኦንላይን ሽያጣችን በ40% ጨምሯል። ደንበኞቻችን በቴሌብር እና ሲቢኢ ብር መክፈል በመቻላቸው በጣም ደስተኛ ናቸው።',
     'stories.author1': 'ሰሎሞን ኃይሌ',
     'stories.role1': 'የአዲስ ቴክ ስቶር መስራች',
-    'stories.quote2': 'ክፍያዎች ወዲያውኑ ገቢ ይሆናሉ። አዲስፔ ለሬስቶራንታችን ክፍያ አሰባሰብ ትልቅ እፎይታ ነው።',
+    'stories.quote2': 'ክፍያዎች ወዲያውኑ ገቢ ይሆናሉ። አዲስፔይ ለሬስቶራንታችን ክፍያ አሰባሰብ ትልቅ እፎይታ ነው።',
     'stories.author2': 'ቤተልሔም ጥላሁን',
     'stories.role2': 'የሆራይዘን ሆስፒታሊቲ ስራ አስኪያጅ',
 
     // FAQ Section
     'faq.badge': 'ጥያቄ አለዎት?',
     'faq.title': 'ተደጋግመው የሚጠየቁ ጥያቄዎች',
-    'faq.q1': 'አዲስፔ በኢትዮጵያ ብሔራዊ ባንክ ፈቃድ ያለው ነው?',
-    'faq.a1': 'አዎ! አዲስፔ ፋይናንሻል ቴክኖሎጂ አክሲዮን ማህበር በኢትዮጵያ ብሔራዊ ባንክ በፈቃድ ቁጥር NPS/PSO/007/2022 የተመዘገበ ህጋዊ የክፍያ ድርጅት ነው።',
-    'faq.q2': 'አዲስፔ የትኞቹን የክፍያ ዘዴዎች ይደግፋል?',
+    'faq.q1': 'አዲስፔይ በኢትዮጵያ ብሔራዊ ባንክ ፈቃድ ያለው ነው?',
+    'faq.a1': 'አዎ! አዲስፔይ ፋይናንሻል ቴክኖሎጂ አክሲዮን ማህበር በኢትዮጵያ ብሔራዊ ባንክ በፈቃድ ቁጥር NPS/PSO/007/2022 የተመዘገበ ህጋዊ የክፍያ ድርጅት ነው።',
+    'faq.q2': 'አዲስፔይ የትኞቹን የክፍያ ዘዴዎች ይደግፋል?',
     'faq.a2': 'ቴሌብር፣ ሲቢኢ ብር፣ አዋሽ ባንክ፣ ኤም-ፔሳ፣ ሄሎካሽ፣ ቪዛ፣ ማስተርካርድ እና የሁሉም ኢትዮጵያ ባንኮች የባንክ ማስተላለፍን ይደግፋል።',
     'faq.q3': 'የነጋዴዎች ገንዘብ በስንት ጊዜ ገቢ ይሆናል?',
     'faq.a3': 'ገንዘብዎ በየቀኑ ወይም ወዲያውኑ በቅጽበት ወደ ባንክ አካውንትዎ ገቢ ይደረጋል።',
-    'faq.q4': 'አዲስፔን ከዌብሳይቴ ጋር እንዴት ማገናኘት እችላለሁ?',
+    'faq.q4': 'አዲስፔይን ከዌብሳይቴ ጋር እንዴት ማገናኘት እችላለሁ?',
     'faq.a4': 'በቀላሉ የሚገጠሙ ፕለጊኖችን (WooCommerce, Shopify) ወይም የልማት APIዎችን በመጠቀም ማገናኘት ይችላሉ።',
 
     // Blog & News Section
@@ -416,11 +416,11 @@ export const translations: Record<Language, Record<string, string>> = {
     // About Us Page
     'about.badge': 'በኢትዮጵያ ብሔራዊ ባንክ ፈቃድ ያለው · NPS/PSO/007/2022',
     'about.title_main': 'ስለ',
-    'about.title_accent': 'አዲስፔ',
+    'about.title_accent': 'አዲስፔይ',
     'about.subtitle': 'በኢትዮጵያ የክፍያ ስርዓትን በዘመናዊ ቴክኖሎጂ፣ ደህንነት እና ጥራት ለማቀላጠፍ የተቋቋመ።',
     'about.who_we_are': 'እኛ ማን ነን',
     'about.bg_title': 'የድርጅቱ ታሪክ',
-    'about.bg_desc': 'አዲስፔ ፋይናንሻል ቴክኖሎጂ አክሲዮን ማህበር በኢትዮጵያ የዲጂታል ክፍያ ስርዓትን ለማዘመን ተመስርቷል። የፋይናንስ ቴክኖሎጂ እውቀታችንን ከአካባቢው ገበያ ጋር በማጣመር አስተማማኝ አገልግሎት እንሰጣለን።',
+    'about.bg_desc': 'አዲስፔይ ፋይናንሻል ቴክኖሎጂ አክሲዮን ማህበር በኢትዮጵያ የዲጂታል ክፍያ ስርዓትን ለማዘመን ተመስርቷል። የፋይናንስ ቴክኖሎጂ እውቀታችንን ከአካባቢው ገበያ ጋር በማጣመር አስተማማኝ አገልግሎት እንሰጣለን።',
     'about.mission_title': 'ተልዕኮአችን',
     'about.mission_desc': 'ለኢትዮጵያ ንግዶች እና ደንበኞች አስተማማኝ፣ ፈጣን እና ዘመናዊ የዲጂታል ክፍያ መፍትሔዎችን ማቅረብ።',
     'about.vision_title': 'ራዕያችን',
@@ -464,7 +464,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'footer.products_title': 'ምርቶች',
     'footer.resources_title': 'መረጃዎች እና ህጋዊ',
     'footer.company_title': 'ድርጅታችን',
-    'footer.rights': 'አዲስፔ ፋይናንሻል ቴክኖሎጂ አክሲዮን ማህበር። መብቱ በህግ የተጠበቀ ነው።',
+    'footer.rights': 'አዲስፔይ ፋይናንሻል ቴክኖሎጂ አክሲዮን ማህበር። መብቱ በህግ የተጠበቀ ነው።',
     'footer.license': 'በኢትዮጵያ ብሔራዊ ባንክ ፈቃድ ያለው · NPS/PSO/007/2022',
   },
   om: {
