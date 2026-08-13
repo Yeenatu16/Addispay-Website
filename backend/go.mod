@@ -3,6 +3,19 @@ module github.com/addispay/backend
 go 1.26.4
 
 require (
+<<<<<<< Updated upstream
+=======
+	github.com/gin-gonic/gin v1.12.0
+	github.com/golang-jwt/jwt/v5 v5.3.1
+	github.com/google/uuid v1.6.0
+	github.com/joho/godotenv v1.5.1
+	golang.org/x/crypto v0.54.0
+	gorm.io/driver/postgres v1.6.2
+	gorm.io/gorm v1.31.2
+)
+
+require (
+>>>>>>> Stashed changes
 	github.com/bytedance/gopkg v0.1.4 // indirect
 	github.com/bytedance/sonic v1.15.2 // indirect
 	github.com/bytedance/sonic/loader v0.5.2 // indirect
@@ -35,7 +48,6 @@ require (
 	github.com/ugorji/go/codec v1.3.2 // indirect
 	go.mongodb.org/mongo-driver/v2 v2.8.0 // indirect
 	golang.org/x/arch v0.30.0 // indirect
-	golang.org/x/crypto v0.54.0 // indirect
 	golang.org/x/net v0.57.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
