@@ -45,6 +45,8 @@ func AutoMigrate(db *gorm.DB) error {
 	log.Println("Executing GORM database migrations...")
 	return db.AutoMigrate(
 		&authDomain.User{},
+		&authDomain.PasswordResetToken{},
+		&authDomain.AdminInvitation{},
 		&newsDomain.NewsArticle{},
 		&careersDomain.JobPosting{},
 		&careersDomain.JobApplication{},

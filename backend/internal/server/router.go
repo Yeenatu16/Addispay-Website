@@ -2,8 +2,8 @@ package server
 
 import (
 	"net/http"
-
 	authDelivery "github.com/addispay/backend/internal/auth/delivery/http"
+	"github.com/addispay/backend/internal/auth/domain"
 	careersDelivery "github.com/addispay/backend/internal/careers/delivery/http"
 	contentDelivery "github.com/addispay/backend/internal/content/delivery/http"
 	newsDelivery "github.com/addispay/backend/internal/news/delivery/http"
@@ -19,18 +19,21 @@ func NewRouter(
 ) *gin.Engine {
 	r := gin.Default()
 
-	// Public Routes
 	v1 := r.Group("/api/v1")
 	{
 		v1.GET("/health", func(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{"status": "UP", "engine": "GORM"})
 		})
 
-		// Auth
+		// Auth (public)
 		v1.POST("/auth/login", authH.Login)
-		v1.POST("/auth/register", authH.Register)
+		v1.POST("/auth/register", authH.Register) // bootstrap Super Admin only
+		v1.POST("/auth/forgot-password", authH.ForgotPassword)
+		v1.POST("/auth/reset-password", authH.ResetPassword)
+		v1.GET("/auth/invitations", authH.GetInvitation)
+		v1.POST("/auth/accept-invitation", authH.AcceptInvitation)
 
-		// Dynamic Public Website APIs
+		// Public website APIs
 		v1.GET("/news/homepage", newsH.GetHomepageNews)
 		v1.GET("/news", newsH.GetNewsListing)
 		v1.GET("/news/:slug", newsH.GetArticleBySlug)
@@ -41,13 +44,36 @@ func NewRouter(
 		v1.POST("/content/subscribe", contentH.Subscribe)
 		v1.POST("/content/contact", contentH.ContactUs)
 
-		// Protected Admin Routes (JWT Required)
+		// Protected admin routes
 		admin := v1.Group("admin")
 		admin.Use(authDelivery.GinAuthMiddleware(jwtSecret))
 		{
-			admin.POST("/news/articles", newsH.CreateArticle)
+			// News — Super Admin + Marketer
+			newsAdmin := admin.Group("")
+			newsAdmin.Use(authDelivery.RequireRoles(domain.RoleSuperAdmin, domain.RoleMarketer))
+			{
+				newsAdmin.POST("/news/articles", newsH.CreateArticle)
+			}
 
-			admin.POST("/careers/jobs", careersH.CreateJob)
+			// Careers — Super Admin + HR
+			careersAdmin := admin.Group("")
+			careersAdmin.Use(authDelivery.RequireRoles(domain.RoleSuperAdmin, domain.RoleHR))
+			{
+				careersAdmin.POST("/careers/jobs", careersH.CreateJob)
+			}
+
+			// User / invitation management — Super Admin only
+			super := admin.Group("")
+			super.Use(authDelivery.RequireRoles(domain.RoleSuperAdmin))
+			{
+				super.POST("/invitations", authH.InviteAdmin)
+				super.GET("/invitations", authH.ListInvitations)
+				super.DELETE("/invitations/:id", authH.CancelInvitation)
+
+				super.GET("/users", authH.ListAdministrators)
+				super.POST("/users/:id/revoke", authH.RevokeAdministrator)
+				super.POST("/users/:id/restore", authH.RestoreAdministrator)
+			}
 		}
 	}
 

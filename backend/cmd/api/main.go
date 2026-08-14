@@ -4,6 +4,7 @@ import (
 	"log"
 
 	authDelivery "github.com/addispay/backend/internal/auth/delivery/http"
+	authMailer "github.com/addispay/backend/internal/auth/mailer"
 	authRepo "github.com/addispay/backend/internal/auth/repository"
 	authUseCase "github.com/addispay/backend/internal/auth/usecase"
 
@@ -40,7 +41,14 @@ func main() {
 
 	// 3. Initialize Clean Architecture Layers (Repositories -> Usecases -> Delivery)
 	uRepo := authRepo.NewUserRepository(db)
-	aUsecase := authUseCase.NewAuthUsecase(uRepo, cfg.JWTSecret)
+	mailer := authMailer.NewMailer(authMailer.SMTPConfig{
+		Host:     cfg.SMTPHost,
+		Port:     cfg.SMTPPort,
+		Username: cfg.SMTPUsername,
+		Password: cfg.SMTPPassword,
+		From:     cfg.SMTPFrom,
+	})
+	aUsecase := authUseCase.NewAuthUsecase(uRepo, mailer, cfg.JWTSecret, cfg.FrontendURL)
 	aHandler := authDelivery.NewAuthHandler(aUsecase)
 
 	nRepo := newsRepo.NewNewsRepository(db)
