@@ -37,4 +37,5 @@ type AuthUsecase interface {
 	Register(ctx context.Context, fullName, email, password string, role Role) (*User, error)
 	Login(ctx context.Context, email, password string) (string, *User, error)
 	GetProfile(ctx context.Context, id uuid.UUID) (*User, error)
+	
 }

@@ -22,14 +22,14 @@ func LoadConfig() *Config {
 	_ = godotenv.Load()
 
 	return &Config{
-		Port:       getEnv("PORT", "8080"),
+		Port:       getEnv("PORT", "8000"),
 		DBHost:     getEnv("DB_HOST", "localhost"),
 		DBPort:     getEnv("DB_PORT", "5432"),
-		DBUser:     getEnv("DB_USER", "addispay_user"),
-		DBPassword: getEnv("DB_PASSWORD", "addispay_password"),
-		DBName:     getEnv("DB_NAME", "addispay_db"),
-		DBSSLMode:  getEnv("DB_SSLMODE", "disable"),
-		JWTSecret:  getEnv("JWT_SECRET", "addispay_jwt_super_secret_key_2026"),
+		DBUser:     getEnv("DB_USER",""),
+		DBPassword: getEnv("DB_PASSWORD",""),
+		DBName:     getEnv("DB_NAME",""),
+		DBSSLMode:  getEnv("DB_SSLMODE", "verify-full"),
+		JWTSecret:  getEnv("ADDISPAY_JWT_SUPER_SECRET_KEY_2026",""),
 		UploadDir:  getEnv("UPLOAD_DIR", "./uploads"),
 	}
 }

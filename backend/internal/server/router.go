@@ -42,7 +42,7 @@ func NewRouter(
 		v1.POST("/content/contact", contentH.ContactUs)
 
 		// Protected Admin Routes (JWT Required)
-		admin := v1.Group("")
+		admin := v1.Group("admin")
 		admin.Use(authDelivery.GinAuthMiddleware(jwtSecret))
 		{
 			admin.POST("/news/articles", newsH.CreateArticle)
