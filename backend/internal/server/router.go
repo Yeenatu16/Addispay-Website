@@ -1,38 +1,55 @@
 package server
 
 import (
-	"github.com/addispay/backend/internal/news/delivery"
-	"github.com/addispay/backend/internal/news/repository"
-	"github.com/addispay/backend/internal/news/usecase"
+	"net/http"
+
+	authDelivery "github.com/addispay/backend/internal/auth/delivery/http"
+	careersDelivery "github.com/addispay/backend/internal/careers/delivery/http"
+	contentDelivery "github.com/addispay/backend/internal/content/delivery/http"
+	newsDelivery "github.com/addispay/backend/internal/news/delivery/http"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
-func SetupRouter(db *gorm.DB) *gin.Engine {
-	router := gin.Default()
+func NewRouter(
+	jwtSecret string,
+	authH *authDelivery.AuthHandler,
+	newsH *newsDelivery.NewsHandler,
+	careersH *careersDelivery.CareerHandler,
+	contentH *contentDelivery.ContentHandler,
+) *gin.Engine {
+	r := gin.Default()
 
-	// News
-	newsRepository := repository.NewNewsRepository(db)
-	newsUsecase := usecase.NewNewsUsecase(newsRepository)
-	newsHandler := delivery.NewNewsHandler(newsUsecase)
-
-	api := router.Group("/api/v1")
-
-	news := api.Group("/news")
+	// Public Routes
+	v1 := r.Group("/api/v1")
 	{
-		news.POST("", newsHandler.Create)
-		news.GET("", newsHandler.GetAll)
-		news.GET("/:id", newsHandler.GetByID)
-		news.PUT("/:id", newsHandler.Update)
-		news.DELETE("/:id", newsHandler.Delete)
+		v1.GET("/health", func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{"status": "UP", "engine": "GORM"})
+		})
+
+		// Auth
+		v1.POST("/auth/login", authH.Login)
+		v1.POST("/auth/register", authH.Register)
+
+		// Dynamic Public Website APIs
+		v1.GET("/news/homepage", newsH.GetHomepageNews)
+		v1.GET("/news", newsH.GetNewsListing)
+		v1.GET("/news/:slug", newsH.GetArticleBySlug)
+
+		v1.GET("/careers", careersH.GetOpenJobs)
+		v1.POST("/careers/apply", careersH.ApplyForJob)
+
+		v1.POST("/content/subscribe", contentH.Subscribe)
+		v1.POST("/content/contact", contentH.ContactUs)
+
+		// Protected Admin Routes (JWT Required)
+		admin := v1.Group("")
+		admin.Use(authDelivery.GinAuthMiddleware(jwtSecret))
+		{
+			admin.POST("/news/articles", newsH.CreateArticle)
+
+			admin.POST("/careers/jobs", careersH.CreateJob)
+		}
 	}
 
-	api.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"success": true,
-			"message": "AddisPay API is running",
-		})
-	})
-
-	return router
+	return r
 }
