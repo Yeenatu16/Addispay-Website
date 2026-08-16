@@ -14,8 +14,9 @@ import (
 type contextKey string
 
 const (
-	UserIDKey contextKey = "user_id"
-	RoleKey   contextKey = "user_role"
+	UserIDKey    contextKey = "user_id"
+	RoleKey      contextKey = "user_role"
+	UserEmailKey contextKey = "user_email"
 )
 
 // GinAuthMiddleware validates JWT and stores identity on Gin + request context.
@@ -56,6 +57,7 @@ func GinAuthMiddleware(jwtSecret string) gin.HandlerFunc {
 
 		userID, _ := claims["sub"].(string)
 		userRole, _ := claims["role"].(string)
+		userEmail, _ := claims["email"].(string)
 		if userID == "" || userRole == "" {
 			response.Error(c, http.StatusUnauthorized, "Invalid token claims")
 			c.Abort()
@@ -64,9 +66,11 @@ func GinAuthMiddleware(jwtSecret string) gin.HandlerFunc {
 
 		c.Set(string(UserIDKey), userID)
 		c.Set(string(RoleKey), userRole)
+		c.Set(string(UserEmailKey), userEmail)
 
 		ctx := context.WithValue(c.Request.Context(), UserIDKey, userID)
 		ctx = context.WithValue(ctx, RoleKey, userRole)
+		ctx = context.WithValue(ctx, UserEmailKey, userEmail)
 		c.Request = c.Request.WithContext(ctx)
 
 		c.Next()

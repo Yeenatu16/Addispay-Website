@@ -81,15 +81,17 @@ flowchart TB
 ```text
 backend/
 ├── cmd/api/main.go              # DI wiring + server start
+├── .env / .env.example          # Local config (never commit secrets)
+├── uploads/                     # Cover images (created at runtime)
 └── internal/
     ├── config/                  # Env-based configuration
     ├── database/                # GORM connect + AutoMigrate
     ├── response/                # Success / error JSON helpers
-    ├── server/router.go         # Route registration
-    ├── auth/                    # Users, login, register, JWT
-    ├── news/                    # News articles
+    ├── server/router.go         # Route registration + /uploads static
+    ├── auth/                    # Users, JWT, invites, password reset, SMTP mailer
+    ├── news/                    # News CRUD, upload + image optimize
     ├── careers/                 # Jobs + applications
-    └── content/                 # Newsletter, contact, audit log
+    └── content/                 # Newsletter, contact, audit logs, site settings
 ```
 
 Each domain follows:
@@ -358,6 +360,9 @@ flowchart LR
     H[GET /health]
     L[POST /auth/login]
     R[POST /auth/register]
+    FP[POST /auth/forgot-password]
+    RP[POST /auth/reset-password]
+    AI[GET/POST /auth/invitations]
     NH[GET /news/homepage]
     NL[GET /news]
     NS[GET /news/:slug]
@@ -367,9 +372,20 @@ flowchart LR
     CON[POST /content/contact]
   end
 
-  subgraph Admin["Admin — Bearer JWT"]
-    NA[POST /admin/news/articles]
+  subgraph NewsAdmin["News admin — Super_Admin / Marketer"]
+    NA[CRUD /admin/news/articles]
+    NU[POST /admin/news/upload]
+    NSET[GET/PUT /admin/news/settings]
+    NLOG[GET /admin/news/audit-logs]
+  end
+
+  subgraph CareerAdmin["Careers admin — Super_Admin / HR"]
     JA[POST /admin/careers/jobs]
+  end
+
+  subgraph SuperAdmin["Super Admin only"]
+    INV[Invitations]
+    USR[Users revoke/restore]
   end
 ```
 
@@ -396,6 +412,14 @@ flowchart LR
 | `POST` | `/api/v1/content/subscribe` | Public | Newsletter |
 | `POST` | `/api/v1/content/contact` | Public | Contact form |
 | `POST` | `/api/v1/admin/news/articles` | Super Admin / Marketer | Create article |
+| `GET` | `/api/v1/admin/news/articles` | Super Admin / Marketer | List all articles (incl. drafts) |
+| `GET` | `/api/v1/admin/news/articles/:id` | Super Admin / Marketer | Get article by ID |
+| `PUT` | `/api/v1/admin/news/articles/:id` | Super Admin / Marketer | Edit / publish / unpublish |
+| `DELETE` | `/api/v1/admin/news/articles/:id` | Super Admin / Marketer | Delete article |
+| `POST` | `/api/v1/admin/news/upload` | Super Admin / Marketer | Upload cover image |
+| `GET` | `/api/v1/admin/news/settings` | Super Admin / Marketer | Homepage limit + empty message |
+| `PUT` | `/api/v1/admin/news/settings` | Super Admin / Marketer | Update news settings |
+| `GET` | `/api/v1/admin/news/audit-logs` | Super Admin / Marketer | News activity audit trail |
 | `POST` | `/api/v1/admin/careers/jobs` | Super Admin / HR | Create job |
 
 ---
@@ -776,8 +800,8 @@ Requires JWT with role **Super_Admin** or **Marketer**.
 {
   "title": "Product launch",
   "shortDescription": "Short summary",
-  "fullContent": "Full rich text body",
-  "coverImageUrl": "https://cdn.example.com/cover.jpg",
+  "fullContent": "<p>Rich HTML body</p>",
+  "coverImageUrl": "/uploads/news/....jpg",
   "isFeatured": true,
   "status": "PUBLISHED"
 }
@@ -790,6 +814,70 @@ If `PUBLISHED`, `publishedAt` is set to now.
 `slug` is derived from `title`.
 
 **Response `201`** — `data` is the created `NewsArticle`.
+
+---
+
+#### `GET /api/v1/admin/news/articles`
+
+Admin list (drafts + published). Query: `page`, `limit`, `search`, `status` (`DRAFT`|`PUBLISHED`).
+
+---
+
+#### `GET /api/v1/admin/news/articles/:id`
+
+Fetch any article by UUID (including drafts).
+
+---
+
+#### `PUT /api/v1/admin/news/articles/:id`
+
+Partial update. Changing `status` publishes or unpublishes. Logs `EDIT` / `PUBLISH` / `UNPUBLISH`.
+
+---
+
+#### `DELETE /api/v1/admin/news/articles/:id`
+
+Permanently deletes the article and logs `DELETE`.
+
+---
+
+#### `POST /api/v1/admin/news/upload`
+
+Multipart form field `file`. Allowed: JPG, JPEG, PNG, WebP. Max **5 MB**.
+
+Uploaded images are automatically optimized for web delivery: EXIF orientation is applied, images wider than **1600px** are downscaled (aspect preserved), and the result is re-encoded as JPEG (quality 82). Output is always `.jpg`.
+
+**Response `201`**
+
+```json
+{ "success": true, "data": { "url": "/uploads/news/....jpg", "filename": "....jpg", "optimizedSize": 148213 } }
+```
+
+Use `data.url` as `coverImageUrl` when creating/updating articles. Files are served at `http://localhost:8000/uploads/...`.
+
+---
+
+#### `GET` / `PUT /api/v1/admin/news/settings`
+
+```json
+{ "homepageLimit": 4, "emptyMessage": "No news available at this time." }
+```
+
+`homepageLimit` controls how many latest articles `/news/homepage` returns (1–20). `emptyMessage` is returned to the frontend for empty states.
+
+---
+
+#### `GET /api/v1/admin/news/audit-logs`
+
+Paginated audit trail (`page`, `limit`). Each log: admin id/name, action (`CREATE`|`EDIT`|`PUBLISH`|`UNPUBLISH`|`DELETE`), resource `news`, article title, timestamp.
+
+---
+
+### Careers (admin)
+
+#### `POST /api/v1/admin/careers/jobs`
+
+Requires JWT with role **Super_Admin** or **HR**.
 
 ---
 
@@ -987,56 +1075,486 @@ sequenceDiagram
 
 ---
 
-## Example requests
+## Example curl requests
 
 ```bash
 # Health
 curl http://localhost:8000/api/v1/health
 
-# Register
+# Bootstrap Super Admin (only when users table is empty)
 curl -X POST http://localhost:8000/api/v1/auth/register \
   -H 'Content-Type: application/json' \
-  -d '{"fullName":"Admin","email":"admin@addispay.com","password":"secret","role":"Super_Admin"}'
+  -d '{"fullName":"Admin","email":"admin@addispay.com","password":"secret123","role":"Super_Admin"}'
 
 # Login
 curl -X POST http://localhost:8000/api/v1/auth/login \
   -H 'Content-Type: application/json' \
-  -d '{"email":"admin@addispay.com","password":"secret"}'
-
-# Forgot password (check server logs for reset link when using LogMailer)
-curl -X POST http://localhost:8000/api/v1/auth/forgot-password \
-  -H 'Content-Type: application/json' \
-  -d '{"email":"admin@addispay.com"}'
-
-# Reset password
-curl -X POST http://localhost:8000/api/v1/auth/reset-password \
-  -H 'Content-Type: application/json' \
-  -d '{"token":"<raw-token>","newPassword":"newSecurePass1"}'
-
-# Invite Marketer (Super Admin)
-curl -X POST http://localhost:8000/api/v1/admin/invitations \
-  -H 'Content-Type: application/json' \
-  -H "Authorization: Bearer $TOKEN" \
-  -d '{"email":"marketer@addispay.com","role":"Marketer"}'
-
-# Accept invitation
-curl -X POST http://localhost:8000/api/v1/auth/accept-invitation \
-  -H 'Content-Type: application/json' \
-  -d '{"token":"<invite-token>","fullName":"New Marketer","password":"securePass1"}'
-
-# Revoke administrator access
-curl -X POST http://localhost:8000/api/v1/admin/users/<user-id>/revoke \
-  -H "Authorization: Bearer $TOKEN"
-
-# Public news
-curl 'http://localhost:8000/api/v1/news?page=1&limit=10'
-
-# Create article (admin)
-curl -X POST http://localhost:8000/api/v1/admin/news/articles \
-  -H 'Content-Type: application/json' \
-  -H "Authorization: Bearer $TOKEN" \
-  -d '{"title":"Launch","shortDescription":"Summary","fullContent":"Body","isFeatured":true,"status":"PUBLISHED"}'
+  -d '{"email":"admin@addispay.com","password":"secret123"}'
 ```
+
+---
+
+## Postman testing guide (step by step)
+
+Base URL for all requests: `http://localhost:8000/api/v1`
+
+### 0. Prep
+
+1. Start PostgreSQL and create DB `addispay_db` if needed.
+2. Copy `.env.example` → `.env` and fill DB + JWT (+ optional SMTP).
+3. In terminal:
+
+```bash
+cd backend
+go mod tidy
+go run ./cmd/api
+```
+
+4. Confirm log shows either `[mailer] using SMTP ...` or `using LogMailer`.
+5. Open Postman → create a collection **AddisPay API**.
+6. Collection variables (recommended):
+
+| Variable | Example |
+|----------|---------|
+| `baseUrl` | `http://localhost:8000/api/v1` |
+| `token` | *(empty — filled after login)* |
+| `articleId` | *(empty — filled after create)* |
+| `userId` | *(empty — from list users)* |
+| `inviteId` | *(empty — from invite response)* |
+| `inviteToken` | *(from email / server log)* |
+| `resetToken` | *(from email / server log)* |
+| `coverUrl` | *(from upload response)* |
+
+Use `{{baseUrl}}` and `{{token}}` in requests below.
+
+---
+
+### 1. Health
+
+| Field | Value |
+|-------|--------|
+| Method | `GET` |
+| URL | `{{baseUrl}}/health` |
+| Auth | none |
+| Body | none |
+
+**Expect `200`:** `{ "status": "UP", "engine": "GORM" }`
+
+---
+
+### 2. Auth — bootstrap Super Admin
+
+Only works when the `users` table is empty.
+
+| Field | Value |
+|-------|--------|
+| Method | `POST` |
+| URL | `{{baseUrl}}/auth/register` |
+| Headers | `Content-Type: application/json` |
+| Body (raw JSON) | see below |
+
+```json
+{
+  "fullName": "Super Admin",
+  "email": "admin@addispay.com",
+  "password": "secret123",
+  "role": "Super_Admin"
+}
+```
+
+**Expect `201`** with user object (`password` omitted). Password min length: **8**.
+
+If you already have users and need a fresh bootstrap:
+
+```sql
+TRUNCATE TABLE password_reset_tokens, admin_invitations, users RESTART IDENTITY CASCADE;
+```
+
+---
+
+### 3. Auth — login (save JWT)
+
+| Field | Value |
+|-------|--------|
+| Method | `POST` |
+| URL | `{{baseUrl}}/auth/login` |
+| Headers | `Content-Type: application/json` |
+
+```json
+{
+  "email": "admin@addispay.com",
+  "password": "secret123"
+}
+```
+
+**Expect `200`:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "token": "<jwt>",
+    "user": { "id": "...", "role": "Super_Admin", "...": "..." }
+  }
+}
+```
+
+**Postman tip:** In **Tests** tab:
+
+```js
+const json = pm.response.json();
+pm.collectionVariables.set("token", json.data.token);
+```
+
+For every protected request below:  
+**Authorization → Type: Bearer Token → Token: `{{token}}`**
+
+---
+
+### 4. Auth — forgot password
+
+| Field | Value |
+|-------|--------|
+| Method | `POST` |
+| URL | `{{baseUrl}}/auth/forgot-password` |
+| Auth | none |
+
+```json
+{ "email": "admin@addispay.com" }
+```
+
+**Expect `200`** with a generic success message (same whether email exists or not).
+
+- With SMTP: check inbox for reset link.
+- Without SMTP: check API terminal for `[mailer:log] ... reset link: ...?token=...`
+- Copy the `token` query value into `{{resetToken}}`.
+
+---
+
+### 5. Auth — reset password
+
+| Field | Value |
+|-------|--------|
+| Method | `POST` |
+| URL | `{{baseUrl}}/auth/reset-password` |
+| Auth | none |
+
+```json
+{
+  "token": "{{resetToken}}",
+  "newPassword": "newSecurePass1"
+}
+```
+
+**Expect `200`.** Then login again with the new password and refresh `{{token}}`.
+
+---
+
+### 6. Super Admin — invite Marketer / HR
+
+Requires Super Admin Bearer token.
+
+| Field | Value |
+|-------|--------|
+| Method | `POST` |
+| URL | `{{baseUrl}}/admin/invitations` |
+| Auth | Bearer `{{token}}` |
+
+```json
+{
+  "email": "marketer@example.com",
+  "role": "Marketer"
+}
+```
+
+`role` must be `Marketer` or `HR` (not `Super_Admin`).
+
+**Expect `201`.** Save `data.id` → `{{inviteId}}`.  
+Copy invite token from email/log → `{{inviteToken}}` (link looks like `/accept-invitation?token=...`).
+
+Other invite endpoints:
+
+| Method | URL | Notes |
+|--------|-----|--------|
+| `GET` | `{{baseUrl}}/admin/invitations` | List pending |
+| `DELETE` | `{{baseUrl}}/admin/invitations/{{inviteId}}` | Cancel invite |
+
+---
+
+### 7. Public — preview + accept invitation
+
+**Preview**
+
+| Field | Value |
+|-------|--------|
+| Method | `GET` |
+| URL | `{{baseUrl}}/auth/invitations?token={{inviteToken}}` |
+| Auth | none |
+
+**Expect `200`:** `{ email, role, expiresAt }`
+
+**Accept**
+
+| Field | Value |
+|-------|--------|
+| Method | `POST` |
+| URL | `{{baseUrl}}/auth/accept-invitation` |
+| Auth | none |
+
+```json
+{
+  "token": "{{inviteToken}}",
+  "fullName": "News Marketer",
+  "password": "securePass1"
+}
+```
+
+**Expect `201`** with the new user (`role: Marketer`). Login as that user to get a Marketer JWT for news tests.
+
+---
+
+### 8. Super Admin — list / revoke / restore users
+
+| Method | URL | Body |
+|--------|-----|------|
+| `GET` | `{{baseUrl}}/admin/users` | — |
+| `POST` | `{{baseUrl}}/admin/users/{{userId}}/revoke` | empty |
+| `POST` | `{{baseUrl}}/admin/users/{{userId}}/restore` | empty |
+
+Auth: Bearer Super Admin token.  
+From `GET /admin/users`, copy a Marketer/HR `id` into `{{userId}}`.  
+Cannot revoke yourself or another Super Admin. Revoked users fail login with “account access has been revoked”.
+
+---
+
+### 9. News admin — upload cover (optimized)
+
+Auth: Super Admin **or** Marketer.
+
+| Field | Value |
+|-------|--------|
+| Method | `POST` |
+| URL | `{{baseUrl}}/admin/news/upload` |
+| Auth | Bearer `{{token}}` |
+| Body | **form-data** (not raw JSON) |
+
+| Key | Type | Value |
+|-----|------|--------|
+| `file` | File | pick a `.jpg` / `.png` / `.webp` under 5 MB |
+
+**Expect `201`:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "url": "/uploads/news/....jpg",
+    "filename": "....jpg",
+    "optimizedSize": 148213
+  }
+}
+```
+
+Save `data.url` → `{{coverUrl}}`.  
+Open in browser: `http://localhost:8000{{coverUrl}}`  
+Upload always stores optimized JPEG (≤1600px wide, quality 82).
+
+---
+
+### 10. News admin — create article
+
+| Field | Value |
+|-------|--------|
+| Method | `POST` |
+| URL | `{{baseUrl}}/admin/news/articles` |
+| Auth | Bearer `{{token}}` |
+| Headers | `Content-Type: application/json` |
+
+```json
+{
+  "title": "AddisPay Product Launch",
+  "shortDescription": "We launched something new",
+  "fullContent": "<p><strong>Bold</strong> rich text body</p>",
+  "coverImageUrl": "{{coverUrl}}",
+  "isFeatured": true,
+  "status": "PUBLISHED"
+}
+```
+
+Use `"status": "DRAFT"` to keep it off the public site.
+
+**Expect `201`.** Save `data.id` → `{{articleId}}` and note `data.slug`.
+
+---
+
+### 11. News admin — list / get / update / delete
+
+All need Bearer Super Admin or Marketer.
+
+| Step | Method | URL | Body |
+|------|--------|-----|------|
+| List all | `GET` | `{{baseUrl}}/admin/news/articles?page=1&limit=20` | — |
+| Filter drafts | `GET` | `{{baseUrl}}/admin/news/articles?status=DRAFT` | — |
+| Search | `GET` | `{{baseUrl}}/admin/news/articles?search=launch` | — |
+| Get one | `GET` | `{{baseUrl}}/admin/news/articles/{{articleId}}` | — |
+| Edit / unpublish | `PUT` | `{{baseUrl}}/admin/news/articles/{{articleId}}` | see below |
+| Delete | `DELETE` | `{{baseUrl}}/admin/news/articles/{{articleId}}` | — |
+
+**PUT body example (partial update):**
+
+```json
+{
+  "title": "Updated title",
+  "status": "DRAFT",
+  "isFeatured": false
+}
+```
+
+- `DRAFT` → `PUBLISHED` logs **PUBLISH** and sets `publishedAt` if empty.  
+- `PUBLISHED` → `DRAFT` logs **UNPUBLISH**.  
+- Other field edits log **EDIT**.
+
+---
+
+### 12. News settings + audit logs
+
+| Method | URL | Body |
+|--------|-----|------|
+| `GET` | `{{baseUrl}}/admin/news/settings` | — |
+| `PUT` | `{{baseUrl}}/admin/news/settings` | JSON below |
+| `GET` | `{{baseUrl}}/admin/news/audit-logs?page=1&limit=20` | — |
+
+```json
+{
+  "homepageLimit": 5,
+  "emptyMessage": "No news available at this time."
+}
+```
+
+`homepageLimit` must be 1–20. Audit rows include `CREATE` / `EDIT` / `PUBLISH` / `UNPUBLISH` / `DELETE`.
+
+---
+
+### 13. Public news APIs (no auth)
+
+| Method | URL | Expect |
+|--------|-----|--------|
+| `GET` | `{{baseUrl}}/news/homepage` | `featured`, `latest`, `emptyMessage` |
+| `GET` | `{{baseUrl}}/news?page=1&limit=10&search=launch` | `{ articles, total }` — published only |
+| `GET` | `{{baseUrl}}/news/{{slug}}` | single published article; drafts → `404` |
+
+After creating a **PUBLISHED** featured article, homepage should show it under `featured`. Drafts never appear here.
+
+---
+
+### 14. Careers + content (public)
+
+| Method | URL | Body |
+|--------|-----|------|
+| `GET` | `{{baseUrl}}/careers` | — |
+| `POST` | `{{baseUrl}}/careers/apply` | JSON below |
+| `POST` | `{{baseUrl}}/content/subscribe` | `{ "email": "u@example.com" }` |
+| `POST` | `{{baseUrl}}/content/contact` | JSON below |
+
+**Apply:**
+
+```json
+{
+  "jobId": "<open-job-uuid>",
+  "fullName": "Applicant Name",
+  "email": "applicant@email.com",
+  "phoneNumber": "+251911000000",
+  "coverLetter": "I am interested...",
+  "cvUrl": "https://example.com/cv.pdf",
+  "linkedinUrl": "",
+  "portfolioUrl": ""
+}
+```
+
+**Contact:**
+
+```json
+{
+  "fullName": "Visitor",
+  "email": "visitor@email.com",
+  "reason": "Partnership",
+  "message": "Hello AddisPay"
+}
+```
+
+---
+
+### 15. Careers admin — create job
+
+Auth: Super Admin **or** HR (Marketer gets `403`).
+
+| Field | Value |
+|-------|--------|
+| Method | `POST` |
+| URL | `{{baseUrl}}/admin/careers/jobs` |
+| Auth | Bearer token for Super Admin / HR |
+
+```json
+{
+  "title": "Backend Engineer",
+  "department": "Engineering",
+  "location": "Addis Ababa",
+  "jobType": "FULL_TIME",
+  "description": "Build APIs",
+  "requirements": "Go, PostgreSQL"
+}
+```
+
+`jobType`: `FULL_TIME` | `PART_TIME` | `REMOTE`  
+Then `GET {{baseUrl}}/careers` should include the new open job.
+
+---
+
+### 16. RBAC smoke checks (recommended)
+
+| Actor token | Call | Expect |
+|-------------|------|--------|
+| Marketer | `POST /admin/news/articles` | `201` |
+| Marketer | `POST /admin/careers/jobs` | `403` |
+| Marketer | `POST /admin/invitations` | `403` |
+| HR | `POST /admin/careers/jobs` | `201` |
+| HR | `POST /admin/news/articles` | `403` |
+| Super Admin | all of the above | allowed |
+
+---
+
+### Postman checklist (quick)
+
+1. Health  
+2. Register Super Admin → Login → save `token`  
+3. Upload cover → save `coverUrl`  
+4. Create published article → save `articleId` / slug  
+5. Public homepage + listing + by slug  
+6. Update / unpublish / republish / delete  
+7. Settings + audit logs  
+8. Invite Marketer → accept → login as Marketer → news only  
+9. Invite HR → careers create only  
+10. Revoke user → login fails  
+
+---
+
+## News SRS compliance (FR-ADM-002 … FR-DYN-004)
+
+| Requirement | Status | Backend support |
+|-------------|--------|-----------------|
+| FR-ADM-002 Create article | Done | `POST /admin/news/articles` — title, shortDescription, fullContent, coverImageUrl, publishedAt, status |
+| FR-ADM-003 Instant publishing | Done | Published articles appear immediately via public news APIs |
+| FR-ADM-004 Draft management | Done | `status=DRAFT`; excluded from public list/homepage; editable via `PUT` |
+| FR-ADM-005 Edit news | Done | `PUT /admin/news/articles/:id` |
+| FR-ADM-006 Delete news | Done | `DELETE /admin/news/articles/:id` |
+| FR-ADM-007 Ordering + featured | Done | Ordered by `published_at DESC`; one featured via `isFeatured` |
+| FR-ADM-008 Rich text | Backend OK | Stores HTML/text in `fullContent` (editor is frontend) |
+| FR-ADM-009 Cover upload | Done | `POST /admin/news/upload` — JPG/PNG/WebP, max 5MB, auto-optimized (downscaled to ≤1600px, re-encoded JPEG q82) |
+| FR-ADM-010 Activity logging | Done | Create/Edit/Publish/Unpublish/Delete → `GET /admin/news/audit-logs` |
+| FR-DYN-001 Dynamic retrieval | Done | Public news APIs |
+| FR-DYN-002 Homepage news | Done | `GET /news/homepage` — featured + latest; limit configurable |
+| FR-DYN-003 News listing | Done | Pagination, search (title/short/full), sort by publish date desc |
+| FR-DYN-004 Empty state | Done | `emptyMessage` on homepage response + admin settings |
 
 ---
 
@@ -1058,10 +1576,8 @@ Unauthorized role → `403` `{ "success": false, "error": "Insufficient permissi
 
 | Area | Status |
 |------|--------|
-| Edit / delete news | Usecase/repo methods exist; **no HTTP routes** |
+| Careers admin CRUD beyond create | Only `POST /admin/careers/jobs` today |
 | Get profile | Usecase exists; **no route** |
-| Audit log API | Table migrated; **no routes** |
-| File upload | `UPLOAD_DIR` configured; **no upload endpoint** |
 
 ---
 

@@ -2,6 +2,8 @@ package server
 
 import (
 	"net/http"
+	"path/filepath"
+
 	authDelivery "github.com/addispay/backend/internal/auth/delivery/http"
 	"github.com/addispay/backend/internal/auth/domain"
 	careersDelivery "github.com/addispay/backend/internal/careers/delivery/http"
@@ -12,12 +14,16 @@ import (
 
 func NewRouter(
 	jwtSecret string,
+	uploadDir string,
 	authH *authDelivery.AuthHandler,
 	newsH *newsDelivery.NewsHandler,
 	careersH *careersDelivery.CareerHandler,
 	contentH *contentDelivery.ContentHandler,
 ) *gin.Engine {
 	r := gin.Default()
+
+	// Serve uploaded cover images
+	r.Static("/uploads", filepath.Clean(uploadDir))
 
 	v1 := r.Group("/api/v1")
 	{
@@ -27,7 +33,7 @@ func NewRouter(
 
 		// Auth (public)
 		v1.POST("/auth/login", authH.Login)
-		v1.POST("/auth/register", authH.Register) // bootstrap Super Admin only
+		v1.POST("/auth/register", authH.Register)
 		v1.POST("/auth/forgot-password", authH.ForgotPassword)
 		v1.POST("/auth/reset-password", authH.ResetPassword)
 		v1.GET("/auth/invitations", authH.GetInvitation)
@@ -52,7 +58,16 @@ func NewRouter(
 			newsAdmin := admin.Group("")
 			newsAdmin.Use(authDelivery.RequireRoles(domain.RoleSuperAdmin, domain.RoleMarketer))
 			{
+				newsAdmin.GET("/news/articles", newsH.ListAdminArticles)
+				newsAdmin.GET("/news/articles/:id", newsH.GetAdminArticle)
 				newsAdmin.POST("/news/articles", newsH.CreateArticle)
+				newsAdmin.PUT("/news/articles/:id", newsH.UpdateArticle)
+				newsAdmin.DELETE("/news/articles/:id", newsH.DeleteArticle)
+				newsAdmin.POST("/news/upload", newsH.UploadCoverImage)
+
+				newsAdmin.GET("/news/settings", contentH.GetNewsSettings)
+				newsAdmin.PUT("/news/settings", contentH.UpdateNewsSettings)
+				newsAdmin.GET("/news/audit-logs", contentH.ListAuditLogs)
 			}
 
 			// Careers — Super Admin + HR

@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	authDelivery "github.com/addispay/backend/internal/auth/delivery/http"
 	authMailer "github.com/addispay/backend/internal/auth/mailer"
@@ -23,23 +24,25 @@ import (
 	"github.com/addispay/backend/internal/config"
 	"github.com/addispay/backend/internal/database"
 	"github.com/addispay/backend/internal/server"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	cfg := config.LoadConfig()
 
-	// 1. Initialize PostgreSQL GORM Driver
+	if err := os.MkdirAll(cfg.UploadDir, 0o755); err != nil {
+		log.Fatalf("Failed to create upload directory: %v", err)
+	}
+
 	db, err := database.NewDatabase(cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DBName, cfg.DBSSLMode)
 	if err != nil {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}
 
-	// 2. Run GORM Migrations
 	if err := database.AutoMigrate(db); err != nil {
 		log.Fatalf("Database migration failed: %v", err)
 	}
 
-	// 3. Initialize Clean Architecture Layers (Repositories -> Usecases -> Delivery)
 	uRepo := authRepo.NewUserRepository(db)
 	mailer := authMailer.NewMailer(authMailer.SMTPConfig{
 		Host:     cfg.SMTPHost,
@@ -51,20 +54,29 @@ func main() {
 	aUsecase := authUseCase.NewAuthUsecase(uRepo, mailer, cfg.JWTSecret, cfg.FrontendURL)
 	aHandler := authDelivery.NewAuthHandler(aUsecase)
 
+	cntRepo := contentRepo.NewContentRepository(db)
+	cntUsecase := contentUseCase.NewContentUsecase(cntRepo)
+	cntHandler := contentDelivery.NewContentHandler(cntUsecase)
+
 	nRepo := newsRepo.NewNewsRepository(db)
-	nUsecase := newsUseCase.NewNewsUsecase(nRepo)
-	nHandler := newsDelivery.NewNewsHandler(nUsecase)
+	audit := contentUseCase.NewNewsAuditAdapter(cntRepo)
+	settings := contentUseCase.NewNewsSettingsAdapter(cntUsecase)
+	nUsecase := newsUseCase.NewNewsUsecase(nRepo, audit, settings)
+	nHandler := newsDelivery.NewNewsHandler(nUsecase, cfg.UploadDir)
+	nHandler.SetUserNameResolver(func(c *gin.Context) string {
+		if email, ok := c.Get(string(authDelivery.UserEmailKey)); ok {
+			if s, ok := email.(string); ok && s != "" {
+				return s
+			}
+		}
+		return "Administrator"
+	})
 
 	cRepo := careerRepo.NewCareerRepository(db)
 	cUsecase := careerUseCase.NewCareerUsecase(cRepo)
 	cHandler := careersDelivery.NewCareerHandler(cUsecase)
 
-	cntRepo := contentRepo.NewContentRepository(db)
-	cntUsecase := contentUseCase.NewContentUsecase(cntRepo)
-	cntHandler := contentDelivery.NewContentHandler(cntUsecase)
-
-	// 4. Wire Server Router
-	router := server.NewRouter(cfg.JWTSecret, aHandler, nHandler, cHandler, cntHandler)
+	router := server.NewRouter(cfg.JWTSecret, cfg.UploadDir, aHandler, nHandler, cHandler, cntHandler)
 
 	log.Printf("Addispay Backend Server running on port %s", cfg.Port)
 	log.Fatal(router.Run(":" + cfg.Port))

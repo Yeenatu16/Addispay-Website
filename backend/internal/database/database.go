@@ -53,5 +53,6 @@ func AutoMigrate(db *gorm.DB) error {
 		&contentDomain.NewsletterSubscriber{},
 		&contentDomain.ContactMessage{},
 		&contentDomain.AuditLog{},
+		&contentDomain.SiteSetting{},
 	)
 }

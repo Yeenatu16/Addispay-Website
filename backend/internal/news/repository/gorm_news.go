@@ -43,7 +43,11 @@ func (r *newsRepository) ListPublished(ctx context.Context, limit, offset int, s
 
 	q := r.db.WithContext(ctx).Model(&domain.NewsArticle{}).Where("status = ?", domain.StatusPublished)
 	if search != "" {
-		q = q.Where("title ILIKE ? OR short_description ILIKE ?", "%"+search+"%", "%"+search+"%")
+		like := "%" + search + "%"
+		q = q.Where(
+			"title ILIKE ? OR short_description ILIKE ? OR full_content ILIKE ?",
+			like, like, like,
+		)
 	}
 
 	if err := q.Count(&total).Error; err != nil {
@@ -54,9 +58,45 @@ func (r *newsRepository) ListPublished(ctx context.Context, limit, offset int, s
 	return articles, total, err
 }
 
+func (r *newsRepository) ListAdmin(ctx context.Context, filter domain.NewsListFilter) ([]domain.NewsArticle, int64, error) {
+	var articles []domain.NewsArticle
+	var total int64
+
+	limit := filter.Limit
+	if limit <= 0 {
+		limit = 20
+	}
+	page := filter.Page
+	if page <= 0 {
+		page = 1
+	}
+	offset := (page - 1) * limit
+
+	q := r.db.WithContext(ctx).Model(&domain.NewsArticle{})
+	if filter.Status != nil {
+		q = q.Where("status = ?", *filter.Status)
+	}
+	if filter.Search != "" {
+		like := "%" + filter.Search + "%"
+		q = q.Where(
+			"title ILIKE ? OR short_description ILIKE ? OR full_content ILIKE ?",
+			like, like, like,
+		)
+	}
+
+	if err := q.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	err := q.Order("updated_at DESC").Limit(limit).Offset(offset).Find(&articles).Error
+	return articles, total, err
+}
+
 func (r *newsRepository) GetFeatured(ctx context.Context) (*domain.NewsArticle, error) {
 	var article domain.NewsArticle
-	err := r.db.WithContext(ctx).Where("status = ? AND is_featured = ?", domain.StatusPublished, true).First(&article).Error
+	err := r.db.WithContext(ctx).
+		Where("status = ? AND is_featured = ?", domain.StatusPublished, true).
+		First(&article).Error
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +104,10 @@ func (r *newsRepository) GetFeatured(ctx context.Context) (*domain.NewsArticle, 
 }
 
 func (r *newsRepository) UnsetFeatured(ctx context.Context) error {
-	return r.db.WithContext(ctx).Model(&domain.NewsArticle{}).Where("is_featured = ?", true).Update("is_featured", false).Error
+	return r.db.WithContext(ctx).
+		Model(&domain.NewsArticle{}).
+		Where("is_featured = ?", true).
+		Update("is_featured", false).Error
 }
 
 func (r *newsRepository) Update(ctx context.Context, article *domain.NewsArticle) error {

@@ -33,13 +33,31 @@ type AuditLog struct {
 	CreatedAt time.Time `json:"createdAt"`
 }
 
+const (
+	SettingHomepageNewsLimit = "news.homepage_limit"
+	SettingNewsEmptyMessage  = "news.empty_message"
+)
+
+type SiteSetting struct {
+	Key       string    `gorm:"type:varchar(100);primaryKey" json:"key"`
+	Value     string    `gorm:"type:text;not null" json:"value"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
 type ContentRepository interface {
 	SubscribeNewsletter(ctx context.Context, email string) error
 	SaveContactMessage(ctx context.Context, msg *ContactMessage) error
 	CreateAuditLog(ctx context.Context, log *AuditLog) error
+	ListAuditLogs(ctx context.Context, limit, offset int) ([]AuditLog, int64, error)
+
+	GetSetting(ctx context.Context, key string) (*SiteSetting, error)
+	UpsertSetting(ctx context.Context, key, value string) error
 }
 
 type ContentUsecase interface {
 	Subscribe(ctx context.Context, email string) error
 	SendContactMessage(ctx context.Context, fullName, email, reason, message string) error
+	ListAuditLogs(ctx context.Context, page, limit int) ([]AuditLog, int64, error)
+	GetNewsSettings(ctx context.Context) (homepageLimit int, emptyMessage string, err error)
+	UpdateNewsSettings(ctx context.Context, homepageLimit *int, emptyMessage *string) error
 }
