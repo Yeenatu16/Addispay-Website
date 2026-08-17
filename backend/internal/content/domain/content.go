@@ -48,7 +48,7 @@ type ContentRepository interface {
 	SubscribeNewsletter(ctx context.Context, email string) error
 	SaveContactMessage(ctx context.Context, msg *ContactMessage) error
 	CreateAuditLog(ctx context.Context, log *AuditLog) error
-	ListAuditLogs(ctx context.Context, limit, offset int) ([]AuditLog, int64, error)
+	ListAuditLogs(ctx context.Context, limit, offset int, resource string) ([]AuditLog, int64, error)
 
 	GetSetting(ctx context.Context, key string) (*SiteSetting, error)
 	UpsertSetting(ctx context.Context, key, value string) error
@@ -57,7 +57,7 @@ type ContentRepository interface {
 type ContentUsecase interface {
 	Subscribe(ctx context.Context, email string) error
 	SendContactMessage(ctx context.Context, fullName, email, reason, message string) error
-	ListAuditLogs(ctx context.Context, page, limit int) ([]AuditLog, int64, error)
+	ListAuditLogs(ctx context.Context, page, limit int, resource string) ([]AuditLog, int64, error)
 	GetNewsSettings(ctx context.Context) (homepageLimit int, emptyMessage string, err error)
 	UpdateNewsSettings(ctx context.Context, homepageLimit *int, emptyMessage *string) error
 }

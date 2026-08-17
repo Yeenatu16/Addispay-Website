@@ -9,7 +9,7 @@ Go API for the AddisPay public website and admin content management.
 | HTTP | Gin |
 | ORM | GORM + PostgreSQL |
 | Base URL | `http://localhost:8000/api/v1` |
-| Auth | JWT Bearer (`HS256`, 24h expiry) |
+| Auth | JWT Bearer (`HS256`, 4h expiry; role/`isActive` re-checked each request) |
 
 ## Quick start
 
@@ -421,6 +421,13 @@ flowchart LR
 | `PUT` | `/api/v1/admin/news/settings` | Super Admin / Marketer | Update news settings |
 | `GET` | `/api/v1/admin/news/audit-logs` | Super Admin / Marketer | News activity audit trail |
 | `POST` | `/api/v1/admin/careers/jobs` | Super Admin / HR | Create job |
+| `GET` | `/api/v1/admin/careers/jobs` | Super Admin / HR | List all jobs (open + closed) |
+| `GET` | `/api/v1/admin/careers/jobs/:id` | Super Admin / HR | Get job by ID |
+| `PUT` | `/api/v1/admin/careers/jobs/:id` | Super Admin / HR | Update / open / close job |
+| `DELETE` | `/api/v1/admin/careers/jobs/:id` | Super Admin / HR | Delete job |
+| `GET` | `/api/v1/admin/careers/applications` | Super Admin / HR | List applications (`?jobId=` optional) |
+| `PUT` | `/api/v1/admin/careers/applications/:id/status` | Super Admin / HR | Update application status |
+| `GET` | `/api/v1/admin/careers/audit-logs` | Super Admin / HR | Careers audit trail |
 
 ---
 
@@ -464,7 +471,7 @@ JWT claims (from login):
 | `sub` | User UUID |
 | `email` | User email |
 | `role` | `Super_Admin` \| `Marketer` \| `HR` |
-| `exp` | Expiry (Unix, +24h) |
+| `exp` | Expiry (Unix, +4h) |
 
 ---
 
@@ -875,9 +882,42 @@ Paginated audit trail (`page`, `limit`). Each log: admin id/name, action (`CREAT
 
 ### Careers (admin)
 
-#### `POST /api/v1/admin/careers/jobs`
+Requires JWT with role **Super_Admin** or **HR** (Career Manager).
 
-Requires JWT with role **Super_Admin** or **HR**.
+| Method | Path | Notes |
+|--------|------|--------|
+| `GET` | `/admin/careers/jobs` | All jobs |
+| `GET` | `/admin/careers/jobs/:id` | One job |
+| `POST` | `/admin/careers/jobs` | Create (open by default) |
+| `PUT` | `/admin/careers/jobs/:id` | Partial update; `isOpen: false` closes posting |
+| `DELETE` | `/admin/careers/jobs/:id` | Permanent delete (cascades applications) |
+| `GET` | `/admin/careers/applications?jobId=` | All apps, or filter by job |
+| `PUT` | `/admin/careers/applications/:id/status` | `{ "status": "REVIEWED" }` etc. |
+| `GET` | `/admin/careers/audit-logs` | CREATE / EDIT / CLOSE / OPEN / DELETE |
+
+**Create body**
+
+```json
+{
+  "title": "Backend Engineer",
+  "department": "Engineering",
+  "location": "Addis Ababa",
+  "jobType": "FULL_TIME",
+  "description": "Build APIs",
+  "requirements": "Go, PostgreSQL"
+}
+```
+
+**Update / close body**
+
+```json
+{
+  "title": "Senior Backend Engineer",
+  "isOpen": false
+}
+```
+
+**Application status values:** `PENDING` · `REVIEWED` · `SHORTLISTED` · `REJECTED`
 
 ---
 
@@ -1014,6 +1054,21 @@ Create `backend/.env` (do not commit secrets):
 | `SMTP_USERNAME` | *(empty)* | SMTP auth username |
 | `SMTP_PASSWORD` | *(empty)* | SMTP auth password / app password |
 | `SMTP_FROM` | *(empty)* | From header, e.g. `AddisPay <noreply@domain.com>` |
+| `FORCE_HTTPS` | `false` | When `true`, redirect if `X-Forwarded-Proto: http` (behind TLS proxy) |
+
+---
+
+## NFR reliability & security (srs.txt §3.3–3.4)
+
+| ID | Status | Implementation |
+|----|--------|----------------|
+| NFR-REL-001 | Partial (ops) | `/health` probe + graceful shutdown (`SIGINT`/`SIGTERM`). 99.9% SLA still requires infra (LB, multi-instance, monitoring). |
+| NFR-REL-002 | Met | Typed `apperr` + `response.FromError` — clients get stable messages; internals are logged, not returned. |
+| NFR-SEC-001 | Partial (edge) | Security headers + optional `FORCE_HTTPS` / HSTS when proxy sets `X-Forwarded-Proto: https`. Terminate TLS at the reverse proxy/CDN. |
+| NFR-SEC-002 | Met | News HTML sanitized on write (safe tag allowlist); plain fields strip tags; frontend blog also sanitizes before `dangerouslySetInnerHTML`. |
+| NFR-SEC-003 | Met | Bearer JWT (not cookie sessions) — classic CSRF N/A. |
+| NFR-SEC-004 | Met | JWT + RBAC; each admin request reloads user and enforces `isActive` + current role (revoke is immediate). JWT TTL 4h. |
+| NFR-SEC-005 | Met | Gin `binding` tags + usecase validators (email, lengths, URLs); HTML/text sanitization before persistence. |
 
 DSN timezone: `Africa/Addis_Ababa`.  
 Pool: max idle 10, max open 100, conn max lifetime 1h.
@@ -1484,15 +1539,22 @@ After creating a **PUBLISHED** featured article, homepage should show it under `
 
 ---
 
-### 15. Careers admin — create job
+### 15. Careers admin — full CRUD + applications + audit
 
 Auth: Super Admin **or** HR (Marketer gets `403`).
 
-| Field | Value |
-|-------|--------|
-| Method | `POST` |
-| URL | `{{baseUrl}}/admin/careers/jobs` |
-| Auth | Bearer token for Super Admin / HR |
+| Step | Method | URL | Body |
+|------|--------|-----|------|
+| List jobs | `GET` | `{{baseUrl}}/admin/careers/jobs` | — |
+| Create | `POST` | `{{baseUrl}}/admin/careers/jobs` | JSON below |
+| Get one | `GET` | `{{baseUrl}}/admin/careers/jobs/{{jobId}}` | — |
+| Update / close | `PUT` | `{{baseUrl}}/admin/careers/jobs/{{jobId}}` | `{ "isOpen": false }` |
+| List applications | `GET` | `{{baseUrl}}/admin/careers/applications` or `?jobId={{jobId}}` | — |
+| Update app status | `PUT` | `{{baseUrl}}/admin/careers/applications/{{appId}}/status` | `{ "status": "SHORTLISTED" }` |
+| Careers audit | `GET` | `{{baseUrl}}/admin/careers/audit-logs?page=1&limit=20` | — |
+| Delete job | `DELETE` | `{{baseUrl}}/admin/careers/jobs/{{jobId}}` | — |
+
+**Create body:**
 
 ```json
 {
@@ -1505,8 +1567,8 @@ Auth: Super Admin **or** HR (Marketer gets `403`).
 }
 ```
 
-`jobType`: `FULL_TIME` | `PART_TIME` | `REMOTE`  
-Then `GET {{baseUrl}}/careers` should include the new open job.
+Save `data.id` → `{{jobId}}`. Then public `GET {{baseUrl}}/careers` should include it.  
+After a public apply, list applications and update status. Audit should show `CREATE` / `EDIT` / `CLOSE` / `DELETE` with `resource: "careers"`.
 
 ---
 
@@ -1556,6 +1618,21 @@ Then `GET {{baseUrl}}/careers` should include the new open job.
 | FR-DYN-003 News listing | Done | Pagination, search (title/short/full), sort by publish date desc |
 | FR-DYN-004 Empty state | Done | `emptyMessage` on homepage response + admin settings |
 
+### Careers + audit (FR-ADM-011 / FR-ADM-010)
+
+| Area | Status | Support |
+|------|--------|---------|
+| Create job | Done | `POST /admin/careers/jobs` |
+| Update job | Done | `PUT /admin/careers/jobs/:id` |
+| Delete job | Done | `DELETE /admin/careers/jobs/:id` |
+| List / get jobs (admin) | Done | `GET /admin/careers/jobs[+/:id]` |
+| Open/close posting | Done | `PUT` with `isOpen` |
+| Public list + apply | Done | `GET /careers`, `POST /careers/apply` |
+| Review applications | Done | `GET /admin/careers/applications`, `PUT .../status` |
+| Careers RBAC | Done | Super Admin + HR only |
+| News audit | Done | CREATE/EDIT/PUBLISH/UNPUBLISH/DELETE → `/admin/news/audit-logs` |
+| Careers audit | Done | CREATE/EDIT/CLOSE/OPEN/DELETE → `/admin/careers/audit-logs` |
+
 ---
 
 ## Role-based access control
@@ -1576,7 +1653,6 @@ Unauthorized role → `403` `{ "success": false, "error": "Insufficient permissi
 
 | Area | Status |
 |------|--------|
-| Careers admin CRUD beyond create | Only `POST /admin/careers/jobs` today |
 | Get profile | Usecase exists; **no route** |
 
 ---

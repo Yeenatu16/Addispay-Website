@@ -18,30 +18,29 @@ func NewContentHandler(usecase domain.ContentUsecase) *ContentHandler {
 }
 
 type SubscribeRequest struct {
-	Email string `json:"email"`
+	Email string `json:"email" binding:"required,email,max=255"`
 }
 
 type ContactRequest struct {
-	FullName string `json:"fullName"`
-	Email    string `json:"email"`
-	Reason   string `json:"reason"`
-	Message  string `json:"message"`
+	FullName string `json:"fullName" binding:"required,max=255"`
+	Email    string `json:"email" binding:"required,email,max=255"`
+	Reason   string `json:"reason" binding:"required,max=255"`
+	Message  string `json:"message" binding:"required"`
 }
 
 type UpdateNewsSettingsRequest struct {
-	HomepageLimit *int    `json:"homepageLimit"`
-	EmptyMessage  *string `json:"emptyMessage"`
+	HomepageLimit *int    `json:"homepageLimit" binding:"omitempty,min=1,max=20"`
+	EmptyMessage  *string `json:"emptyMessage" binding:"omitempty,max=2000"`
 }
 
 func (h *ContentHandler) Subscribe(c *gin.Context) {
 	var req SubscribeRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		response.Error(c, http.StatusBadRequest, "Invalid request payload")
+	if !response.BindJSON(c, &req) {
 		return
 	}
 
 	if err := h.usecase.Subscribe(c.Request.Context(), req.Email); err != nil {
-		response.Error(c, http.StatusInternalServerError, err.Error())
+		response.FromError(c, err)
 		return
 	}
 
@@ -50,13 +49,12 @@ func (h *ContentHandler) Subscribe(c *gin.Context) {
 
 func (h *ContentHandler) ContactUs(c *gin.Context) {
 	var req ContactRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		response.Error(c, http.StatusBadRequest, "Invalid request payload")
+	if !response.BindJSON(c, &req) {
 		return
 	}
 
 	if err := h.usecase.SendContactMessage(c.Request.Context(), req.FullName, req.Email, req.Reason, req.Message); err != nil {
-		response.Error(c, http.StatusInternalServerError, err.Error())
+		response.FromError(c, err)
 		return
 	}
 
@@ -64,25 +62,38 @@ func (h *ContentHandler) ContactUs(c *gin.Context) {
 }
 
 func (h *ContentHandler) ListAuditLogs(c *gin.Context) {
+	h.listAuditLogs(c, c.Query("resource"))
+}
+
+func (h *ContentHandler) ListNewsAuditLogs(c *gin.Context) {
+	h.listAuditLogs(c, "news")
+}
+
+func (h *ContentHandler) ListCareersAuditLogs(c *gin.Context) {
+	h.listAuditLogs(c, "careers")
+}
+
+func (h *ContentHandler) listAuditLogs(c *gin.Context, resource string) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
 
-	logs, total, err := h.usecase.ListAuditLogs(c.Request.Context(), page, limit)
+	logs, total, err := h.usecase.ListAuditLogs(c.Request.Context(), page, limit, resource)
 	if err != nil {
-		response.Error(c, http.StatusInternalServerError, err.Error())
+		response.FromError(c, err)
 		return
 	}
 
 	response.Success(c, http.StatusOK, map[string]interface{}{
-		"logs":  logs,
-		"total": total,
+		"logs":     logs,
+		"total":    total,
+		"resource": resource,
 	})
 }
 
 func (h *ContentHandler) GetNewsSettings(c *gin.Context) {
 	limit, message, err := h.usecase.GetNewsSettings(c.Request.Context())
 	if err != nil {
-		response.Error(c, http.StatusInternalServerError, err.Error())
+		response.FromError(c, err)
 		return
 	}
 
@@ -94,8 +105,7 @@ func (h *ContentHandler) GetNewsSettings(c *gin.Context) {
 
 func (h *ContentHandler) UpdateNewsSettings(c *gin.Context) {
 	var req UpdateNewsSettingsRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		response.Error(c, http.StatusBadRequest, "Invalid request payload")
+	if !response.BindJSON(c, &req) {
 		return
 	}
 	if req.HomepageLimit == nil && req.EmptyMessage == nil {
@@ -104,7 +114,7 @@ func (h *ContentHandler) UpdateNewsSettings(c *gin.Context) {
 	}
 
 	if err := h.usecase.UpdateNewsSettings(c.Request.Context(), req.HomepageLimit, req.EmptyMessage); err != nil {
-		response.Error(c, http.StatusBadRequest, err.Error())
+		response.FromError(c, err)
 		return
 	}
 

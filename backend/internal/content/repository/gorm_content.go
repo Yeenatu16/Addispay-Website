@@ -34,10 +34,13 @@ func (r *contentRepository) CreateAuditLog(ctx context.Context, log *domain.Audi
 	return r.db.WithContext(ctx).Create(log).Error
 }
 
-func (r *contentRepository) ListAuditLogs(ctx context.Context, limit, offset int) ([]domain.AuditLog, int64, error) {
+func (r *contentRepository) ListAuditLogs(ctx context.Context, limit, offset int, resource string) ([]domain.AuditLog, int64, error) {
 	var logs []domain.AuditLog
 	var total int64
 	q := r.db.WithContext(ctx).Model(&domain.AuditLog{})
+	if resource != "" {
+		q = q.Where("resource = ?", resource)
+	}
 	if err := q.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}

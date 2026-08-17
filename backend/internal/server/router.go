@@ -15,12 +15,14 @@ import (
 func NewRouter(
 	jwtSecret string,
 	uploadDir string,
+	users authDelivery.UserLookup,
 	authH *authDelivery.AuthHandler,
 	newsH *newsDelivery.NewsHandler,
 	careersH *careersDelivery.CareerHandler,
 	contentH *contentDelivery.ContentHandler,
 ) *gin.Engine {
 	r := gin.Default()
+	r.Use(SecurityHeaders())
 
 	// Serve uploaded cover images
 	r.Static("/uploads", filepath.Clean(uploadDir))
@@ -52,7 +54,7 @@ func NewRouter(
 
 		// Protected admin routes
 		admin := v1.Group("admin")
-		admin.Use(authDelivery.GinAuthMiddleware(jwtSecret))
+		admin.Use(authDelivery.GinAuthMiddleware(jwtSecret, users))
 		{
 			// News — Super Admin + Marketer
 			newsAdmin := admin.Group("")
@@ -67,14 +69,23 @@ func NewRouter(
 
 				newsAdmin.GET("/news/settings", contentH.GetNewsSettings)
 				newsAdmin.PUT("/news/settings", contentH.UpdateNewsSettings)
-				newsAdmin.GET("/news/audit-logs", contentH.ListAuditLogs)
+				newsAdmin.GET("/news/audit-logs", contentH.ListNewsAuditLogs)
 			}
 
-			// Careers — Super Admin + HR
+			// Careers — Super Admin + HR (Career Manager)
 			careersAdmin := admin.Group("")
 			careersAdmin.Use(authDelivery.RequireRoles(domain.RoleSuperAdmin, domain.RoleHR))
 			{
+				careersAdmin.GET("/careers/jobs", careersH.ListAdminJobs)
+				careersAdmin.GET("/careers/jobs/:id", careersH.GetAdminJob)
 				careersAdmin.POST("/careers/jobs", careersH.CreateJob)
+				careersAdmin.PUT("/careers/jobs/:id", careersH.UpdateJob)
+				careersAdmin.DELETE("/careers/jobs/:id", careersH.DeleteJob)
+
+				careersAdmin.GET("/careers/applications", careersH.ListApplications)
+				careersAdmin.PUT("/careers/applications/:id/status", careersH.UpdateApplicationStatus)
+
+				careersAdmin.GET("/careers/audit-logs", contentH.ListCareersAuditLogs)
 			}
 
 			// User / invitation management — Super Admin only

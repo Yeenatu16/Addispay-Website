@@ -40,7 +40,6 @@ func NewNewsHandler(usecase domain.NewsUsecase, uploadDir string) *NewsHandler {
 	}
 }
 
-// SetUserNameResolver optionally resolves display names from JWT/context.
 func (h *NewsHandler) SetUserNameResolver(fn func(*gin.Context) string) {
 	if fn != nil {
 		h.userName = fn
@@ -48,21 +47,21 @@ func (h *NewsHandler) SetUserNameResolver(fn func(*gin.Context) string) {
 }
 
 type CreateArticleRequest struct {
-	Title            string                   `json:"title"`
-	ShortDescription string                   `json:"shortDescription"`
-	FullContent      string                   `json:"fullContent"`
-	CoverImageURL    string                   `json:"coverImageUrl"`
+	Title            string                   `json:"title" binding:"required,max=255"`
+	ShortDescription string                   `json:"shortDescription" binding:"required,max=2000"`
+	FullContent      string                   `json:"fullContent" binding:"required"`
+	CoverImageURL    string                   `json:"coverImageUrl" binding:"omitempty,max=500"`
 	IsFeatured       bool                     `json:"isFeatured"`
-	Status           domain.PublicationStatus `json:"status"`
+	Status           domain.PublicationStatus `json:"status" binding:"omitempty,oneof=DRAFT PUBLISHED"`
 }
 
 type UpdateArticleRequest struct {
-	Title            *string                   `json:"title"`
-	ShortDescription *string                   `json:"shortDescription"`
+	Title            *string                   `json:"title" binding:"omitempty,max=255"`
+	ShortDescription *string                   `json:"shortDescription" binding:"omitempty,max=2000"`
 	FullContent      *string                   `json:"fullContent"`
-	CoverImageURL    *string                   `json:"coverImageUrl"`
+	CoverImageURL    *string                   `json:"coverImageUrl" binding:"omitempty,max=500"`
 	IsFeatured       *bool                     `json:"isFeatured"`
-	Status           *domain.PublicationStatus `json:"status"`
+	Status           *domain.PublicationStatus `json:"status" binding:"omitempty,oneof=DRAFT PUBLISHED"`
 }
 
 func (h *NewsHandler) CreateArticle(c *gin.Context) {
@@ -73,9 +72,11 @@ func (h *NewsHandler) CreateArticle(c *gin.Context) {
 	}
 
 	var req CreateArticleRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		response.Error(c, http.StatusBadRequest, "Invalid request payload")
+	if !response.BindJSON(c, &req) {
 		return
+	}
+	if req.Status == "" {
+		req.Status = domain.StatusDraft
 	}
 
 	article, err := h.usecase.CreateArticle(
@@ -90,7 +91,7 @@ func (h *NewsHandler) CreateArticle(c *gin.Context) {
 		req.Status,
 	)
 	if err != nil {
-		response.Error(c, http.StatusBadRequest, err.Error())
+		response.FromError(c, err)
 		return
 	}
 
@@ -111,8 +112,7 @@ func (h *NewsHandler) UpdateArticle(c *gin.Context) {
 	}
 
 	var req UpdateArticleRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		response.Error(c, http.StatusBadRequest, "Invalid request payload")
+	if !response.BindJSON(c, &req) {
 		return
 	}
 
@@ -125,11 +125,7 @@ func (h *NewsHandler) UpdateArticle(c *gin.Context) {
 		Status:           req.Status,
 	})
 	if err != nil {
-		status := http.StatusBadRequest
-		if err.Error() == "article not found" {
-			status = http.StatusNotFound
-		}
-		response.Error(c, status, err.Error())
+		response.FromError(c, err)
 		return
 	}
 
@@ -150,11 +146,7 @@ func (h *NewsHandler) DeleteArticle(c *gin.Context) {
 	}
 
 	if err := h.usecase.DeleteArticle(c.Request.Context(), actorID, h.userName(c), id); err != nil {
-		status := http.StatusBadRequest
-		if err.Error() == "article not found" {
-			status = http.StatusNotFound
-		}
-		response.Error(c, status, err.Error())
+		response.FromError(c, err)
 		return
 	}
 
@@ -170,7 +162,7 @@ func (h *NewsHandler) GetAdminArticle(c *gin.Context) {
 
 	article, err := h.usecase.GetByID(c.Request.Context(), id)
 	if err != nil {
-		response.Error(c, http.StatusNotFound, err.Error())
+		response.FromError(c, err)
 		return
 	}
 
@@ -190,7 +182,7 @@ func (h *NewsHandler) ListAdminArticles(c *gin.Context) {
 
 	articles, total, err := h.usecase.ListAdminArticles(c.Request.Context(), filter)
 	if err != nil {
-		response.Error(c, http.StatusInternalServerError, err.Error())
+		response.FromError(c, err)
 		return
 	}
 
@@ -203,7 +195,7 @@ func (h *NewsHandler) ListAdminArticles(c *gin.Context) {
 func (h *NewsHandler) GetHomepageNews(c *gin.Context) {
 	featured, latest, emptyMessage, err := h.usecase.GetHomepageNews(c.Request.Context())
 	if err != nil {
-		response.Error(c, http.StatusInternalServerError, err.Error())
+		response.FromError(c, err)
 		return
 	}
 
@@ -221,7 +213,7 @@ func (h *NewsHandler) GetNewsListing(c *gin.Context) {
 
 	articles, total, err := h.usecase.GetPublishedNews(c.Request.Context(), page, limit, search)
 	if err != nil {
-		response.Error(c, http.StatusInternalServerError, err.Error())
+		response.FromError(c, err)
 		return
 	}
 
@@ -235,14 +227,13 @@ func (h *NewsHandler) GetArticleBySlug(c *gin.Context) {
 	slug := c.Param("slug")
 	article, err := h.usecase.GetBySlug(c.Request.Context(), slug)
 	if err != nil {
-		response.Error(c, http.StatusNotFound, "Article not found")
+		response.FromError(c, err)
 		return
 	}
 
 	response.Success(c, http.StatusOK, article)
 }
 
-// UploadCoverImage accepts JPG/JPEG/PNG/WebP up to 5MB (FR-ADM-009).
 func (h *NewsHandler) UploadCoverImage(c *gin.Context) {
 	fileHeader, err := c.FormFile("file")
 	if err != nil {
@@ -265,10 +256,8 @@ func (h *NewsHandler) UploadCoverImage(c *gin.Context) {
 	n, _ := file.Read(header)
 	contentType := http.DetectContentType(header[:n])
 	if _, ok := allowedCoverTypes[contentType]; !ok {
-		// Fallback to extension when DetectContentType is too generic.
 		switch strings.ToLower(filepath.Ext(fileHeader.Filename)) {
 		case ".jpg", ".jpeg", ".png", ".webp":
-			// ok
 		default:
 			response.Error(c, http.StatusBadRequest, "unsupported format; allowed: JPG, JPEG, PNG, WebP")
 			return
@@ -280,7 +269,6 @@ func (h *NewsHandler) UploadCoverImage(c *gin.Context) {
 		return
 	}
 
-	// Decode, downscale, and re-encode to an optimized JPEG for web delivery.
 	optimized, err := optimizeCoverImage(file)
 	if err != nil {
 		response.Error(c, http.StatusBadRequest, "unable to process image; ensure it is a valid JPG, PNG, or WebP")

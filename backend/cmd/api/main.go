@@ -1,8 +1,13 @@
 package main
 
 import (
+	"context"
 	"log"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	authDelivery "github.com/addispay/backend/internal/auth/delivery/http"
 	authMailer "github.com/addispay/backend/internal/auth/mailer"
@@ -73,11 +78,45 @@ func main() {
 	})
 
 	cRepo := careerRepo.NewCareerRepository(db)
-	cUsecase := careerUseCase.NewCareerUsecase(cRepo)
+	careerAudit := contentUseCase.NewCareerAuditAdapter(cntRepo)
+	cUsecase := careerUseCase.NewCareerUsecase(cRepo, careerAudit)
 	cHandler := careersDelivery.NewCareerHandler(cUsecase)
+	cHandler.SetUserNameResolver(func(c *gin.Context) string {
+		if email, ok := c.Get(string(authDelivery.UserEmailKey)); ok {
+			if s, ok := email.(string); ok && s != "" {
+				return s
+			}
+		}
+		return "Administrator"
+	})
 
-	router := server.NewRouter(cfg.JWTSecret, cfg.UploadDir, aHandler, nHandler, cHandler, cntHandler)
+	router := server.NewRouter(cfg.JWTSecret, cfg.UploadDir, uRepo, aHandler, nHandler, cHandler, cntHandler)
 
-	log.Printf("Addispay Backend Server running on port %s", cfg.Port)
-	log.Fatal(router.Run(":" + cfg.Port))
+	srv := &http.Server{
+		Addr:              ":" + cfg.Port,
+		Handler:           router,
+		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       30 * time.Second,
+		WriteTimeout:      60 * time.Second,
+		IdleTimeout:       120 * time.Second,
+	}
+
+	go func() {
+		log.Printf("Addispay Backend Server running on port %s", cfg.Port)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("server failed: %v", err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Shutting down server...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Printf("server forced to shutdown: %v", err)
+	}
+	log.Println("Server stopped")
 }

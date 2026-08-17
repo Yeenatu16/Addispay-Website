@@ -10,7 +10,10 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
+	"github.com/addispay/backend/internal/apperr"
 	"github.com/addispay/backend/internal/news/domain"
+	"github.com/addispay/backend/internal/sanitize"
+	"github.com/addispay/backend/internal/validate"
 )
 
 type newsUsecase struct {
@@ -30,14 +33,36 @@ func (u *newsUsecase) CreateArticle(
 	isFeatured bool,
 	status domain.PublicationStatus,
 ) (*domain.NewsArticle, error) {
-	title = strings.TrimSpace(title)
-	shortDesc = strings.TrimSpace(shortDesc)
-	fullContent = strings.TrimSpace(fullContent)
-	if title == "" || shortDesc == "" || fullContent == "" {
-		return nil, errors.New("title, short description, and full content are required")
+	title = sanitize.Text(title)
+	shortDesc = sanitize.Text(shortDesc)
+	fullContent = sanitize.HTML(fullContent)
+	coverURL = strings.TrimSpace(coverURL)
+
+	if err := validate.Required(title, "title"); err != nil {
+		return nil, err
+	}
+	if err := validate.MaxLen(title, "title", validate.MaxTitle); err != nil {
+		return nil, err
+	}
+	if err := validate.Required(shortDesc, "shortDescription"); err != nil {
+		return nil, err
+	}
+	if err := validate.MaxLen(shortDesc, "shortDescription", validate.MaxShortText); err != nil {
+		return nil, err
+	}
+	if err := validate.Required(fullContent, "fullContent"); err != nil {
+		return nil, err
+	}
+	if err := validate.MaxLen(fullContent, "fullContent", validate.MaxLongText); err != nil {
+		return nil, err
+	}
+	if coverURL != "" {
+		if err := validate.MaxLen(coverURL, "coverImageUrl", validate.MaxURL); err != nil {
+			return nil, err
+		}
 	}
 	if status != domain.StatusDraft && status != domain.StatusPublished {
-		return nil, errors.New("status must be DRAFT or PUBLISHED")
+		return nil, apperr.BadRequest("status must be DRAFT or PUBLISHED")
 	}
 
 	if isFeatured {
@@ -63,7 +88,7 @@ func (u *newsUsecase) CreateArticle(
 	}
 
 	if err := u.repo.Create(ctx, article); err != nil {
-		return nil, err
+		return nil, apperr.Internal(err)
 	}
 
 	action := domain.AuditCreate
@@ -71,7 +96,6 @@ func (u *newsUsecase) CreateArticle(
 		action = domain.AuditPublish
 	}
 	_ = u.audit.LogNewsAction(ctx, authorID, authorName, action, article.Title)
-
 	return article, nil
 }
 
@@ -85,37 +109,52 @@ func (u *newsUsecase) UpdateArticle(
 	article, err := u.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("article not found")
+			return nil, apperr.NotFound("article not found")
 		}
-		return nil, err
+		return nil, apperr.Internal(err)
 	}
 
 	previousStatus := article.Status
 
 	if input.Title != nil {
-		title := strings.TrimSpace(*input.Title)
-		if title == "" {
-			return nil, errors.New("title cannot be empty")
+		title := sanitize.Text(*input.Title)
+		if err := validate.Required(title, "title"); err != nil {
+			return nil, err
+		}
+		if err := validate.MaxLen(title, "title", validate.MaxTitle); err != nil {
+			return nil, err
 		}
 		article.Title = title
 		article.Slug = slugify(title)
 	}
 	if input.ShortDescription != nil {
-		desc := strings.TrimSpace(*input.ShortDescription)
-		if desc == "" {
-			return nil, errors.New("short description cannot be empty")
+		desc := sanitize.Text(*input.ShortDescription)
+		if err := validate.Required(desc, "shortDescription"); err != nil {
+			return nil, err
+		}
+		if err := validate.MaxLen(desc, "shortDescription", validate.MaxShortText); err != nil {
+			return nil, err
 		}
 		article.ShortDescription = desc
 	}
 	if input.FullContent != nil {
-		content := strings.TrimSpace(*input.FullContent)
-		if content == "" {
-			return nil, errors.New("full content cannot be empty")
+		content := sanitize.HTML(*input.FullContent)
+		if err := validate.Required(content, "fullContent"); err != nil {
+			return nil, err
+		}
+		if err := validate.MaxLen(content, "fullContent", validate.MaxLongText); err != nil {
+			return nil, err
 		}
 		article.FullContent = content
 	}
 	if input.CoverImageURL != nil {
-		article.CoverImageURL = *input.CoverImageURL
+		cover := strings.TrimSpace(*input.CoverImageURL)
+		if cover != "" {
+			if err := validate.MaxLen(cover, "coverImageUrl", validate.MaxURL); err != nil {
+				return nil, err
+			}
+		}
+		article.CoverImageURL = cover
 	}
 	if input.IsFeatured != nil {
 		if *input.IsFeatured {
@@ -125,7 +164,7 @@ func (u *newsUsecase) UpdateArticle(
 	}
 	if input.Status != nil {
 		if *input.Status != domain.StatusDraft && *input.Status != domain.StatusPublished {
-			return nil, errors.New("status must be DRAFT or PUBLISHED")
+			return nil, apperr.BadRequest("status must be DRAFT or PUBLISHED")
 		}
 		article.Status = *input.Status
 		if *input.Status == domain.StatusPublished && article.PublishedAt == nil {
@@ -138,7 +177,7 @@ func (u *newsUsecase) UpdateArticle(
 	}
 
 	if err := u.repo.Update(ctx, article); err != nil {
-		return nil, err
+		return nil, apperr.Internal(err)
 	}
 
 	action := domain.AuditEdit
@@ -150,7 +189,6 @@ func (u *newsUsecase) UpdateArticle(
 		}
 	}
 	_ = u.audit.LogNewsAction(ctx, actorID, actorName, action, article.Title)
-
 	return article, nil
 }
 
@@ -158,15 +196,13 @@ func (u *newsUsecase) DeleteArticle(ctx context.Context, actorID uuid.UUID, acto
 	article, err := u.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return errors.New("article not found")
+			return apperr.NotFound("article not found")
 		}
-		return err
+		return apperr.Internal(err)
 	}
-
 	if err := u.repo.Delete(ctx, id); err != nil {
-		return err
+		return apperr.Internal(err)
 	}
-
 	_ = u.audit.LogNewsAction(ctx, actorID, actorName, domain.AuditDelete, article.Title)
 	return nil
 }
@@ -175,9 +211,9 @@ func (u *newsUsecase) GetByID(ctx context.Context, id uuid.UUID) (*domain.NewsAr
 	article, err := u.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("article not found")
+			return nil, apperr.NotFound("article not found")
 		}
-		return nil, err
+		return nil, apperr.Internal(err)
 	}
 	return article, nil
 }
@@ -185,10 +221,10 @@ func (u *newsUsecase) GetByID(ctx context.Context, id uuid.UUID) (*domain.NewsAr
 func (u *newsUsecase) GetBySlug(ctx context.Context, slug string) (*domain.NewsArticle, error) {
 	article, err := u.repo.GetBySlug(ctx, slug)
 	if err != nil {
-		return nil, err
+		return nil, apperr.NotFound("article not found")
 	}
 	if article.Status != domain.StatusPublished {
-		return nil, errors.New("article not found")
+		return nil, apperr.NotFound("article not found")
 	}
 	return article, nil
 }
@@ -197,11 +233,18 @@ func (u *newsUsecase) GetPublishedNews(ctx context.Context, page, limit int, sea
 	if limit <= 0 {
 		limit = 9
 	}
+	if limit > 50 {
+		limit = 50
+	}
 	if page <= 0 {
 		page = 1
 	}
-	offset := (page - 1) * limit
-	return u.repo.ListPublished(ctx, limit, offset, search)
+	search = sanitize.Text(search)
+	articles, total, err := u.repo.ListPublished(ctx, limit, (page-1)*limit, search)
+	if err != nil {
+		return nil, 0, apperr.Internal(err)
+	}
+	return articles, total, nil
 }
 
 func (u *newsUsecase) GetHomepageNews(ctx context.Context) (*domain.NewsArticle, []domain.NewsArticle, string, error) {
@@ -215,17 +258,34 @@ func (u *newsUsecase) GetHomepageNews(ctx context.Context) (*domain.NewsArticle,
 	emptyMsg := "No news available at this time."
 	if u.settings != nil {
 		if msg, err := u.settings.GetNewsEmptyMessage(ctx); err == nil && strings.TrimSpace(msg) != "" {
-			emptyMsg = msg
+			emptyMsg = sanitize.Text(msg)
 		}
 	}
 
 	featured, _ := u.repo.GetFeatured(ctx)
 	latest, _, err := u.repo.ListPublished(ctx, limit, 0, "")
-	return featured, latest, emptyMsg, err
+	if err != nil {
+		return nil, nil, "", apperr.Internal(err)
+	}
+	return featured, latest, emptyMsg, nil
 }
 
 func (u *newsUsecase) ListAdminArticles(ctx context.Context, filter domain.NewsListFilter) ([]domain.NewsArticle, int64, error) {
-	return u.repo.ListAdmin(ctx, filter)
+	if filter.Limit <= 0 {
+		filter.Limit = 20
+	}
+	if filter.Limit > 100 {
+		filter.Limit = 100
+	}
+	if filter.Page <= 0 {
+		filter.Page = 1
+	}
+	filter.Search = sanitize.Text(filter.Search)
+	articles, total, err := u.repo.ListAdmin(ctx, filter)
+	if err != nil {
+		return nil, 0, apperr.Internal(err)
+	}
+	return articles, total, nil
 }
 
 func slugify(title string) string {

@@ -19,47 +19,46 @@ func NewAuthHandler(usecase domain.AuthUsecase) *AuthHandler {
 }
 
 type LoginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    string `json:"email" binding:"required,email,max=255"`
+	Password string `json:"password" binding:"required,min=1,max=128"`
 }
 
 type RegisterRequest struct {
-	FullName string      `json:"fullName"`
-	Email    string      `json:"email"`
-	Password string      `json:"password"`
-	Role     domain.Role `json:"role"`
+	FullName string      `json:"fullName" binding:"required,max=255"`
+	Email    string      `json:"email" binding:"required,email,max=255"`
+	Password string      `json:"password" binding:"required,min=8,max=128"`
+	Role     domain.Role `json:"role" binding:"required"`
 }
 
 type ForgotPasswordRequest struct {
-	Email string `json:"email"`
+	Email string `json:"email" binding:"required,email,max=255"`
 }
 
 type ResetPasswordRequest struct {
-	Token       string `json:"token"`
-	NewPassword string `json:"newPassword"`
+	Token       string `json:"token" binding:"required"`
+	NewPassword string `json:"newPassword" binding:"required,min=8,max=128"`
 }
 
 type InviteAdminRequest struct {
-	Email string      `json:"email"`
-	Role  domain.Role `json:"role"`
+	Email string      `json:"email" binding:"required,email,max=255"`
+	Role  domain.Role `json:"role" binding:"required"`
 }
 
 type AcceptInvitationRequest struct {
-	Token    string `json:"token"`
-	FullName string `json:"fullName"`
-	Password string `json:"password"`
+	Token    string `json:"token" binding:"required"`
+	FullName string `json:"fullName" binding:"required,max=255"`
+	Password string `json:"password" binding:"required,min=8,max=128"`
 }
 
 func (h *AuthHandler) Login(c *gin.Context) {
 	var req LoginRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		response.Error(c, http.StatusBadRequest, "Invalid request payload")
+	if !response.BindJSON(c, &req) {
 		return
 	}
 
 	token, user, err := h.usecase.Login(c.Request.Context(), req.Email, req.Password)
 	if err != nil {
-		response.Error(c, http.StatusUnauthorized, err.Error())
+		response.FromError(c, err)
 		return
 	}
 
@@ -71,14 +70,13 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 func (h *AuthHandler) Register(c *gin.Context) {
 	var req RegisterRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		response.Error(c, http.StatusBadRequest, "Invalid request payload")
+	if !response.BindJSON(c, &req) {
 		return
 	}
 
 	user, err := h.usecase.Register(c.Request.Context(), req.FullName, req.Email, req.Password, req.Role)
 	if err != nil {
-		response.Error(c, http.StatusBadRequest, err.Error())
+		response.FromError(c, err)
 		return
 	}
 
@@ -87,18 +85,12 @@ func (h *AuthHandler) Register(c *gin.Context) {
 
 func (h *AuthHandler) ForgotPassword(c *gin.Context) {
 	var req ForgotPasswordRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		response.Error(c, http.StatusBadRequest, "Invalid request payload")
-		return
-	}
-
-	if strings.TrimSpace(req.Email) == "" {
-		response.Error(c, http.StatusBadRequest, "email is required")
+	if !response.BindJSON(c, &req) {
 		return
 	}
 
 	if err := h.usecase.ForgotPassword(c.Request.Context(), req.Email); err != nil {
-		response.Error(c, http.StatusInternalServerError, "Unable to process password reset request")
+		response.FromError(c, err)
 		return
 	}
 
@@ -109,13 +101,12 @@ func (h *AuthHandler) ForgotPassword(c *gin.Context) {
 
 func (h *AuthHandler) ResetPassword(c *gin.Context) {
 	var req ResetPasswordRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		response.Error(c, http.StatusBadRequest, "Invalid request payload")
+	if !response.BindJSON(c, &req) {
 		return
 	}
 
 	if err := h.usecase.ResetPassword(c.Request.Context(), req.Token, req.NewPassword); err != nil {
-		response.Error(c, http.StatusBadRequest, err.Error())
+		response.FromError(c, err)
 		return
 	}
 
@@ -132,14 +123,13 @@ func (h *AuthHandler) InviteAdmin(c *gin.Context) {
 	}
 
 	var req InviteAdminRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		response.Error(c, http.StatusBadRequest, "Invalid request payload")
+	if !response.BindJSON(c, &req) {
 		return
 	}
 
 	invite, err := h.usecase.InviteAdmin(c.Request.Context(), actorID, req.Email, req.Role)
 	if err != nil {
-		response.Error(c, http.StatusBadRequest, err.Error())
+		response.FromError(c, err)
 		return
 	}
 
@@ -149,7 +139,7 @@ func (h *AuthHandler) InviteAdmin(c *gin.Context) {
 func (h *AuthHandler) ListInvitations(c *gin.Context) {
 	invites, err := h.usecase.ListPendingInvitations(c.Request.Context())
 	if err != nil {
-		response.Error(c, http.StatusInternalServerError, err.Error())
+		response.FromError(c, err)
 		return
 	}
 	response.Success(c, http.StatusOK, invites)
@@ -163,7 +153,7 @@ func (h *AuthHandler) CancelInvitation(c *gin.Context) {
 	}
 
 	if err := h.usecase.CancelInvitation(c.Request.Context(), id); err != nil {
-		response.Error(c, http.StatusBadRequest, err.Error())
+		response.FromError(c, err)
 		return
 	}
 
@@ -173,14 +163,14 @@ func (h *AuthHandler) CancelInvitation(c *gin.Context) {
 }
 
 func (h *AuthHandler) GetInvitation(c *gin.Context) {
-	token := c.Query("token")
+	token := strings.TrimSpace(c.Query("token"))
 	if token == "" {
-		token = c.Param("token")
+		token = strings.TrimSpace(c.Param("token"))
 	}
 
 	invite, err := h.usecase.GetInvitationByToken(c.Request.Context(), token)
 	if err != nil {
-		response.Error(c, http.StatusBadRequest, err.Error())
+		response.FromError(c, err)
 		return
 	}
 
@@ -193,14 +183,13 @@ func (h *AuthHandler) GetInvitation(c *gin.Context) {
 
 func (h *AuthHandler) AcceptInvitation(c *gin.Context) {
 	var req AcceptInvitationRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		response.Error(c, http.StatusBadRequest, "Invalid request payload")
+	if !response.BindJSON(c, &req) {
 		return
 	}
 
 	user, err := h.usecase.AcceptInvitation(c.Request.Context(), req.Token, req.FullName, req.Password)
 	if err != nil {
-		response.Error(c, http.StatusBadRequest, err.Error())
+		response.FromError(c, err)
 		return
 	}
 
@@ -210,7 +199,7 @@ func (h *AuthHandler) AcceptInvitation(c *gin.Context) {
 func (h *AuthHandler) ListAdministrators(c *gin.Context) {
 	users, err := h.usecase.ListAdministrators(c.Request.Context())
 	if err != nil {
-		response.Error(c, http.StatusInternalServerError, err.Error())
+		response.FromError(c, err)
 		return
 	}
 	response.Success(c, http.StatusOK, users)
@@ -230,7 +219,7 @@ func (h *AuthHandler) RevokeAdministrator(c *gin.Context) {
 	}
 
 	if err := h.usecase.RevokeAdministrator(c.Request.Context(), actorID, targetID); err != nil {
-		response.Error(c, http.StatusBadRequest, err.Error())
+		response.FromError(c, err)
 		return
 	}
 
@@ -253,7 +242,7 @@ func (h *AuthHandler) RestoreAdministrator(c *gin.Context) {
 	}
 
 	if err := h.usecase.RestoreAdministrator(c.Request.Context(), actorID, targetID); err != nil {
-		response.Error(c, http.StatusBadRequest, err.Error())
+		response.FromError(c, err)
 		return
 	}
 

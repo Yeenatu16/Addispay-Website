@@ -9,6 +9,7 @@ import (
 	"github.com/addispay/backend/internal/response"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 type contextKey string
@@ -19,8 +20,14 @@ const (
 	UserEmailKey contextKey = "user_email"
 )
 
-// GinAuthMiddleware validates JWT and stores identity on Gin + request context.
-func GinAuthMiddleware(jwtSecret string) gin.HandlerFunc {
+// UserLookup loads the current administrator for authz checks.
+type UserLookup interface {
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.User, error)
+}
+
+// GinAuthMiddleware validates JWT, then reloads the user from the DB so revoke
+// and role changes take effect immediately (NFR-SEC-004).
+func GinAuthMiddleware(jwtSecret string, users UserLookup) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
@@ -55,22 +62,33 @@ func GinAuthMiddleware(jwtSecret string) gin.HandlerFunc {
 			return
 		}
 
-		userID, _ := claims["sub"].(string)
-		userRole, _ := claims["role"].(string)
-		userEmail, _ := claims["email"].(string)
-		if userID == "" || userRole == "" {
+		userIDRaw, _ := claims["sub"].(string)
+		userID, err := uuid.Parse(userIDRaw)
+		if err != nil || userID == uuid.Nil {
 			response.Error(c, http.StatusUnauthorized, "Invalid token claims")
 			c.Abort()
 			return
 		}
 
-		c.Set(string(UserIDKey), userID)
-		c.Set(string(RoleKey), userRole)
-		c.Set(string(UserEmailKey), userEmail)
+		user, err := users.GetByID(c.Request.Context(), userID)
+		if err != nil || user == nil {
+			response.Error(c, http.StatusUnauthorized, "Invalid or expired token")
+			c.Abort()
+			return
+		}
+		if !user.IsActive {
+			response.Error(c, http.StatusUnauthorized, "Account access has been revoked")
+			c.Abort()
+			return
+		}
 
-		ctx := context.WithValue(c.Request.Context(), UserIDKey, userID)
-		ctx = context.WithValue(ctx, RoleKey, userRole)
-		ctx = context.WithValue(ctx, UserEmailKey, userEmail)
+		c.Set(string(UserIDKey), user.ID.String())
+		c.Set(string(RoleKey), string(user.Role))
+		c.Set(string(UserEmailKey), user.Email)
+
+		ctx := context.WithValue(c.Request.Context(), UserIDKey, user.ID.String())
+		ctx = context.WithValue(ctx, RoleKey, string(user.Role))
+		ctx = context.WithValue(ctx, UserEmailKey, user.Email)
 		c.Request = c.Request.WithContext(ctx)
 
 		c.Next()
