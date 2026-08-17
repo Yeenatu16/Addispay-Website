@@ -4,7 +4,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { JsonLd } from '@/components/SEO/JsonLd';
 import { LanguageProvider } from '@/context/LanguageContext';
-import { AdminProvider } from '@/context/AdminContext';
+import { AuthProvider } from '@/context/AuthContext';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://addispay.et'),
@@ -112,11 +112,11 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen flex flex-col font-sans antialiased">
         <LanguageProvider>
-          <AdminProvider>
+          <AuthProvider>
             <Navbar />
             <main className="flex-grow pt-20">{children}</main>
             <Footer />
-          </AdminProvider>
+          </AuthProvider>
         </LanguageProvider>
       </body>
     </html>

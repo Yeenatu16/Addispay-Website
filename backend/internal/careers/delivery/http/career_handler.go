@@ -1,7 +1,13 @@
 package http
 
 import (
+	"fmt"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
 
 	authhttp "github.com/addispay/backend/internal/auth/delivery/http"
 	"github.com/addispay/backend/internal/careers/domain"
@@ -10,15 +16,28 @@ import (
 	"github.com/google/uuid"
 )
 
-type CareerHandler struct {
-	usecase  domain.CareerUsecase
-	userName func(*gin.Context) string
+const maxCVBytes = 5 * 1024 * 1024 // 5 MB
+
+// Applicants upload documents, so the allowlist stays narrow and is checked
+// against the sniffed content type rather than the client-supplied extension.
+var allowedCVTypes = map[string]string{
+	"application/pdf": ".pdf",
+	"application/vnd.openxmlformats-officedocument.wordprocessingml.document": ".docx",
+	"application/msword": ".doc",
+	"application/zip":    ".docx", // DOCX archives sniff as zip
 }
 
-func NewCareerHandler(usecase domain.CareerUsecase) *CareerHandler {
+type CareerHandler struct {
+	usecase   domain.CareerUsecase
+	uploadDir string
+	userName  func(*gin.Context) string
+}
+
+func NewCareerHandler(usecase domain.CareerUsecase, uploadDir string) *CareerHandler {
 	return &CareerHandler{
-		usecase:  usecase,
-		userName: func(*gin.Context) string { return "Administrator" },
+		usecase:   usecase,
+		uploadDir: uploadDir,
+		userName:  func(*gin.Context) string { return "Administrator" },
 	}
 }
 
@@ -212,6 +231,82 @@ func (h *CareerHandler) ApplyForJob(c *gin.Context) {
 	}
 
 	response.Success(c, http.StatusCreated, app)
+}
+
+// UploadCV accepts an applicant's résumé and returns an absolute URL that can be
+// submitted with the application. Public by necessity, so size and type are
+// strictly bounded and the stored filename is server-generated (NFR-SEC-005).
+func (h *CareerHandler) UploadCV(c *gin.Context) {
+	fileHeader, err := c.FormFile("file")
+	if err != nil {
+		response.Error(c, http.StatusBadRequest, "file is required (multipart field name: file)")
+		return
+	}
+	if fileHeader.Size > maxCVBytes {
+		response.Error(c, http.StatusBadRequest, "file exceeds maximum size of 5 MB")
+		return
+	}
+
+	file, err := fileHeader.Open()
+	if err != nil {
+		response.Error(c, http.StatusBadRequest, "unable to read uploaded file")
+		return
+	}
+	defer file.Close()
+
+	sniff := make([]byte, 512)
+	n, _ := file.Read(sniff)
+	ext, ok := allowedCVTypes[http.DetectContentType(sniff[:n])]
+	if !ok {
+		response.Error(c, http.StatusBadRequest, "unsupported format; allowed: PDF, DOC, DOCX")
+		return
+	}
+	if declared := strings.ToLower(filepath.Ext(fileHeader.Filename)); declared == ".pdf" || declared == ".doc" || declared == ".docx" {
+		ext = declared
+	}
+
+	if _, err := file.Seek(0, io.SeekStart); err != nil {
+		response.Error(c, http.StatusInternalServerError, "unable to process uploaded file")
+		return
+	}
+
+	dir := filepath.Join(h.uploadDir, "cv")
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		response.Error(c, http.StatusInternalServerError, "unable to create upload directory")
+		return
+	}
+
+	filename := fmt.Sprintf("%d_%s%s", time.Now().UnixNano(), uuid.New().String()[:8], ext)
+	dest, err := os.OpenFile(filepath.Join(dir, filename), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644)
+	if err != nil {
+		response.Error(c, http.StatusInternalServerError, "unable to save uploaded file")
+		return
+	}
+	defer dest.Close()
+
+	if _, err := io.Copy(dest, io.LimitReader(file, maxCVBytes)); err != nil {
+		response.Error(c, http.StatusInternalServerError, "unable to save uploaded file")
+		return
+	}
+
+	path := "/uploads/cv/" + filename
+	response.Success(c, http.StatusCreated, map[string]any{
+		"url":      absoluteURL(c, path),
+		"path":     path,
+		"filename": fileHeader.Filename,
+	})
+}
+
+// absoluteURL builds a fully-qualified media URL, required because application
+// payloads validate cvUrl as an absolute http(s) URL.
+func absoluteURL(c *gin.Context, path string) string {
+	scheme := "http"
+	if forwarded := c.GetHeader("X-Forwarded-Proto"); forwarded != "" {
+		scheme = strings.ToLower(forwarded)
+	} else if c.Request.TLS != nil {
+		scheme = "https"
+	}
+	return scheme + "://" + c.Request.Host + path
 }
 
 func (h *CareerHandler) ListApplications(c *gin.Context) {

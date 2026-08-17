@@ -68,6 +68,24 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	})
 }
 
+// Me returns the authenticated administrator so the client can restore a session
+// and render role-aware navigation without trusting the stored JWT payload.
+func (h *AuthHandler) Me(c *gin.Context) {
+	actorID, ok := currentUserID(c)
+	if !ok {
+		response.Error(c, http.StatusUnauthorized, "User ID not found in context")
+		return
+	}
+
+	user, err := h.usecase.GetProfile(c.Request.Context(), actorID)
+	if err != nil {
+		response.FromError(c, err)
+		return
+	}
+
+	response.Success(c, http.StatusOK, user)
+}
+
 func (h *AuthHandler) Register(c *gin.Context) {
 	var req RegisterRequest
 	if !response.BindJSON(c, &req) {
@@ -261,4 +279,17 @@ func currentUserID(c *gin.Context) (uuid.UUID, bool) {
 		return uuid.Nil, false
 	}
 	return id, true
+}
+
+// ActorName resolves the display name recorded in audit trails (FR-ADM-010),
+// preferring the administrator's full name over their email address.
+func ActorName(c *gin.Context) string {
+	for _, key := range []contextKey{UserNameKey, UserEmailKey} {
+		if raw, ok := c.Get(string(key)); ok {
+			if name, ok := raw.(string); ok && strings.TrimSpace(name) != "" {
+				return name
+			}
+		}
+	}
+	return "Administrator"
 }

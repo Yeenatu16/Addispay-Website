@@ -1,118 +1,88 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Briefcase, MapPin, Clock, ArrowRight, CheckCircle2, Search, Sparkles, Send, X, Upload } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
-
-export interface JobOpening {
-  id: string;
-  title: string;
-  department: 'Engineering' | 'Product & Design' | 'Operations & Sales' | 'Compliance & Legal';
-  location: string;
-  type: string;
-  experience: string;
-  description: string;
-  requirements: string[];
-}
-
-export const jobPositions: JobOpening[] = [
-  {
-    id: 'job-1',
-    title: 'Senior Fintech Software Engineer (Node.js & Python)',
-    department: 'Engineering',
-    location: 'Addis Ababa (Hybrid)',
-    type: 'Full-time',
-    experience: '4+ years',
-    description: 'We are looking for a Senior Backend Engineer to build high-scale, ultra-low latency transaction systems and payment gateway APIs.',
-    requirements: [
-      'Experience with distributed backend systems, PostgreSQL, Redis, and Kafka',
-      'Solid background in payment processing, webhooks, and idempotent APIs',
-      'Knowledge of PCI-DSS compliance and financial data security standards',
-    ],
-  },
-  {
-    id: 'job-2',
-    title: 'Lead DevOps & Site Reliability Engineer',
-    department: 'Engineering',
-    location: 'Addis Ababa (On-site)',
-    type: 'Full-time',
-    experience: '5+ years',
-    description: 'Lead our cloud infrastructure reliability, Kubernetes deployments, monitoring, and automated disaster recovery systems.',
-    requirements: [
-      'Hands-on experience with Docker, Kubernetes, Terraform, and AWS/Cloud',
-      'Proficiency in Prometheus, Grafana, and ELK stack log monitoring',
-      'Experience maintaining 99.99% system availability SLA',
-    ],
-  },
-  {
-    id: 'job-3',
-    title: 'Product Manager — Payment Gateway & POS',
-    department: 'Product & Design',
-    location: 'Addis Ababa (On-site)',
-    type: 'Full-time',
-    experience: '3+ years',
-    description: 'Drive the product roadmap for Addis Merchant POS, contactless NFC payments, and merchant dashboard tools.',
-    requirements: [
-      'Proven track record delivering B2B fintech or mobile wallet products',
-      'Strong UX mindset and data-driven approach to product analytics',
-      'Excellent stakeholder management and merchant empathy',
-    ],
-  },
-  {
-    id: 'job-4',
-    title: 'Merchant Success & Onboarding Lead',
-    department: 'Operations & Sales',
-    location: 'Addis Ababa (On-site)',
-    type: 'Full-time',
-    experience: '2+ years',
-    description: 'Manage onboarding, merchant support, and customer satisfaction for over 50,000 retail and enterprise partners.',
-    requirements: [
-      'Strong problem-solving skills and customer service orientation',
-      'Fluency in Amharic, Afaan Oromoo, and English',
-      'Experience in merchant training and SLA resolution',
-    ],
-  },
-  {
-    id: 'job-5',
-    title: 'Head of Regulatory Compliance & NBE Reporting',
-    department: 'Compliance & Legal',
-    location: 'Addis Ababa (On-site)',
-    type: 'Full-time',
-    experience: '6+ years',
-    description: 'Ensure total adherence to National Bank of Ethiopia (NBE) payment system operator regulations, AML/CFT policies, and audit frameworks.',
-    requirements: [
-      'Degree in Law, Finance, or Risk Management',
-      'Deep understanding of NBE PSO directives (NPS/PSO/007/2022)',
-      'Experience engaging regulatory authorities and managing compliance audits',
-    ],
-  },
-];
+import { Alert, EmptyState, Input, Pagination, Spinner, Textarea } from '@/components/ui';
+import { careers, errorMessage, JOB_TYPE_LABELS, type JobPosting } from '@/lib/api';
+import { requirementsToLines } from '@/lib/admin/utils';
 
 export default function CareersPage() {
   const { t } = useLanguage();
   const [selectedDept, setSelectedDept] = useState<string>('All');
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [activeJobModal, setActiveJobModal] = useState<JobOpening | null>(null);
+  const [activeJobModal, setActiveJobModal] = useState<JobPosting | null>(null);
   const [applied, setApplied] = useState<boolean>(false);
   const [cvFile, setCvFile] = useState<File | null>(null);
+  const [jobs, setJobs] = useState<JobPosting[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [page, setPage] = useState(1);
+  const [form, setForm] = useState({
+    fullName: '',
+    email: '',
+    phoneNumber: '',
+    linkedinUrl: '',
+    portfolioUrl: '',
+    coverLetter: '',
+  });
+  const pageSize = 6;
 
-  const departments = ['All', 'Engineering', 'Product & Design', 'Operations & Sales', 'Compliance & Legal'];
+  useEffect(() => {
+    let active = true;
+    careers
+      .openJobs()
+      .then((data) => {
+        if (active) setJobs(data);
+      })
+      .catch(() => {
+        if (active) setJobs([]);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
-  const filteredJobs = jobPositions.filter((job) => {
+  const departments = useMemo(
+    () => ['All', ...Array.from(new Set(jobs.map((job) => job.department)))],
+    [jobs],
+  );
+
+  const filteredJobs = jobs.filter((job) => {
     const matchesDept = selectedDept === 'All' || job.department === selectedDept;
     const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           job.description.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesDept && matchesSearch;
   });
+  const pagedJobs = filteredJobs.slice((page - 1) * pageSize, page * pageSize);
 
-  const handleApply = (e: React.FormEvent) => {
+  const handleApply = async (e: React.FormEvent) => {
     e.preventDefault();
-    setApplied(true);
-    setTimeout(() => {
-      setApplied(false);
-      setCvFile(null);
-      setActiveJobModal(null);
-    }, 2200);
+    if (!activeJobModal || !cvFile) return;
+    setSubmitting(true);
+    setSubmitError('');
+    try {
+      const upload = await careers.uploadCv(cvFile);
+      await careers.apply({
+        jobId: activeJobModal.id,
+        fullName: form.fullName,
+        email: form.email,
+        phoneNumber: form.phoneNumber,
+        linkedinUrl: form.linkedinUrl || undefined,
+        portfolioUrl: form.portfolioUrl || undefined,
+        coverLetter: form.coverLetter,
+        cvUrl: upload.url,
+      });
+      setApplied(true);
+    } catch (error) {
+      setSubmitError(errorMessage(error));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -142,7 +112,10 @@ export default function CareersPage() {
               <input
                 type="text"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setPage(1);
+                }}
                 placeholder="Search open roles..."
                 className="w-full bg-white pl-12 pr-4 py-3.5 rounded-2xl border border-gray-200 shadow-sm focus:outline-none focus:border-[#00A36D] text-sm text-gray-800 font-medium"
               />
@@ -172,7 +145,11 @@ export default function CareersPage() {
 
         {/* Jobs List */}
         <div className="mt-8 space-y-6 max-w-4xl mx-auto">
-          {filteredJobs.map((job) => (
+          {loading ? (
+            <Spinner label="Loading open roles..." />
+          ) : pagedJobs.length === 0 ? (
+            <EmptyState title="No open roles match your search" description="Try a different keyword or department filter." />
+          ) : pagedJobs.map((job) => (
             <div
               key={job.id}
               className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-6"
@@ -183,7 +160,7 @@ export default function CareersPage() {
                     {job.department}
                   </span>
                   <span className="bg-gray-100 text-gray-700 text-[10px] font-bold px-2.5 py-1 rounded-full">
-                    {job.type}
+                    {JOB_TYPE_LABELS[job.jobType]}
                   </span>
                 </div>
 
@@ -198,7 +175,7 @@ export default function CareersPage() {
                     <MapPin className="w-3.5 h-3.5 text-[#00A36D]" /> {job.location}
                   </span>
                   <span className="flex items-center gap-1">
-                    <Briefcase className="w-3.5 h-3.5 text-[#00A36D]" /> {job.experience}
+                    <Briefcase className="w-3.5 h-3.5 text-[#00A36D]" /> {JOB_TYPE_LABELS[job.jobType]}
                   </span>
                 </div>
               </div>
@@ -212,6 +189,9 @@ export default function CareersPage() {
               </button>
             </div>
           ))}
+          {!loading && filteredJobs.length > pageSize && (
+            <Pagination page={page} total={filteredJobs.length} pageSize={pageSize} onPageChange={setPage} />
+          )}
         </div>
 
       </div>
@@ -234,7 +214,7 @@ export default function CareersPage() {
               </span>
               <h2 className="text-2xl font-black text-[#101828]">{activeJobModal.title}</h2>
               <div className="text-xs text-gray-500 font-semibold">
-                {activeJobModal.location} · {activeJobModal.type} · {activeJobModal.experience}
+                {activeJobModal.location} · {JOB_TYPE_LABELS[activeJobModal.jobType]}
               </div>
             </div>
 
@@ -244,7 +224,7 @@ export default function CareersPage() {
               
               <h4 className="font-bold text-sm text-[#101828] pt-2">Key Requirements:</h4>
               <ul className="space-y-1.5">
-                {activeJobModal.requirements.map((req, i) => (
+                {requirementsToLines(activeJobModal.requirements).map((req, i) => (
                   <li key={i} className="flex items-start gap-2 text-xs text-gray-700 font-medium">
                     <CheckCircle2 className="w-4 h-4 text-[#00A36D] shrink-0 mt-0.5" />
                     <span>{req}</span>
@@ -258,47 +238,59 @@ export default function CareersPage() {
               <div className="bg-[#E5F5EE] border border-[#00A36D]/30 p-6 rounded-2xl text-center space-y-3">
                 <CheckCircle2 className="w-10 h-10 text-[#00A36D] mx-auto animate-bounce" />
                 <h3 className="text-lg font-bold text-[#101828]">Application Submitted!</h3>
-                <p className="text-xs text-[#6A7282]">
-                  Thank you for applying for {activeJobModal.title}. Our HR team will reach out shortly.
-                </p>
+                <p className="text-xs text-[#6A7282]">Thank you for applying for {activeJobModal.title}. Our HR team will reach out shortly.</p>
               </div>
             ) : (
               <form onSubmit={handleApply} className="space-y-4 border-t border-gray-100 pt-4">
                 <h4 className="font-bold text-sm text-[#101828]">Submit Application</h4>
+                {submitError && <Alert tone="error">{submitError}</Alert>}
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <input
+                  <Input
                     type="text"
                     required
+                    value={form.fullName}
+                    onChange={(e) => setForm((prev) => ({ ...prev, fullName: e.target.value }))}
                     placeholder="Full Name *"
-                    className="w-full bg-[#F8FDFB] px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#00A36D] text-xs font-medium"
                   />
-                  <input
+                  <Input
                     type="email"
                     required
+                    value={form.email}
+                    onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
                     placeholder="Email Address *"
-                    className="w-full bg-[#F8FDFB] px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#00A36D] text-xs font-medium"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <input
+                  <Input
                     type="text"
                     required
+                    value={form.phoneNumber}
+                    onChange={(e) => setForm((prev) => ({ ...prev, phoneNumber: e.target.value }))}
                     placeholder="Phone Number (e.g. 0911234567) *"
-                    className="w-full bg-[#F8FDFB] px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#00A36D] text-xs font-medium"
                   />
-                  <input
+                  <Input
                     type="url"
-                    placeholder="LinkedIn / Portfolio URL"
-                    className="w-full bg-[#F8FDFB] px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#00A36D] text-xs font-medium"
+                    value={form.linkedinUrl}
+                    onChange={(e) => setForm((prev) => ({ ...prev, linkedinUrl: e.target.value }))}
+                    placeholder="LinkedIn URL"
                   />
                 </div>
 
-                <textarea
+                <Input
+                  type="url"
+                  value={form.portfolioUrl}
+                  onChange={(e) => setForm((prev) => ({ ...prev, portfolioUrl: e.target.value }))}
+                  placeholder="Portfolio URL"
+                />
+
+                <Textarea
                   rows={3}
+                  required
+                  value={form.coverLetter}
+                  onChange={(e) => setForm((prev) => ({ ...prev, coverLetter: e.target.value }))}
                   placeholder="Cover Note / Why Addispay?"
-                  className="w-full bg-[#F8FDFB] px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#00A36D] text-xs font-medium"
                 />
 
                 <div className="space-y-1.5">
@@ -345,10 +337,11 @@ export default function CareersPage() {
 
                 <button
                   type="submit"
-                  className="w-full py-3.5 rounded-xl bg-[#00A36D] hover:bg-[#008959] text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2"
+                    disabled={submitting || !cvFile}
+                    className="w-full py-3.5 rounded-xl bg-[#00A36D] hover:bg-[#008959] text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-60"
                 >
                   <Send className="w-4 h-4" />
-                  <span>Submit Application</span>
+                    <span>{submitting ? 'Submitting...' : 'Submit Application'}</span>
                 </button>
               </form>
             )}

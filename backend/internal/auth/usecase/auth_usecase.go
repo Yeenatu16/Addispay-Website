@@ -158,7 +158,7 @@ func (u *authUsecase) ForgotPassword(ctx context.Context, email string) error {
 		return apperr.Internal(err)
 	}
 
-	resetURL := u.buildURL("/reset-password", rawToken)
+	resetURL := u.buildURL("/admin/reset-password", rawToken)
 	if err := u.mailer.SendPasswordReset(ctx, user.Email, user.FullName, resetURL); err != nil {
 		return apperr.Internal(err)
 	}
@@ -224,7 +224,7 @@ func (u *authUsecase) InviteAdmin(ctx context.Context, invitedBy uuid.UUID, emai
 		return nil, apperr.Internal(err)
 	}
 
-	inviteURL := u.buildURL("/accept-invitation", rawToken)
+	inviteURL := u.buildURL("/admin/accept-invitation", rawToken)
 	if err := u.mailer.SendAdminInvitation(ctx, email, role, inviteURL); err != nil {
 		_ = u.repo.RevokeInvitation(ctx, invite.ID)
 		return nil, apperr.BadRequest("could not send the invitation email; check SMTP configuration")
@@ -360,7 +360,7 @@ func (u *authUsecase) RestoreAdministrator(ctx context.Context, actorID, targetI
 }
 
 func (u *authUsecase) buildURL(path, rawToken string) string {
-	base := u.frontendURL
+	base := strings.TrimRight(u.frontendURL, "/")
 	if base == "" {
 		base = "http://localhost:3000"
 	}

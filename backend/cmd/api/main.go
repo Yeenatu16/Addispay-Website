@@ -29,7 +29,6 @@ import (
 	"github.com/addispay/backend/internal/config"
 	"github.com/addispay/backend/internal/database"
 	"github.com/addispay/backend/internal/server"
-	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -68,29 +67,15 @@ func main() {
 	settings := contentUseCase.NewNewsSettingsAdapter(cntUsecase)
 	nUsecase := newsUseCase.NewNewsUsecase(nRepo, audit, settings)
 	nHandler := newsDelivery.NewNewsHandler(nUsecase, cfg.UploadDir)
-	nHandler.SetUserNameResolver(func(c *gin.Context) string {
-		if email, ok := c.Get(string(authDelivery.UserEmailKey)); ok {
-			if s, ok := email.(string); ok && s != "" {
-				return s
-			}
-		}
-		return "Administrator"
-	})
+	nHandler.SetUserNameResolver(authDelivery.ActorName)
 
 	cRepo := careerRepo.NewCareerRepository(db)
 	careerAudit := contentUseCase.NewCareerAuditAdapter(cntRepo)
 	cUsecase := careerUseCase.NewCareerUsecase(cRepo, careerAudit)
-	cHandler := careersDelivery.NewCareerHandler(cUsecase)
-	cHandler.SetUserNameResolver(func(c *gin.Context) string {
-		if email, ok := c.Get(string(authDelivery.UserEmailKey)); ok {
-			if s, ok := email.(string); ok && s != "" {
-				return s
-			}
-		}
-		return "Administrator"
-	})
+	cHandler := careersDelivery.NewCareerHandler(cUsecase, cfg.UploadDir)
+	cHandler.SetUserNameResolver(authDelivery.ActorName)
 
-	router := server.NewRouter(cfg.JWTSecret, cfg.UploadDir, uRepo, aHandler, nHandler, cHandler, cntHandler)
+	router := server.NewRouter(cfg.JWTSecret, cfg.UploadDir, cfg.CORSAllowedOrigins, uRepo, aHandler, nHandler, cHandler, cntHandler)
 
 	srv := &http.Server{
 		Addr:              ":" + cfg.Port,

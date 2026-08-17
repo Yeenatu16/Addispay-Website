@@ -15,6 +15,7 @@ import (
 func NewRouter(
 	jwtSecret string,
 	uploadDir string,
+	corsOrigins []string,
 	users authDelivery.UserLookup,
 	authH *authDelivery.AuthHandler,
 	newsH *newsDelivery.NewsHandler,
@@ -23,6 +24,7 @@ func NewRouter(
 ) *gin.Engine {
 	r := gin.Default()
 	r.Use(SecurityHeaders())
+	r.Use(CORS(corsOrigins))
 
 	// Serve uploaded cover images
 	r.Static("/uploads", filepath.Clean(uploadDir))
@@ -48,6 +50,7 @@ func NewRouter(
 
 		v1.GET("/careers", careersH.GetOpenJobs)
 		v1.POST("/careers/apply", careersH.ApplyForJob)
+		v1.POST("/careers/upload-cv", careersH.UploadCV)
 
 		v1.POST("/content/subscribe", contentH.Subscribe)
 		v1.POST("/content/contact", contentH.ContactUs)
@@ -56,6 +59,9 @@ func NewRouter(
 		admin := v1.Group("admin")
 		admin.Use(authDelivery.GinAuthMiddleware(jwtSecret, users))
 		{
+			// Session restore / role discovery for any authenticated administrator
+			admin.GET("/me", authH.Me)
+
 			// News — Super Admin + Marketer
 			newsAdmin := admin.Group("")
 			newsAdmin.Use(authDelivery.RequireRoles(domain.RoleSuperAdmin, domain.RoleMarketer))

@@ -18,6 +18,7 @@ const (
 	UserIDKey    contextKey = "user_id"
 	RoleKey      contextKey = "user_role"
 	UserEmailKey contextKey = "user_email"
+	UserNameKey  contextKey = "user_name"
 )
 
 // UserLookup loads the current administrator for authz checks.
@@ -85,10 +86,12 @@ func GinAuthMiddleware(jwtSecret string, users UserLookup) gin.HandlerFunc {
 		c.Set(string(UserIDKey), user.ID.String())
 		c.Set(string(RoleKey), string(user.Role))
 		c.Set(string(UserEmailKey), user.Email)
+		c.Set(string(UserNameKey), user.FullName)
 
 		ctx := context.WithValue(c.Request.Context(), UserIDKey, user.ID.String())
 		ctx = context.WithValue(ctx, RoleKey, string(user.Role))
 		ctx = context.WithValue(ctx, UserEmailKey, user.Email)
+		ctx = context.WithValue(ctx, UserNameKey, user.FullName)
 		c.Request = c.Request.WithContext(ctx)
 
 		c.Next()

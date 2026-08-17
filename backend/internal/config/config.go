@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
@@ -18,6 +19,9 @@ type Config struct {
 	UploadDir   string
 	FrontendURL string
 
+	// CORSAllowedOrigins lists browser origins permitted to call the API.
+	CORSAllowedOrigins []string
+
 	SMTPHost     string
 	SMTPPort     string
 	SMTPUsername string
@@ -28,8 +32,10 @@ type Config struct {
 func LoadConfig() *Config {
 	_ = godotenv.Load()
 
+	frontendURL := getEnv("FRONTEND_URL", "http://localhost:3000")
+
 	return &Config{
-		Port:        getEnv("PORT", "8000"),
+		Port:        getEnv("PORT", "8080"),
 		DBHost:      getEnv("DB_HOST", "localhost"),
 		DBPort:      getEnv("DB_PORT", "5432"),
 		DBUser:      getEnv("DB_USER", ""),
@@ -38,7 +44,9 @@ func LoadConfig() *Config {
 		DBSSLMode:   getEnv("DB_SSLMODE", "verify-full"),
 		JWTSecret:   getEnv("ADDISPAY_JWT_SUPER_SECRET_KEY_2026", ""),
 		UploadDir:   getEnv("UPLOAD_DIR", "./uploads"),
-		FrontendURL: getEnv("FRONTEND_URL", "http://localhost:3000"),
+		FrontendURL: frontendURL,
+
+		CORSAllowedOrigins: splitList(getEnv("CORS_ALLOWED_ORIGINS", frontendURL)),
 
 		SMTPHost:     getEnv("SMTP_HOST", ""),
 		SMTPPort:     getEnv("SMTP_PORT", "587"),
@@ -53,4 +61,15 @@ func getEnv(key, fallback string) string {
 		return value
 	}
 	return fallback
+}
+
+func splitList(raw string) []string {
+	parts := strings.Split(raw, ",")
+	out := make([]string, 0, len(parts))
+	for _, part := range parts {
+		if trimmed := strings.TrimSpace(part); trimmed != "" {
+			out = append(out, trimmed)
+		}
+	}
+	return out
 }

@@ -69,6 +69,18 @@ type SiteSettings interface {
 	SetNewsEmptyMessage(ctx context.Context, message string) error
 }
 
+type CreateArticleInput struct {
+	Title            string
+	ShortDescription string
+	FullContent      string
+	CoverImageURL    string
+	IsFeatured       bool
+	Status           PublicationStatus
+	// PublishedAt overrides the publish date (FR-ADM-002). Nil means "now" for
+	// published articles and no date for drafts.
+	PublishedAt *time.Time
+}
+
 type UpdateArticleInput struct {
 	Title            *string
 	ShortDescription *string
@@ -76,10 +88,11 @@ type UpdateArticleInput struct {
 	CoverImageURL    *string
 	IsFeatured       *bool
 	Status           *PublicationStatus
+	PublishedAt      *time.Time
 }
 
 type NewsUsecase interface {
-	CreateArticle(ctx context.Context, authorID uuid.UUID, authorName, title, shortDesc, fullContent, coverURL string, isFeatured bool, status PublicationStatus) (*NewsArticle, error)
+	CreateArticle(ctx context.Context, authorID uuid.UUID, authorName string, input CreateArticleInput) (*NewsArticle, error)
 	UpdateArticle(ctx context.Context, actorID uuid.UUID, actorName string, id uuid.UUID, input UpdateArticleInput) (*NewsArticle, error)
 	DeleteArticle(ctx context.Context, actorID uuid.UUID, actorName string, id uuid.UUID) error
 	GetByID(ctx context.Context, id uuid.UUID) (*NewsArticle, error)

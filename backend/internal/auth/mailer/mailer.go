@@ -4,11 +4,14 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"mime"
 	"net"
 	"net/smtp"
 	"strings"
+	"time"
 
 	"github.com/addispay/backend/internal/auth/domain"
+	"github.com/google/uuid"
 )
 
 // LogMailer writes auth emails to the application log.
@@ -101,9 +104,14 @@ func (m *SMTPMailer) send(to, subject, body string) error {
 	msg := strings.Builder{}
 	msg.WriteString(fmt.Sprintf("From: %s\r\n", fromHeader))
 	msg.WriteString(fmt.Sprintf("To: %s\r\n", to))
-	msg.WriteString(fmt.Sprintf("Subject: %s\r\n", subject))
+	msg.WriteString(fmt.Sprintf("Subject: %s\r\n", mime.QEncoding.Encode("UTF-8", subject)))
+	// Date and Message-ID are required by RFC 5322; without them providers such as
+	// Gmail and Outlook are far more likely to file the message as spam.
+	msg.WriteString(fmt.Sprintf("Date: %s\r\n", time.Now().Format(time.RFC1123Z)))
+	msg.WriteString(fmt.Sprintf("Message-ID: <%s@%s>\r\n", uuid.NewString(), hostFromAddress(fromAddr)))
 	msg.WriteString("MIME-Version: 1.0\r\n")
 	msg.WriteString("Content-Type: text/plain; charset=\"UTF-8\"\r\n")
+	msg.WriteString("Content-Transfer-Encoding: 8bit\r\n")
 	msg.WriteString("\r\n")
 	msg.WriteString(body)
 
@@ -130,6 +138,13 @@ func NewMailer(cfg SMTPConfig) domain.Mailer {
 	}
 	log.Printf("[mailer] SMTP not configured — using LogMailer (emails printed to logs)")
 	return NewLogMailer()
+}
+
+func hostFromAddress(addr string) string {
+	if at := strings.LastIndex(addr, "@"); at >= 0 && at+1 < len(addr) {
+		return addr[at+1:]
+	}
+	return "addispay.local"
 }
 
 func extractEmail(from string) string {

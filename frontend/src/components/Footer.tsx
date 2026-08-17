@@ -14,10 +14,31 @@ import {
 } from 'lucide-react';
 import AddisPayLogo from './AddisPayLogo';
 import { useLanguage } from '@/context/LanguageContext';
+import { content, errorMessage } from '@/lib/api';
 
 export default function Footer() {
   const { t } = useLanguage();
   const pathname = usePathname();
+  const [email, setEmail] = React.useState('');
+  const [subscribing, setSubscribing] = React.useState(false);
+  const [message, setMessage] = React.useState('');
+  const [error, setError] = React.useState('');
+
+  async function handleSubscribe(e: React.FormEvent) {
+    e.preventDefault();
+    setSubscribing(true);
+    setMessage('');
+    setError('');
+    try {
+      const result = await content.subscribe(email);
+      setMessage(result.message);
+      setEmail('');
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setSubscribing(false);
+    }
+  }
 
   return (
     <footer className="bg-[#F1FAF7] border-t border-[#E5F5EE] pt-16 pb-12 text-[#101828]">
@@ -33,6 +54,32 @@ export default function Footer() {
             <p className="text-[#1A1F36] text-sm leading-relaxed max-w-sm font-normal">
               Providing a one touch end to end commercial transaction experience for consumers and businesses in Africa.
             </p>
+
+            <form onSubmit={handleSubscribe} className="space-y-3 rounded-3xl border border-[#00A36D]/15 bg-white p-4 shadow-xs max-w-md">
+              <div>
+                <h3 className="text-sm font-black text-[#101828]">Stay updated</h3>
+                <p className="text-xs text-gray-500">Get product updates, company news, and merchant tips in your inbox.</p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@example.com"
+                  required
+                  className="flex-1 rounded-xl border border-gray-200 bg-[#F8FDFB] px-4 py-3 text-sm outline-none focus:border-[#00A36D]"
+                />
+                <button
+                  type="submit"
+                  disabled={subscribing}
+                  className="rounded-xl bg-[#00A36D] px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-[#008959] disabled:opacity-60"
+                >
+                  {subscribing ? 'Joining...' : 'Subscribe'}
+                </button>
+              </div>
+              {message && <p className="text-xs font-semibold text-emerald-700">{message}</p>}
+              {error && <p className="text-xs font-semibold text-rose-600">{error}</p>}
+            </form>
 
             {/* App & Soft POS Download Badges */}
             <div className="flex flex-wrap items-center gap-3 pt-1">

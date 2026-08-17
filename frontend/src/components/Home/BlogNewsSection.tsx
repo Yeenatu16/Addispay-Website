@@ -1,37 +1,41 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Clock, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
+import { EmptyState, Spinner } from '@/components/ui';
+import { mediaUrl, news, type NewsArticle } from '@/lib/api';
+import { articleCategory, articleReadTime, formatDate } from '@/lib/admin/utils';
 
 export const BlogNewsSection: React.FC = () => {
   const { t } = useLanguage();
+  const [articles, setArticles] = useState<NewsArticle[]>([]);
+  const [emptyMessage, setEmptyMessage] = useState('No news available at this time.');
+  const [loading, setLoading] = useState(true);
 
-  const articles = [
-    {
-      image: '/images/blog_sme_growth.png',
-      tag: 'Growth',
-      title: 'How Ethiopian SMEs Are Growing 3x Faster with Digital Payments',
-      readTime: '7 min read',
-      date: 'Aug 2, 2026',
-    },
-    {
-      image: '/images/blog_security.png',
-      tag: 'Security',
-      title: 'Bank-Grade Security: How Addispay Keeps Every Transaction Safe',
-      readTime: '6 min read',
-      date: 'Aug 1, 2026',
-    },
-    {
-      image: '/images/blog_api_v3.png',
-      tag: 'Developer',
-      title: 'Addispay API v3: Faster Webhooks, Better SDKs, Zero Downtime',
-      readTime: '8 min read',
-      date: 'Jul 31, 2026',
-    },
-  ];
+  useEffect(() => {
+    let active = true;
+    news
+      .homepage()
+      .then((data) => {
+        if (!active) return;
+        setArticles(data.latest);
+        setEmptyMessage(data.emptyMessage);
+      })
+      .catch(() => {
+        if (!active) return;
+        setArticles([]);
+        setEmptyMessage('News is temporarily unavailable. Please try again later.');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <section className="py-20 lg:py-28 bg-white border-b border-gray-100">
@@ -58,41 +62,49 @@ export const BlogNewsSection: React.FC = () => {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {articles.map((art, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between group"
-            >
-              <div>
-                <div className="relative h-48 w-full overflow-hidden bg-gray-100">
-                  <Image
-                    src={art.image}
-                    alt={art.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <span className="absolute top-3 left-3 bg-[#00A36D] text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase">
-                    {art.tag}
+        {loading ? (
+          <Spinner label="Loading latest news..." />
+        ) : articles.length === 0 ? (
+          <EmptyState title="No published stories yet" description={emptyMessage} />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {articles.slice(0, 3).map((art) => (
+              <Link
+                key={art.id}
+                href={`/blog/${art.slug}`}
+                className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between group"
+              >
+                <div>
+                  <div className="relative h-48 w-full overflow-hidden bg-gray-100">
+                    <Image
+                      src={mediaUrl(art.coverImageUrl) || '/images/blog_security.png'}
+                      alt={art.title}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <span className="absolute top-3 left-3 bg-[#00A36D] text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase">
+                      {articleCategory(art)}
+                    </span>
+                  </div>
+
+                  <div className="p-6 space-y-2">
+                    <h3 className="font-bold text-[#101828] text-base group-hover:text-[#00A36D] transition-colors leading-snug line-clamp-2">
+                      {art.title}
+                    </h3>
+                    <p className="text-xs text-[#6A7282] line-clamp-2">{art.shortDescription}</p>
+                  </div>
+                </div>
+
+                <div className="px-6 pb-6 pt-2 flex items-center justify-between text-xs text-gray-400 font-medium">
+                  <span>{formatDate(art.publishedAt || art.createdAt)}</span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-3 h-3 text-[#00A36D]" /> {articleReadTime(art)}
                   </span>
                 </div>
-
-                <div className="p-6 space-y-2">
-                  <h3 className="font-bold text-[#101828] text-base group-hover:text-[#00A36D] transition-colors leading-snug line-clamp-2">
-                    {art.title}
-                  </h3>
-                </div>
-              </div>
-
-              <div className="px-6 pb-6 pt-2 flex items-center justify-between text-xs text-gray-400 font-medium">
-                <span>{art.date}</span>
-                <span className="flex items-center gap-1">
-                  <Clock className="w-3 h-3 text-[#00A36D]" /> {art.readTime}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
+              </Link>
+            ))}
+          </div>
+        )}
 
       </div>
     </section>

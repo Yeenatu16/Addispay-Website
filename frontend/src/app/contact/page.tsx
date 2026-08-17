@@ -3,14 +3,33 @@
 import React, { useState } from 'react';
 import { Phone, Mail, MapPin, Send, CheckCircle2, Headphones } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
+import { Alert, Input, Select, Textarea } from '@/components/ui';
+import { content, errorMessage } from '@/lib/api';
 
 export default function ContactPage() {
   const { t } = useLanguage();
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [form, setForm] = useState({
+    fullName: '',
+    email: '',
+    reason: '',
+    message: '',
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setSubmitting(true);
+    setError('');
+    try {
+      await content.contact(form);
+      setSubmitted(true);
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -98,15 +117,17 @@ export default function ContactPage() {
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-5">
+                  {error && <Alert tone="error">{error}</Alert>}
                   <div>
                     <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase">
                       {t('contact.name_label')} <span className="text-rose-500">*</span>
                     </label>
-                    <input
+                    <Input
                       type="text"
                       required
+                      value={form.fullName}
+                      onChange={(e) => setForm((prev) => ({ ...prev, fullName: e.target.value }))}
                       placeholder={t('contact.name_placeholder')}
-                      className="w-full bg-[#F8FDFB] px-4 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#00A36D] text-sm text-gray-800"
                     />
                   </div>
 
@@ -114,11 +135,12 @@ export default function ContactPage() {
                     <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase">
                       {t('contact.email_label')} <span className="text-rose-500">*</span>
                     </label>
-                    <input
+                    <Input
                       type="email"
                       required
+                      value={form.email}
+                      onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
                       placeholder="name@example.com"
-                      className="w-full bg-[#F8FDFB] px-4 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#00A36D] text-sm text-gray-800"
                     />
                   </div>
 
@@ -126,35 +148,38 @@ export default function ContactPage() {
                     <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase">
                       {t('contact.reason_label')} <span className="text-rose-500">*</span>
                     </label>
-                    <select
+                    <Select
                       required
-                      className="w-full bg-[#F8FDFB] px-4 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#00A36D] text-sm text-gray-800 font-medium"
+                      value={form.reason}
+                      onChange={(e) => setForm((prev) => ({ ...prev, reason: e.target.value }))}
                     >
                       <option value="">{t('contact.reason_placeholder')}</option>
                       <option value="merchant">{t('contact.reason_m')}</option>
                       <option value="partner">{t('contact.reason_p')}</option>
                       <option value="support">{t('contact.reason_s')}</option>
-                    </select>
+                    </Select>
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase">
                       {t('contact.message_label')} <span className="text-rose-500">*</span>
                     </label>
-                    <textarea
+                    <Textarea
                       required
                       rows={4}
+                      value={form.message}
+                      onChange={(e) => setForm((prev) => ({ ...prev, message: e.target.value }))}
                       placeholder={t('contact.message_placeholder')}
-                      className="w-full bg-[#F8FDFB] px-4 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#00A36D] text-sm text-gray-800 font-medium"
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full py-4 rounded-xl bg-[#00A36D] hover:bg-[#008959] text-white font-bold text-base shadow-lg shadow-[#00A36D]/20 transition-all flex items-center justify-center gap-2 hover:-translate-y-0.5"
+                    disabled={submitting}
+                    className="w-full py-4 rounded-xl bg-[#00A36D] hover:bg-[#008959] text-white font-bold text-base shadow-lg shadow-[#00A36D]/20 transition-all flex items-center justify-center gap-2 hover:-translate-y-0.5 disabled:opacity-60"
                   >
                     <Send className="w-4 h-4" />
-                    <span>{t('contact.submit_btn')}</span>
+                    <span>{submitting ? 'Sending...' : t('contact.submit_btn')}</span>
                   </button>
                 </form>
               )}

@@ -2,32 +2,21 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAdmin } from '@/context/AdminContext';
-import { Loader2 } from 'lucide-react';
+import { homeRouteForRole, useAuth } from '@/context/AuthContext';
+import { Spinner } from '@/components/ui';
 
 export default function AdminPage() {
   const router = useRouter();
-  const { currentUser } = useAdmin();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
-    if (!currentUser) {
+    if (loading) return;
+    if (!user) {
       router.push('/admin/login');
       return;
     }
+    router.push(homeRouteForRole(user.role));
+  }, [loading, user, router]);
 
-    if (currentUser.role === 'Super Admin') {
-      router.push('/admin/super');
-    } else if (currentUser.role === 'Blog Writer') {
-      router.push('/admin/blog');
-    } else if (currentUser.role === 'Career Writer') {
-      router.push('/admin/careers');
-    }
-  }, [currentUser, router]);
-
-  return (
-    <div className="min-h-[80vh] flex flex-col items-center justify-center space-y-4">
-      <Loader2 className="w-8 h-8 text-[#00A36D] animate-spin" />
-      <p className="text-sm font-bold text-gray-700">Redirecting to your workspace...</p>
-    </div>
-  );
+  return <Spinner label="Opening your workspace..." />;
 }

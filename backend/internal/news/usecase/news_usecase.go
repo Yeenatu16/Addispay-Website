@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -29,14 +30,15 @@ func NewNewsUsecase(repo domain.NewsRepository, audit domain.AuditLogger, settin
 func (u *newsUsecase) CreateArticle(
 	ctx context.Context,
 	authorID uuid.UUID,
-	authorName, title, shortDesc, fullContent, coverURL string,
-	isFeatured bool,
-	status domain.PublicationStatus,
+	authorName string,
+	in domain.CreateArticleInput,
 ) (*domain.NewsArticle, error) {
-	title = sanitize.Text(title)
-	shortDesc = sanitize.Text(shortDesc)
-	fullContent = sanitize.HTML(fullContent)
-	coverURL = strings.TrimSpace(coverURL)
+	title := sanitize.Text(in.Title)
+	shortDesc := sanitize.Text(in.ShortDescription)
+	fullContent := sanitize.HTML(in.FullContent)
+	coverURL := strings.TrimSpace(in.CoverImageURL)
+	isFeatured := in.IsFeatured
+	status := in.Status
 
 	if err := validate.Required(title, "title"); err != nil {
 		return nil, err
@@ -65,19 +67,25 @@ func (u *newsUsecase) CreateArticle(
 		return nil, apperr.BadRequest("status must be DRAFT or PUBLISHED")
 	}
 
+	if isFeatured && status != domain.StatusPublished {
+		return nil, apperr.BadRequest("only published articles can be featured")
+	}
 	if isFeatured {
 		_ = u.repo.UnsetFeatured(ctx)
 	}
 
-	var pubDate *time.Time
-	if status == domain.StatusPublished {
+	pubDate := in.PublishedAt
+	if status == domain.StatusPublished && pubDate == nil {
 		now := time.Now()
 		pubDate = &now
+	}
+	if status == domain.StatusDraft {
+		pubDate = nil
 	}
 
 	article := &domain.NewsArticle{
 		Title:            title,
-		Slug:             slugify(title),
+		Slug:             u.uniqueSlug(ctx, title, uuid.Nil),
 		ShortDescription: shortDesc,
 		FullContent:      fullContent,
 		CoverImageURL:    coverURL,
@@ -125,7 +133,7 @@ func (u *newsUsecase) UpdateArticle(
 			return nil, err
 		}
 		article.Title = title
-		article.Slug = slugify(title)
+		article.Slug = u.uniqueSlug(ctx, title, article.ID)
 	}
 	if input.ShortDescription != nil {
 		desc := sanitize.Text(*input.ShortDescription)
@@ -173,7 +181,11 @@ func (u *newsUsecase) UpdateArticle(
 		}
 		if *input.Status == domain.StatusDraft {
 			article.IsFeatured = false
+			article.PublishedAt = nil
 		}
+	}
+	if input.PublishedAt != nil && article.Status == domain.StatusPublished {
+		article.PublishedAt = input.PublishedAt
 	}
 
 	if err := u.repo.Update(ctx, article); err != nil {
@@ -288,14 +300,45 @@ func (u *newsUsecase) ListAdminArticles(ctx context.Context, filter domain.NewsL
 	return articles, total, nil
 }
 
-func slugify(title string) string {
-	slug := strings.ToLower(strings.TrimSpace(title))
-	slug = strings.ReplaceAll(slug, " ", "-")
-	for strings.Contains(slug, "--") {
-		slug = strings.ReplaceAll(slug, "--", "-")
+// uniqueSlug derives a URL-safe slug and appends a counter when another article
+// already owns it, keeping /blog/<slug> resolvable for same-titled articles.
+func (u *newsUsecase) uniqueSlug(ctx context.Context, title string, selfID uuid.UUID) string {
+	base := slugify(title)
+	candidate := base
+	for i := 2; i < 100; i++ {
+		existing, err := u.repo.GetBySlug(ctx, candidate)
+		if err != nil || existing == nil || existing.ID == selfID {
+			return candidate
+		}
+		candidate = fmt.Sprintf("%s-%d", base, i)
 	}
+	return fmt.Sprintf("%s-%d", base, time.Now().Unix())
+}
+
+func slugify(title string) string {
+	var b strings.Builder
+	lastDash := false
+	for _, r := range strings.ToLower(strings.TrimSpace(title)) {
+		switch {
+		case (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9'):
+			b.WriteRune(r)
+			lastDash = false
+		case r > unicode.MaxASCII && unicode.IsLetter(r):
+			// Preserve Amharic and other non-Latin titles rather than dropping them.
+			b.WriteRune(r)
+			lastDash = false
+		case !lastDash && b.Len() > 0:
+			b.WriteByte('-')
+			lastDash = true
+		}
+	}
+
+	slug := strings.Trim(b.String(), "-")
 	if slug == "" {
-		slug = fmt.Sprintf("article-%d", time.Now().Unix())
+		return fmt.Sprintf("article-%d", time.Now().UnixNano())
+	}
+	if len(slug) > 200 {
+		slug = strings.Trim(slug[:200], "-")
 	}
 	return slug
 }

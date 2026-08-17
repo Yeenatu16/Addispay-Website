@@ -53,6 +53,7 @@ type CreateArticleRequest struct {
 	CoverImageURL    string                   `json:"coverImageUrl" binding:"omitempty,max=500"`
 	IsFeatured       bool                     `json:"isFeatured"`
 	Status           domain.PublicationStatus `json:"status" binding:"omitempty,oneof=DRAFT PUBLISHED"`
+	PublishedAt      *time.Time               `json:"publishedAt"`
 }
 
 type UpdateArticleRequest struct {
@@ -62,6 +63,7 @@ type UpdateArticleRequest struct {
 	CoverImageURL    *string                   `json:"coverImageUrl" binding:"omitempty,max=500"`
 	IsFeatured       *bool                     `json:"isFeatured"`
 	Status           *domain.PublicationStatus `json:"status" binding:"omitempty,oneof=DRAFT PUBLISHED"`
+	PublishedAt      *time.Time                `json:"publishedAt"`
 }
 
 func (h *NewsHandler) CreateArticle(c *gin.Context) {
@@ -79,17 +81,15 @@ func (h *NewsHandler) CreateArticle(c *gin.Context) {
 		req.Status = domain.StatusDraft
 	}
 
-	article, err := h.usecase.CreateArticle(
-		c.Request.Context(),
-		actorID,
-		h.userName(c),
-		req.Title,
-		req.ShortDescription,
-		req.FullContent,
-		req.CoverImageURL,
-		req.IsFeatured,
-		req.Status,
-	)
+	article, err := h.usecase.CreateArticle(c.Request.Context(), actorID, h.userName(c), domain.CreateArticleInput{
+		Title:            req.Title,
+		ShortDescription: req.ShortDescription,
+		FullContent:      req.FullContent,
+		CoverImageURL:    req.CoverImageURL,
+		IsFeatured:       req.IsFeatured,
+		Status:           req.Status,
+		PublishedAt:      req.PublishedAt,
+	})
 	if err != nil {
 		response.FromError(c, err)
 		return
@@ -123,6 +123,7 @@ func (h *NewsHandler) UpdateArticle(c *gin.Context) {
 		CoverImageURL:    req.CoverImageURL,
 		IsFeatured:       req.IsFeatured,
 		Status:           req.Status,
+		PublishedAt:      req.PublishedAt,
 	})
 	if err != nil {
 		response.FromError(c, err)
