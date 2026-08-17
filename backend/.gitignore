@@ -1,1 +1,6 @@
 .env
+
+# Runtime user uploads (covers, CVs). Keep folder structure via .gitkeep.
+uploads/**
+!uploads/**/
+!uploads/**/.gitkeep
