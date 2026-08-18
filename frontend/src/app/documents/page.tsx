@@ -7,7 +7,6 @@ import {
   Download,
   ExternalLink,
   ShieldCheck,
-  Sparkles,
   BookOpen,
   Eye,
   FileCheck,
@@ -180,7 +179,7 @@ export default function RealPdfDocumentPortalPage() {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl bg-[#00A36D] hover:bg-[#008959] text-white font-bold text-sm shadow-md shadow-[#00A36D]/20 hover:-translate-y-0.5 transition-all"
             >
-              <Sparkles className="w-4 h-4 text-white" />
+              <ExternalLink className="w-4 h-4" />
               <span>Developer API Portal (devportal.addispay.et)</span>
               <ExternalLink className="w-4 h-4" />
             </a>

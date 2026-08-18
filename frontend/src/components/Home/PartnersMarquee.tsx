@@ -5,13 +5,12 @@ import Image from 'next/image';
 import { useLanguage } from '@/context/LanguageContext';
 
 const partners = [
-  { name: 'Commercial Bank of Ethiopia', logo: '/images/partners/cbe.png' },
+  { name: 'Cbe Birr', logo: '/images/partners/cbebirr.png' },
   { name: 'Telebirr', logo: '/images/partners/telebirr.png' },
-  { name: 'Bank of Abyssinia', logo: '/images/partners/abyssinia.png' },
-  { name: 'Cooperative Bank of Oromia', logo: '/images/partners/coop.png' },
-  { name: 'Oromia International Bank', logo: '/images/partners/oromia.png' },
-  { name: 'HelloCash', logo: '/images/partners/hellocash.png' },
-  { name: 'Apollo', logo: '/images/partners/apoll.png' },
+  { name: 'Mpesa', logo: '/images/partners/mpesa.png' },
+  { name: 'Etswitch', logo: '/images/partners/etswitch.jpg' },
+  { name: 'Kacha', logo: '/images/partners/kacha.png' },
+  { name: 'Awash Bank', logo: '/images/partners/awash.jpg' },
 ];
 
 export const PartnersMarquee: React.FC = () => {
@@ -39,6 +38,7 @@ export const PartnersMarquee: React.FC = () => {
                 src={partner.logo}
                 alt={partner.name}
                 fill
+                sizes="(max-width: 640px) 112px, 144px"
                 className="object-contain"
               />
             </div>

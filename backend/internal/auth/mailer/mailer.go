@@ -42,6 +42,11 @@ func (m *LogMailer) SendAdminInvitation(_ context.Context, toEmail string, role 
 	return nil
 }
 
+func (m *LogMailer) SendPlain(_ context.Context, to, subject, body string) error {
+	log.Printf("[mailer:log] %q to <%s>\n%s", subject, to, body)
+	return nil
+}
+
 // SMTPConfig holds outbound mail settings.
 type SMTPConfig struct {
 	Host     string
@@ -64,6 +69,18 @@ type SMTPMailer struct {
 
 func NewSMTPMailer(cfg SMTPConfig) *SMTPMailer {
 	return &SMTPMailer{cfg: cfg}
+}
+
+// Sender is a generic outbound mail helper used by newsletter notifications.
+type Sender interface {
+	SendPlain(ctx context.Context, to, subject, body string) error
+}
+
+func AsSender(m domain.Mailer) Sender {
+	if s, ok := m.(Sender); ok {
+		return s
+	}
+	return NewLogMailer()
 }
 
 func (m *SMTPMailer) SendPasswordReset(_ context.Context, toEmail, fullName, resetURL string) error {
@@ -92,6 +109,10 @@ func (m *SMTPMailer) SendAdminInvitation(_ context.Context, toEmail string, role
 		inviteURL,
 	)
 	return m.send(toEmail, subject, body)
+}
+
+func (m *SMTPMailer) SendPlain(_ context.Context, to, subject, body string) error {
+	return m.send(to, subject, body)
 }
 
 func (m *SMTPMailer) send(to, subject, body string) error {

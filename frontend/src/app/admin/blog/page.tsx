@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ImagePlus, LogOut, Newspaper, Plus, Save, Search, Settings2, Trash2 } from 'lucide-react';
+import { ImagePlus, LogOut, Mail, Newspaper, Plus, Save, Search, Settings2, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { AdminGate } from '@/components/admin/AdminGate';
 import { RichTextEditor } from '@/components/admin/RichTextEditor';
@@ -20,7 +20,7 @@ import {
   Textarea,
 } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
-import { adminNews, errorMessage, mediaUrl, type ArticleDraft, type NewsArticle, type PublicationStatus } from '@/lib/api';
+import { adminNews, errorMessage, mediaUrl, type ArticleDraft, type NewsArticle, type NewsletterSubscriber, type PublicationStatus } from '@/lib/api';
 import { articleCategory, articleReadTime, articleStatusTone, formatDate } from '@/lib/admin/utils';
 
 const DEFAULT_DRAFT: ArticleDraft = {
@@ -51,13 +51,16 @@ export default function BlogWriterDashboard() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-
+  const [subscribers, setSubscribers] = useState<NewsletterSubscriber[]>([]);
+  const [subscriberTotal, setSubscriberTotal] = useState(0);
+  const [subscriberPage, setSubscriberPage] = useState(1);
   const pageSize = 10;
+  const subscriberPageSize = 8;
 
   async function load() {
     setLoading(true);
     try {
-      const [list, logs, cfg] = await Promise.all([
+      const [list, logs, cfg, subs] = await Promise.all([
         adminNews.list({
           page,
           limit: pageSize,
@@ -66,11 +69,14 @@ export default function BlogWriterDashboard() {
         }),
         adminNews.auditLogs({ page: 1, limit: 6 }),
         adminNews.getSettings(),
+        adminNews.subscribers({ page: subscriberPage, limit: subscriberPageSize }),
       ]);
       setArticles(list.articles);
       setTotal(list.total);
       setAuditLogs(logs.logs);
       setSettings(cfg);
+      setSubscribers(subs.subscribers);
+      setSubscriberTotal(subs.total);
       setError('');
     } catch (err) {
       setError(errorMessage(err));
@@ -81,7 +87,7 @@ export default function BlogWriterDashboard() {
 
   useEffect(() => {
     void load();
-  }, [page, search, status]);
+  }, [page, search, status, subscriberPage]);
 
   const stats = useMemo(() => ({
     published: articles.filter((article) => article.status === 'PUBLISHED').length,
@@ -206,10 +212,11 @@ export default function BlogWriterDashboard() {
                 </div>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-3">
+              <div className="grid gap-4 sm:grid-cols-4">
                 <StatCard label="Visible in listing" value={stats.published} accent="text-[#00A36D]" />
                 <StatCard label="Drafts in progress" value={stats.drafts} accent="text-amber-600" />
                 <StatCard label="Featured stories" value={stats.featured} accent="text-sky-600" />
+                <StatCard label="Newsletter subscribers" value={subscriberTotal} accent="text-[#00A36D]" />
               </div>
             </div>
           </div>
@@ -298,6 +305,36 @@ export default function BlogWriterDashboard() {
               <aside className="space-y-5">
                 <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-xs">
                   <div className="mb-4 flex items-center gap-2">
+                    <Mail className="h-5 w-5 text-[#00A36D]" />
+                    <h2 className="text-lg font-black">Subscribed users</h2>
+                  </div>
+                  <p className="mb-4 text-xs text-[#6A7282]">
+                    These readers get an email when you publish a new article.
+                  </p>
+                  {subscribers.length === 0 ? (
+                    <p className="text-xs text-gray-500">No newsletter subscribers yet.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {subscribers.map((sub) => (
+                        <div key={sub.id} className="rounded-2xl bg-[#F8FDFB] px-4 py-3">
+                          <p className="break-all text-sm font-semibold text-[#101828]">{sub.email}</p>
+                          <p className="mt-1 text-[11px] text-gray-400">
+                            Joined {formatDate(sub.subscribedAt)}
+                          </p>
+                        </div>
+                      ))}
+                      <Pagination
+                        page={subscriberPage}
+                        total={subscriberTotal}
+                        pageSize={subscriberPageSize}
+                        onPageChange={setSubscriberPage}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-xs">
+                  <div className="mb-4 flex items-center gap-2">
                     <Newspaper className="h-5 w-5 text-[#00A36D]" />
                     <h2 className="text-lg font-black">News audit trail</h2>
                   </div>
@@ -322,7 +359,7 @@ export default function BlogWriterDashboard() {
             </div>
           </div>
 
-          <Modal open={editorOpen} onClose={resetEditor} size="2xl" title={editingId ? 'Edit article' : 'Create article'} description="Draft now or publish immediately. Featured stories appear in the homepage block.">
+          <Modal open={editorOpen} onClose={resetEditor} size="2xl" title={editingId ? 'Edit article' : 'Create article'} description="Draft now or publish immediately. Publishing sends an email to newsletter subscribers.">
             <div className="space-y-5">
               <Field label="Title" required>
                 <Input value={draft.title} onChange={(e) => setDraft((prev) => ({ ...prev, title: e.target.value }))} />

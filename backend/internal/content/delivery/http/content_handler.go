@@ -124,3 +124,19 @@ func (h *ContentHandler) UpdateNewsSettings(c *gin.Context) {
 		"emptyMessage":  message,
 	})
 }
+
+func (h *ContentHandler) ListSubscribers(c *gin.Context) {
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
+
+	subs, total, err := h.usecase.ListSubscribers(c.Request.Context(), page, limit)
+	if err != nil {
+		response.FromError(c, err)
+		return
+	}
+
+	response.Success(c, http.StatusOK, map[string]interface{}{
+		"subscribers": subs,
+		"total":       total,
+	})
+}

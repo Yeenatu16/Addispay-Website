@@ -76,6 +76,7 @@ func NewRouter(
 				newsAdmin.GET("/news/settings", contentH.GetNewsSettings)
 				newsAdmin.PUT("/news/settings", contentH.UpdateNewsSettings)
 				newsAdmin.GET("/news/audit-logs", contentH.ListNewsAuditLogs)
+				newsAdmin.GET("/news/subscribers", contentH.ListSubscribers)
 			}
 
 			// Careers — Super Admin + HR (Career Manager)

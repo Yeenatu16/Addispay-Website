@@ -19,11 +19,36 @@ func NewContentRepository(db *gorm.DB) domain.ContentRepository {
 }
 
 func (r *contentRepository) SubscribeNewsletter(ctx context.Context, email string) error {
-	sub := domain.NewsletterSubscriber{Email: email, IsSubscribed: true}
+	now := time.Now()
+	sub := domain.NewsletterSubscriber{Email: email, IsSubscribed: true, SubscribedAt: now}
 	return r.db.WithContext(ctx).Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "email"}},
-		DoUpdates: clause.Assignments(map[string]interface{}{"is_subscribed": true}),
+		Columns: []clause.Column{{Name: "email"}},
+		DoUpdates: clause.Assignments(map[string]interface{}{
+			"is_subscribed": true,
+			"subscribed_at": now,
+		}),
 	}).Create(&sub).Error
+}
+
+func (r *contentRepository) ListSubscribers(ctx context.Context, limit, offset int) ([]domain.NewsletterSubscriber, int64, error) {
+	var subs []domain.NewsletterSubscriber
+	var total int64
+	q := r.db.WithContext(ctx).Model(&domain.NewsletterSubscriber{}).Where("is_subscribed = ?", true)
+	if err := q.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	err := q.Order("subscribed_at DESC").Limit(limit).Offset(offset).Find(&subs).Error
+	return subs, total, err
+}
+
+func (r *contentRepository) ListActiveSubscriberEmails(ctx context.Context) ([]string, error) {
+	var emails []string
+	err := r.db.WithContext(ctx).
+		Model(&domain.NewsletterSubscriber{}).
+		Where("is_subscribed = ?", true).
+		Order("subscribed_at DESC").
+		Pluck("email", &emails).Error
+	return emails, err
 }
 
 func (r *contentRepository) SaveContactMessage(ctx context.Context, msg *domain.ContactMessage) error {

@@ -78,6 +78,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'products.p5_desc': 'Track daily revenue, customer trends, and transaction history through interactive visual dashboards.',
     'products.p6_title': 'International Cards Acquiring',
     'products.p6_desc': 'Receive global card payments (Visa & Mastercard) from international customers and expand beyond borders.',
+    'products.coming_soon': 'Coming Soon',
     'products.pos_title': 'Addis Merchant Mobile POS',
     'products.pos_desc': 'Turn any smartphone into a point-of-sale terminal. Accept QR code, NFC contactless payments, and generate digital receipts.',
     'products.links_title': 'Payment Links & Social Commerce',
@@ -125,14 +126,30 @@ export const translations: Record<Language, Record<string, string>> = {
     'features.stat_satisfaction': 'Customer Satisfaction Rate',
 
     // How It Works
-    'how.badge': 'Simple 3-Step Process',
     'how.title': 'Start Accepting Payments in Minutes',
-    'how.step1_title': '1. Create Your Account',
-    'how.step1_desc': 'Register your business in under 2 minutes with basic business details.',
-    'how.step2_title': '2. Connect Payment Options',
-    'how.step2_desc': 'Enable Telebirr, CBE Birr, cards, and bank transfer options with one click.',
-    'how.step3_title': '3. Start Receiving Money',
-    'how.step3_desc': 'Collect money instantly from customers and withdraw directly to your bank account.',
+    'how.subtitle':
+      'From sign-up to your first payment and beyond. Follow these steps to get your business live on AddisPay.',
+    'how.step1_title': 'Sign-Up',
+    'how.step1_desc':
+      'Visit our website and click on the Sign Up button. Fill out the registration form with your business details and contact information. Verify your email address and account to complete the registration process.',
+    'how.step2_title': 'Account Activation',
+    'how.step2_desc':
+      'Once your account is verified, access your merchant dashboard to customize settings, add your logo, and set up payment methods. Manage transactions with ease, viewing reports, reconciling payments, and handling refunds and withdrawals through the dashboard.',
+    'how.step3_title': 'API Integration',
+    'how.step3_desc':
+      'If you require API integration for your website or app, our developer documentation provides step-by-step guides to help you integrate AddisPay seamlessly.',
+    'how.step4_title': 'Start Accepting Payments',
+    'how.step4_desc':
+      'With AddisPay, you can easily accept payments from your customers using various methods, including credit and debit cards, mobile money and wallets, and bank transfers.',
+    'how.step5_title': 'Manage Your Transactions',
+    'how.step5_desc':
+      'Keep track of all your transactions, view detailed reports, and reconcile payments easily using your merchant dashboard. Initiate refunds and process withdrawal requests directly from your dashboard.',
+    'how.step6_title': 'Customer Support',
+    'how.step6_desc':
+      'Our dedicated customer support team is available to assist you with any questions or issues you may have. Use our chat support feature to communicate with our support team.',
+    'how.step7_title': 'Grow Your Business',
+    'how.step7_desc':
+      'With AddisPay, you can expand your customer base and reach new markets. Take advantage of our marketing tools and analytics to understand your customers better and tailor your offerings to their needs.',
 
     // Customer Stories
     'stories.badge': 'Testimonials',
@@ -304,6 +321,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'products.p5_desc': 'የቀን፣ የሳምንት እና የወር ገቢዎን ግልጽ በሆኑ ገበታዎች እና ሪፖርቶች ይከታተሉ።',
     'products.p6_title': 'ዓለም አቀፍ ካርዶች (ቪዛ/ማስተርካርድ)',
     'products.p6_desc': 'ከውጭ ሀገር ደንበኞች በቪዛ እና ማስተርካርድ ክፍያዎችን በመቀበል ንግድዎን ያስፉ።',
+    'products.coming_soon': 'በቅርቡ ይመጣል',
     'products.pos_title': 'የአዲስ ነጋዴ ሞባይል POS',
     'products.pos_desc': 'ስልክዎን ወደ ክፍያ መቀበያ ማሽን ይለውጡ። በQR ኮድ እና በNFC ክፍያዎችን በመቀበል ዲጂታል ደረሰኝ ይቁረጡ።',
     'products.links_title': 'የክፍያ ሊንኮች እና ሶሻል ኮመርስ',
@@ -351,14 +369,30 @@ export const translations: Record<Language, Record<string, string>> = {
     'features.stat_satisfaction': 'የደንበኞች እርካታ',
 
     // How It Works
-    'how.badge': 'ቀላል 3 ደረጃዎች',
     'how.title': 'በደቂቃዎች ውስጥ ክፍያ መቀበል ይጀምሩ',
-    'how.step1_title': '1. አካውንት ይክፈቱ',
-    'how.step1_desc': 'የንግድ መረጃዎን በማስገባት በ2 ደቂቃ ውስጥ ይመዝገቡ።',
-    'how.step2_title': '2. የክፍያ አማራጮችን ያገናኙ',
-    'how.step2_desc': 'ቴሌብር፣ ሲቢኢ ብር እና የባንክ አማራጮችን በአንድ ቁልፍ ያንቁ።',
-    'how.step3_title': '3. ገንዘብ መቀበል ይጀምሩ',
-    'how.step3_desc': 'ከደንበኞች ክፍያ በመቀበል በቀጥታ ወደ ባንክ አካውንትዎ ገቢ ያድርጉ።',
+    'how.subtitle':
+      'ከመመዝገብ እስከ የመጀመሪያ ክፍያዎ እና ከዚያም በላይ። ንግድዎን በአዲስፓይ ላይ ለማስጀመር እነዚህን ደረጃዎች ይከተሉ።',
+    'how.step1_title': 'መመዝገብ',
+    'how.step1_desc':
+      'ድህረ ገጻችንን ይጎብኙ እና የSign Up ቁልፍን ይጫኑ። የንግድ መረጃዎን እና የእውቂያ መረጃዎን በመጠቀም የምዝገባ ቅጽ ይሙሉ። የምዝገባ ሂደቱን ለማጠናቀቅ የኢሜይል አድራሻዎን እና አካውንትዎን ያረጋግጡ።',
+    'how.step2_title': 'የአካውንት ማግበር',
+    'how.step2_desc':
+      'አካውንትዎ ከተረጋገጠ በኋላ፣ ቅንብሮችን ለመስተካከል፣ ስሎግዎን ለመጨመር እና የክፍያ ዘዴዎችን ለማዘጋጀት የነጋዴ ዳሽቦርድዎን ይጠቀሙ። ሪፖርቶችን በመመልከት፣ ክፍያዎችን በማስረከብ እና ተመላሾችን እና ገንዘብ ማውጣቶችን በዳሽቦርድ በኩል በቀላሉ ግብይቶችን ያስተዳድሩ።',
+    'how.step3_title': 'API ውህደት',
+    'how.step3_desc':
+      'ለድህረ ገጽዎ ወይም ለመተግበሪያዎ API ውህደት ከፈለጉ፣ የአዲስፓይን በተሳላ ለማዋሃድ የሚረዱዎትን ደረጃ በደረጃ መመሪያዎች የሰራተኞች ሰነድ ይሰጣል።',
+    'how.step4_title': 'ክፍያ መቀበል ይጀምሩ',
+    'how.step4_desc':
+      'በአዲስፓይ ከደንበኞችዎ ክፍያ በቀላሉ መቀበል ይችላሉ፣ ከዚያም የክሬዲት እና የዴቢት ካርዶች፣ የሞባይል ገንዘብ እና ዋሌቶች እና የባንክ ማስተላለፊያዎችን ጨምሮ።',
+    'how.step5_title': 'ግብይቶችዎን ያስተዳድሩ',
+    'how.step5_desc':
+      'ሁሉንም ግብይቶችዎን ይከታተሉ፣ ዝርዝር ሪፖርቶችን ይመልከቱ እና በነጋዴ ዳሽቦርድዎ ክፍያዎችን በቀላሉ ያስረክቡ። ተመላሾችን ይጀምሩ እና የገንዘብ ማውጣት ጥያቄዎችን በቀጥታ ከዳሽቦርድዎ ያስኬዱ።',
+    'how.step6_title': 'የደንበኛ ድጋፍ',
+    'how.step6_desc':
+      'የተሰጠ የደንበኛ ድጋፍ ቡድናችን ለማንኛውም ጥያቄ ወይም ችግር ለመርዳት ይገኛል። ከድጋፍ ቡድናችን ጋር ለመገናኘት የቻት ድጋፍ ባህሪያችንን ይጠቀሙ።',
+    'how.step7_title': 'ንግድዎን ያሳድጉ',
+    'how.step7_desc':
+      'በአዲስፓይ የደንበኞች ቁጥርዎን ማስፋት እና አዲስ ገበያዎችን መድረስ ይችላሉ። ደንበኞችዎን በተሻለ ለመረዳት እና አገልግሎቶችዎን ለመስተካከል የግብይት መሳሪያዎቻችንን እና ትንተናዎችን ይጠቀሙ።',
 
     // Customer Stories
     'stories.badge': 'የደንበኞች ምስክርነት',
@@ -530,6 +564,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'products.p5_desc': 'Galii guyyaa, torban fi ji\'aa keessan gabatee ifa ta\'een hordofaa.',
     'products.p6_title': 'Kaffaltii Idil-addunyaa',
     'products.p6_desc': 'Maamiltoota alaatti kaffaltii Visa fi Mastercard fudhadhaa.',
+    'products.coming_soon': 'Fuulduraatti',
     'products.pos_title': 'POS Moobaayilaa Addis',
     'products.pos_desc': 'Bilbila keessan gara meeshaa kaffalchiisaatti jijjiiraa. NFC fi QR kaffaltii fudhadhaa.',
     'products.links_title': 'Hidha Kaffaltii Telegram',
@@ -577,14 +612,30 @@ export const translations: Record<Language, Record<string, string>> = {
     'features.stat_satisfaction': 'Gammachu Maamiltootaa',
 
     // How It Works
-    'how.badge': 'Tarkaanfii Salphaa 3',
     'how.title': 'Daqiiqaa Muraasa Keessatti Kaffaltii Fudhadhaa',
-    'how.step1_title': '1. Akkaantii Banadhaa',
-    'how.step1_desc': 'Odeeffannoo daldalaa galchuun daqiiqaa 2 keessatti galmaa\'aa.',
-    'how.step2_title': '2. Kaffaltii Walitti Qabsiisaa',
-    'how.step2_desc': 'Telebirr, CBE Birr fi baankota button tokkoon saaqaa.',
-    'how.step3_title': '3. Maallaqa Fudhadhaa',
-    'how.step3_desc': 'Kaffaltii maamila irraa fudhachuun gara baankii keessaniitti dabarsaa.',
+    'how.subtitle':
+      'Galmaa\'ii irraa hanga kaffaltii jalqabaa keessaniitti. Daldala keessan AddisPay irratti jalqabuuf tarkaanfiiwwan kana hordofaa.',
+    'how.step1_title': 'Galmaa\'ii',
+    'how.step1_desc':
+      'Websaayitii keenya daawwadhaa fi Sign Up tuqaa. Odeeffannoo daldalaa fi qunnamtii keessan guutuu formii galmaa\'ii guutaa. Imelii fi akkaantii keessan mirkaneessuun galmaa\'ii xumuraa.',
+    'how.step2_title': 'Akkaantii Hojjachiisuu',
+    'how.step2_desc':
+      'Akkaantii keessan erga mirkanaa\'ee booda, saajoo sirreessuuf, loogoo dabaluuf fi mala kaffaltii qopheessuuf daashboordii daldalaa keessan fayyadamaa. Gabaasawwan ilaaluun, kaffaltii walsimsiisuun fi deebisuu fi baasii daashboordii keessan irratti bulchaa.',
+    'how.step3_title': 'Walitti Makamuu API',
+    'how.step3_desc':
+      'Websaayitii ykn app keessaniif walitti makamuu API yoo barbaachise, qajeelfama addaa addaa AddisPay salphaatti walitti makuuf qabnu qophaa\'eera.',
+    'how.step4_title': 'Kaffaltii Fudhachuu Jalqabaa',
+    'how.step4_desc':
+      'AddisPay waliin maamiltoota irraa kaffaltii salphaatti fudhachuu dandeessu, kaardii liqii fi deebii, maallaqa moobaayilii fi waaletii fi dabarsa baankii dabalatee.',
+    'how.step5_title': 'Daldala Keessan Bulchaa',
+    'how.step5_desc':
+      'Daldala hunda hordofaa, gabaasa bal\'aa ilaalaa fi kaffaltii salphaatti walsimsiisaa. Deebisuu jalqabaa fi gaaffii baasii daashboordii keessan irraa to\'achaa.',
+    'how.step6_title': 'Deeggarsa Maamilaa',
+    'how.step6_desc':
+      'Gareen deeggarsa maamilaa keenya gaaffii ykn rakkoo kamiyyuu irratti isin gargaaruuf qophaa\'eera. Garee deeggarsa keenya waliin qunnamuuf chat deeggarsa fayyadamaa.',
+    'how.step7_title': 'Daldala Keessan Guddisaa',
+    'how.step7_desc':
+      'AddisPay waliin maamiltoota baay\'isuu fi gabaa haaraa qaqqabuu dandeessu. Maamiltoota keessan hubachuuf fi tajaajila keessan sirreessuuf meeshaalee gabaa fi xiinxala fayyadamaa.',
 
     // Customer Stories
     'stories.badge': 'Ragaa Maamiltootaa',
@@ -756,6 +807,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'products.p5_desc': 'La soco dakhligaaga maalinlaha ah iyo bishaba shaxan habaysan.',
     'products.p6_title': 'Bixinta Caalamiga Ah',
     'products.p6_desc': 'Ka hel lacagaha kaadhadhka caalamiga ah ee Visa iyo Mastercard.',
+    'products.coming_soon': 'Dhawaan',
     'products.pos_title': 'POS Moobaylka Addis',
     'products.pos_desc': 'U beddel telefoonkaaga POS. Ka aqbal QR code iyo NFC kaadhadhka.',
     'products.links_title': 'Xidhiidhka Bixinta Telegram',
@@ -803,14 +855,30 @@ export const translations: Record<Language, Record<string, string>> = {
     'features.stat_satisfaction': 'Qanacsanaanta Macaamiisha',
 
     // How It Works
-    'how.badge': '3 Tallaabo oo Fudud',
     'how.title': 'Bilaabida Bixinta Lacagta Daqiiqado Gudahood',
-    'how.step1_title': '1. Sameeyo Koonto',
-    'how.step1_desc': 'Ku is-dangal 2 daqiiqo gudahood xogtaada ganacsiga.',
-    'how.step2_title': '2. Ku Xidh Hababka Bixinta',
-    'how.step2_desc': 'Kari Telebirr, CBE Birr iyo bangiyada hal taabasho.',
-    'how.step3_title': '3. Bilaabida Helida Lacagta',
-    'how.step3_desc': 'Ka hel lacagta macaamiisha oo si direct ah ugu shub bangigaaga.',
+    'how.subtitle':
+      'Is-diiwaangelinta ilaa bixintaada ugu horreysa iyo wixii ka dambeeya. Raac tallaabooyinkan si aad ganacsigaaga ugu bilowdo AddisPay.',
+    'how.step1_title': 'Is-diiwaangelin',
+    'how.step1_desc':
+      'Booqo websaydhkeena oo guji Sign Up. Buuxi foomka diiwaangelinta faahfaahinta ganacsigaaga iyo macluumaadka xiriirka. Xaqiiji cinwaanka emailkaaga iyo akoonkaaga si aad u dhammaystirto diiwaangelinta.',
+    'how.step2_title': 'Hawlgelinta Akoonka',
+    'how.step2_desc':
+      'Marka akoonkaaga la xaqiijiyo, gal dashboard-ka ganacsiga si aad u habeyso goobaha, ku darto summadaada, oo aad u diyaarisid hababka bixinta. Si fudud u maamul macaamiisha, daawo warbixinnada, isku dheelitir bixinnada, oo ka maamul lacag celin iyo bixitaan dashboard-ka.',
+    'how.step3_title': 'Isku Xirka API',
+    'how.step3_desc':
+      'Haddii aad u baahan tahay isku xirka API websaydhkaaga ama app-kaaga, dukumeentiyada horumariyeyaasha waxay bixiyaan tilmaamo tallaabo tallaabo ah si aad si habsami ah ugu xirto AddisPay.',
+    'how.step4_title': 'Bilaabida Qaadashada Bixinta',
+    'how.step4_desc':
+      'AddisPay waxaad si fudud uga qaadan kartaa macaamiishaada habab kala duwan, oo ay ku jiraan kaararka deynta iyo amaahda, lacagta mobile iyo wallet-yada, iyo wareejinta bangiga.',
+    'how.step5_title': 'Maamul Macaamiishaada',
+    'how.step5_desc':
+      'La soco dhammaan macaamiishaada, daawo warbixinnada faahfaahsan, oo si fudud u isku dheelitir bixinnada adigoo isticmaalaya dashboard-kaaga. Bilow lacag celin oo ka maamul codsiyada bixitaanka toos dashboard-kaaga.',
+    'how.step6_title': 'Taageerada Macaamiisha',
+    'how.step6_desc':
+      'Kooxdayada taageerada macaamiisha ayaa diyaar u ah inay kaa caawiyaan su\'aal kasta ama dhibaato. Isticmaal chat-ka taageerada si aad ula xiriirto kooxdayada.',
+    'how.step7_title': 'Kobci Ganacsigaaga',
+    'how.step7_desc':
+      'AddisPay waxaad ku ballaarin kartaa saldhigga macaamiishaada oo aad gaari kartaa suuqyo cusub. Ka faa\'iideysan qalabka suuqgeynta iyo falanqaynta si aad u fahamto macaamiishaada oo aad u habeyso dalabkaaga.',
 
     // Customer Stories
     'stories.badge': 'Markhaatiyada Macaamiisha',

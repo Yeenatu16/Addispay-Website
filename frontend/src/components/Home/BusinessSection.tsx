@@ -112,6 +112,7 @@ export const BusinessSection: React.FC = () => {
                   src="/images/merchant_hero.png"
                   alt="Addispay Business Dashboard"
                   fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
                   className="object-cover"
                 />
               </div>

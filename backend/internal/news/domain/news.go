@@ -69,6 +69,11 @@ type SiteSettings interface {
 	SetNewsEmptyMessage(ctx context.Context, message string) error
 }
 
+// NewsletterNotifier emails subscribers when a story is published for the first time.
+type NewsletterNotifier interface {
+	NotifyArticlePublished(ctx context.Context, slug, title, summary string)
+}
+
 type CreateArticleInput struct {
 	Title            string
 	ShortDescription string

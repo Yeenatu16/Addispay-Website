@@ -22,6 +22,7 @@ import type {
   NewsSettings,
   PublicationStatus,
   Role,
+  SubscriberListPage,
   UploadResult,
   User,
 } from './types';
@@ -140,6 +141,13 @@ export const adminNews = {
 
   auditLogs: (params: { page?: number; limit?: number } = {}) =>
     apiRequest<AuditLogPage>('/admin/news/audit-logs', {
+      auth: true,
+      cache: 'no-store',
+      query: { page: params.page, limit: params.limit },
+    }),
+
+  subscribers: (params: { page?: number; limit?: number } = {}) =>
+    apiRequest<SubscriberListPage>('/admin/news/subscribers', {
       auth: true,
       cache: 'no-store',
       query: { page: params.page, limit: params.limit },

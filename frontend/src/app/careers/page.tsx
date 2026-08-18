@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { Briefcase, MapPin, Clock, ArrowRight, CheckCircle2, Search, Sparkles, Send, X, Upload } from 'lucide-react';
+import { Briefcase, MapPin, Clock, ArrowRight, CheckCircle2, Search, Send, X, Upload } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { Alert, EmptyState, Input, Pagination, Spinner, Textarea } from '@/components/ui';
 import { careers, errorMessage, JOB_TYPE_LABELS, type JobPosting } from '@/lib/api';
@@ -92,8 +92,7 @@ export default function CareersPage() {
       <div className="bg-gradient-to-b from-[#E5F5EE]/80 via-[#F8FDFB] to-[#F8FDFB] py-16 lg:py-24 border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
           
-          <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#00A36D]/10 text-[#00A36D] text-xs font-bold uppercase tracking-wider border border-[#00A36D]/20">
-            <Sparkles className="w-3.5 h-3.5 fill-[#00A36D]" />
+          <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-[#00A36D]/10 text-[#00A36D] text-xs font-bold uppercase tracking-wider border border-[#00A36D]/20">
             <span>{t('careers.badge')}</span>
           </div>
 

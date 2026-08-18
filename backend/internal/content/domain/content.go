@@ -46,6 +46,8 @@ type SiteSetting struct {
 
 type ContentRepository interface {
 	SubscribeNewsletter(ctx context.Context, email string) error
+	ListSubscribers(ctx context.Context, limit, offset int) ([]NewsletterSubscriber, int64, error)
+	ListActiveSubscriberEmails(ctx context.Context) ([]string, error)
 	SaveContactMessage(ctx context.Context, msg *ContactMessage) error
 	CreateAuditLog(ctx context.Context, log *AuditLog) error
 	ListAuditLogs(ctx context.Context, limit, offset int, resource string) ([]AuditLog, int64, error)
@@ -56,6 +58,7 @@ type ContentRepository interface {
 
 type ContentUsecase interface {
 	Subscribe(ctx context.Context, email string) error
+	ListSubscribers(ctx context.Context, page, limit int) ([]NewsletterSubscriber, int64, error)
 	SendContactMessage(ctx context.Context, fullName, email, reason, message string) error
 	ListAuditLogs(ctx context.Context, page, limit int, resource string) ([]AuditLog, int64, error)
 	GetNewsSettings(ctx context.Context) (homepageLimit int, emptyMessage string, err error)

@@ -11,7 +11,6 @@ import {
   Phone,
   Mail,
   ShieldCheck,
-  Sparkles,
   ArrowRight,
   ExternalLink,
   BookOpen,

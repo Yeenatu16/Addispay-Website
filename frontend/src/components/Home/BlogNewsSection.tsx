@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Clock, Sparkles } from 'lucide-react';
+import { ArrowRight, Clock } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { EmptyState, Spinner } from '@/components/ui';
 import { mediaUrl, news, type NewsArticle } from '@/lib/api';
@@ -43,8 +43,7 @@ export const BlogNewsSection: React.FC = () => {
         
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
           <div className="space-y-4">
-            <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#00A36D]/10 text-[#00A36D] text-xs font-bold uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5 fill-[#00A36D]" />
+            <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-[#00A36D]/10 text-[#00A36D] text-xs font-bold uppercase tracking-wider">
               <span>{t('blog.badge')}</span>
             </div>
 
@@ -80,6 +79,7 @@ export const BlogNewsSection: React.FC = () => {
                       src={mediaUrl(art.coverImageUrl) || '/images/blog_security.png'}
                       alt={art.title}
                       fill
+                      sizes="(max-width: 768px) 100vw, 33vw"
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <span className="absolute top-3 left-3 bg-[#00A36D] text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase">

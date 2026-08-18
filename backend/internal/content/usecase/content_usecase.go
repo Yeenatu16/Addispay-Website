@@ -39,6 +39,23 @@ func (u *contentUsecase) Subscribe(ctx context.Context, email string) error {
 	return nil
 }
 
+func (u *contentUsecase) ListSubscribers(ctx context.Context, page, limit int) ([]domain.NewsletterSubscriber, int64, error) {
+	if limit <= 0 {
+		limit = 20
+	}
+	if limit > 100 {
+		limit = 100
+	}
+	if page <= 0 {
+		page = 1
+	}
+	subs, total, err := u.repo.ListSubscribers(ctx, limit, (page-1)*limit)
+	if err != nil {
+		return nil, 0, apperr.Internal(err)
+	}
+	return subs, total, nil
+}
+
 func (u *contentUsecase) SendContactMessage(ctx context.Context, fullName, email, reason, message string) error {
 	fullName = sanitize.Text(fullName)
 	reason = sanitize.Text(reason)

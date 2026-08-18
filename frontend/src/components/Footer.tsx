@@ -55,7 +55,7 @@ export default function Footer() {
               Providing a one touch end to end commercial transaction experience for consumers and businesses in Africa.
             </p>
 
-            <form onSubmit={handleSubscribe} className="space-y-3 rounded-3xl border border-[#00A36D]/15 bg-white p-4 shadow-xs max-w-md">
+            <form onSubmit={handleSubscribe} className="max-w-md space-y-3 rounded-3xl bg-[#F1FAF7] p-4">
               <div>
                 <h3 className="text-sm font-black text-[#101828]">Stay updated</h3>
                 <p className="text-xs text-gray-500">Get product updates, company news, and merchant tips in your inbox.</p>
@@ -67,7 +67,7 @@ export default function Footer() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com"
                   required
-                  className="flex-1 rounded-xl border border-gray-200 bg-[#F8FDFB] px-4 py-3 text-sm outline-none focus:border-[#00A36D]"
+                  className="flex-1 rounded-xl  bg-[#E8F5F0] px-4 py-3 text-sm outline-none"
                 />
                 <button
                   type="submit"
@@ -275,6 +275,11 @@ export default function Footer() {
                   <span>Become a Merchant</span>
                   <ExternalLink className="w-3 h-3" />
                 </a>
+              </li>
+              <li>
+                <Link href="/admin" className="text-[#1A1F36] hover:text-[#00A36D] transition-colors">
+                  Login as a Staff
+                </Link>
               </li>
             </ul>
           </div>

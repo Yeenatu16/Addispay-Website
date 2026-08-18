@@ -77,6 +77,18 @@ export interface NewsSettings {
   emptyMessage: string;
 }
 
+export interface NewsletterSubscriber {
+  id: string;
+  email: string;
+  isSubscribed: boolean;
+  subscribedAt: string;
+}
+
+export interface SubscriberListPage {
+  subscribers: NewsletterSubscriber[];
+  total: number;
+}
+
 export interface ArticleDraft {
   title: string;
   shortDescription: string;

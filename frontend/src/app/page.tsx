@@ -5,30 +5,36 @@ import { HowItWorksSection } from '@/components/Home/HowItWorksSection';
 import { BlogNewsSection } from '@/components/Home/BlogNewsSection';
 import { CustomerStoriesSection } from '@/components/Home/CustomerStoriesSection';
 import { FAQSection } from '@/components/Home/FAQSection';
+import { Reveal } from '@/components/Home/Reveal';
 
 export default function Home() {
   return (
     <div className="bg-white min-h-screen">
-      {/* 1. Hero Section */}
       <Hero />
 
-      {/* 2. Partners Marquee */}
-      <PartnersMarquee />
+      <Reveal direction="up">
+        <PartnersMarquee />
+      </Reveal>
 
-      {/* 3. Products Grid */}
-      <ProductsGrid />
+      <Reveal direction="up" delay={80}>
+        <ProductsGrid />
+      </Reveal>
 
-      {/* 4. How It Works */}
-      <HowItWorksSection />
+      <Reveal direction="scale" delay={100}>
+        <HowItWorksSection />
+      </Reveal>
 
-      {/* 5. Blog & News */}
-      <BlogNewsSection />
+      <Reveal direction="up" delay={80}>
+        <BlogNewsSection />
+      </Reveal>
 
-      {/* 6. Customer Stories */}
-      <CustomerStoriesSection />
+      <Reveal direction="left" delay={100}>
+        <CustomerStoriesSection />
+      </Reveal>
 
-      {/* 7. FAQ */}
-      <FAQSection />
+      <Reveal direction="up" delay={120}>
+        <FAQSection />
+      </Reveal>
     </div>
   );
 }

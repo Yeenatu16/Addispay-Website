@@ -65,7 +65,8 @@ func main() {
 	nRepo := newsRepo.NewNewsRepository(db)
 	audit := contentUseCase.NewNewsAuditAdapter(cntRepo)
 	settings := contentUseCase.NewNewsSettingsAdapter(cntUsecase)
-	nUsecase := newsUseCase.NewNewsUsecase(nRepo, audit, settings)
+	notifier := contentUseCase.NewArticleNotifier(cntRepo, authMailer.AsSender(mailer), cfg.FrontendURL)
+	nUsecase := newsUseCase.NewNewsUsecase(nRepo, audit, settings, notifier)
 	nHandler := newsDelivery.NewNewsHandler(nUsecase, cfg.UploadDir)
 	nHandler.SetUserNameResolver(authDelivery.ActorName)
 

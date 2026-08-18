@@ -2,16 +2,22 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Target, Eye, ArrowRight, Lightbulb, Lock, HeartHandshake, Users } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 
 const boardMembers = [
-  { name: 'Mr. Ewnetu Abera', title: 'Board Chairman', initials: 'EA', bg: 'bg-emerald-100 text-emerald-800' },
-  { name: 'Mr. Desta Asmamaw', title: 'Board Member', initials: 'DA', bg: 'bg-blue-100 text-blue-800' },
-  { name: 'Mr. Mikiyas Tamirat', title: 'Board Member', initials: 'MT', bg: 'bg-[#E5F5EE] text-[#00A36D]' },
-  { name: 'Mr. Abraham Teshome', title: 'Board Member', initials: 'AT', bg: 'bg-purple-100 text-purple-800' },
-  { name: 'Mrs. Hiwot Yemane', title: 'Board Member', initials: 'HY', bg: 'bg-amber-100 text-amber-800' },
-  { name: 'Mr. Ashenafi Shawol', title: 'Chief Executive Officer', initials: 'AS', bg: 'bg-[#00A36D] text-white', isCEO: true },
+  { name: 'Mr. Ewnetu Abera', title: 'Board Chairman', image: '/images/board/ewnetu.jpg' },
+  { name: 'Mr. Desta Asmamaw', title: 'Board Member', image: '/images/board/desta.jpg' },
+  { name: 'Mr. Mikiyas Tamirat', title: 'Board Member', image: '/images/board/mikiyas.jpg' },
+  { name: 'Mr. Abraham Teshome', title: 'Board Member', image: '/images/board/abraham.jpg' },
+  { name: 'Mrs. Hiwot Yemane', title: 'Board Member', image: '/images/board/hiwot.jpg' },
+  {
+    name: 'Mr. Ashenafi Shawol',
+    title: 'Chief Executive Officer',
+    image: '/images/board/ashenafi.jpg',
+    isCEO: true,
+  },
 ];
 
 export default function AboutPage() {
@@ -38,47 +44,28 @@ export default function AboutPage() {
       {/* Company Background */}
       <section className="py-20 bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            
-            <div className="space-y-6">
-              <span className="text-xs font-black uppercase tracking-wider text-[#00A36D]">
-                {t('about.who_we_are')}
-              </span>
+          <div className="max-w-3xl space-y-6">
+            <span className="text-xs font-black uppercase tracking-wider text-[#00A36D]">
+              {t('about.who_we_are')}
+            </span>
 
-              <h2 className="text-3xl sm:text-4xl font-black text-[#101828] leading-tight">
-                {t('about.bg_title')}
-              </h2>
+            <h2 className="text-3xl sm:text-4xl font-black text-[#101828] leading-tight">
+              {t('about.bg_title')}
+            </h2>
 
-              <p className="text-[#6A7282] text-base leading-relaxed">
-                {t('about.bg_desc')}
-              </p>
+            <p className="text-[#6A7282] text-base leading-relaxed">
+              {t('about.bg_desc')}
+            </p>
 
-              <div className="pt-2">
-                <Link
-                  href="/merchant"
-                  className="inline-flex items-center gap-2 text-[#00A36D] font-bold text-sm hover:gap-3 transition-all"
-                >
-                  <span>{t('products.learn_more')}</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
+            <div className="pt-2">
+              <Link
+                href="/merchant"
+                className="inline-flex items-center gap-2 text-[#00A36D] font-bold text-sm hover:gap-3 transition-all"
+              >
+                <span>{t('products.learn_more')}</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
-
-            {/* Metrics Grid */}
-            <div className="grid grid-cols-2 gap-6">
-              {[
-                { number: '50K+', label: t('features.stat_merchants') },
-                { number: '28K+', label: t('features.stat_users') },
-                { number: 'ETB 380M', label: 'Series A Raised' },
-                { number: '24/7', label: 'Dedicated Support' },
-              ].map((stat, i) => (
-                <div key={i} className="bg-[#F8FDFB] p-6 rounded-3xl border border-[#E5F5EE] text-center space-y-2 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-                  <div className="text-3xl font-black text-[#00A36D]">{stat.number}</div>
-                  <div className="text-xs font-bold text-[#6A7282]">{stat.label}</div>
-                </div>
-              ))}
-            </div>
-
           </div>
         </div>
       </section>
@@ -176,8 +163,14 @@ export default function AboutPage() {
                   </span>
                 )}
                 
-                <div className={`w-14 h-14 rounded-full mx-auto flex items-center justify-center font-bold text-lg ${member.bg}`}>
-                  {member.initials}
+                <div className="relative mx-auto h-20 w-20 overflow-hidden rounded-full bg-[#E5F5EE] ring-2 ring-[#E5F5EE] sm:h-24 sm:w-24">
+                  <Image
+                    src={member.image}
+                    alt={member.name}
+                    fill
+                    className="object-cover object-top"
+                    sizes="(max-width: 640px) 80px, 96px"
+                  />
                 </div>
 
                 <div className="space-y-1">

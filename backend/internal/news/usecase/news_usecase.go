@@ -18,13 +18,19 @@ import (
 )
 
 type newsUsecase struct {
-	repo     domain.NewsRepository
-	audit    domain.AuditLogger
-	settings domain.SiteSettings
+	repo      domain.NewsRepository
+	audit     domain.AuditLogger
+	settings  domain.SiteSettings
+	notifier  domain.NewsletterNotifier
 }
 
-func NewNewsUsecase(repo domain.NewsRepository, audit domain.AuditLogger, settings domain.SiteSettings) domain.NewsUsecase {
-	return &newsUsecase{repo: repo, audit: audit, settings: settings}
+func NewNewsUsecase(
+	repo domain.NewsRepository,
+	audit domain.AuditLogger,
+	settings domain.SiteSettings,
+	notifier domain.NewsletterNotifier,
+) domain.NewsUsecase {
+	return &newsUsecase{repo: repo, audit: audit, settings: settings, notifier: notifier}
 }
 
 func (u *newsUsecase) CreateArticle(
@@ -104,6 +110,9 @@ func (u *newsUsecase) CreateArticle(
 		action = domain.AuditPublish
 	}
 	_ = u.audit.LogNewsAction(ctx, authorID, authorName, action, article.Title)
+	if status == domain.StatusPublished {
+		u.notifyPublished(article)
+	}
 	return article, nil
 }
 
@@ -201,6 +210,9 @@ func (u *newsUsecase) UpdateArticle(
 		}
 	}
 	_ = u.audit.LogNewsAction(ctx, actorID, actorName, action, article.Title)
+	if previousStatus != domain.StatusPublished && article.Status == domain.StatusPublished {
+		u.notifyPublished(article)
+	}
 	return article, nil
 }
 
@@ -298,6 +310,13 @@ func (u *newsUsecase) ListAdminArticles(ctx context.Context, filter domain.NewsL
 		return nil, 0, apperr.Internal(err)
 	}
 	return articles, total, nil
+}
+
+func (u *newsUsecase) notifyPublished(article *domain.NewsArticle) {
+	if u.notifier == nil || article == nil {
+		return
+	}
+	u.notifier.NotifyArticlePublished(context.Background(), article.Slug, article.Title, article.ShortDescription)
 }
 
 // uniqueSlug derives a URL-safe slug and appends a counter when another article
