@@ -36,6 +36,8 @@ type AuditLog struct {
 const (
 	SettingHomepageNewsLimit = "news.homepage_limit"
 	SettingNewsEmptyMessage  = "news.empty_message"
+	SettingHeroYoutubeID     = "homepage.hero_youtube_id"
+	DefaultHeroYoutubeID     = "oHFAOehZBRc"
 )
 
 type SiteSetting struct {
@@ -63,4 +65,6 @@ type ContentUsecase interface {
 	ListAuditLogs(ctx context.Context, page, limit int, resource string) ([]AuditLog, int64, error)
 	GetNewsSettings(ctx context.Context) (homepageLimit int, emptyMessage string, err error)
 	UpdateNewsSettings(ctx context.Context, homepageLimit *int, emptyMessage *string) error
+	GetHeroYoutubeID(ctx context.Context) (string, error)
+	UpdateHeroYoutubeID(ctx context.Context, youtubeIDOrURL string) (string, error)
 }

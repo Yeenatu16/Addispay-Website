@@ -1,6 +1,7 @@
 package config
 
 import (
+	"net/url"
 	"os"
 	"strings"
 
@@ -34,15 +35,50 @@ func LoadConfig() *Config {
 
 	frontendURL := getEnv("FRONTEND_URL", "http://localhost:3000")
 
+	dbHost := getEnv("DB_HOST", "localhost")
+	dbPort := getEnv("DB_PORT", "5432")
+	dbUser := getEnv("DB_USER", "")
+	dbPassword := getEnv("DB_PASSWORD", "")
+	dbName := getEnv("DB_NAME", "")
+	dbSSLMode := getEnv("DB_SSLMODE", "disable")
+
+	// Render / managed Postgres often provides a single DATABASE_URL.
+	if raw := strings.TrimSpace(os.Getenv("DATABASE_URL")); raw != "" {
+		if u, err := url.Parse(raw); err == nil && u.Host != "" {
+			if u.Hostname() != "" {
+				dbHost = u.Hostname()
+			}
+			if u.Port() != "" {
+				dbPort = u.Port()
+			}
+			if u.User != nil {
+				dbUser = u.User.Username()
+				if pw, ok := u.User.Password(); ok {
+					dbPassword = pw
+				}
+			}
+			if name := strings.TrimPrefix(u.Path, "/"); name != "" {
+				dbName = name
+			}
+			q := u.Query()
+			if ssl := q.Get("sslmode"); ssl != "" {
+				dbSSLMode = ssl
+			} else if dbSSLMode == "" || dbSSLMode == "disable" {
+				// Render Postgres requires TLS from external clients.
+				dbSSLMode = "require"
+			}
+		}
+	}
+
 	return &Config{
 		Port:        getEnv("PORT", "8080"),
-		DBHost:      getEnv("DB_HOST", "localhost"),
-		DBPort:      getEnv("DB_PORT", "5432"),
-		DBUser:      getEnv("DB_USER", ""),
-		DBPassword:  getEnv("DB_PASSWORD", ""),
-		DBName:      getEnv("DB_NAME", ""),
-		DBSSLMode:   getEnv("DB_SSLMODE", "verify-full"),
-		JWTSecret:   getEnv("ADDISPAY_JWT_SUPER_SECRET_KEY_2026", ""),
+		DBHost:      dbHost,
+		DBPort:      dbPort,
+		DBUser:      dbUser,
+		DBPassword:  dbPassword,
+		DBName:      dbName,
+		DBSSLMode:   dbSSLMode,
+		JWTSecret:   firstNonEmpty(os.Getenv("ADDISPAY_JWT_SUPER_SECRET_KEY_2026"), os.Getenv("JWT_SECRET")),
 		UploadDir:   getEnv("UPLOAD_DIR", "./uploads"),
 		FrontendURL: frontendURL,
 
@@ -61,6 +97,15 @@ func getEnv(key, fallback string) string {
 		return value
 	}
 	return fallback
+}
+
+func firstNonEmpty(values ...string) string {
+	for _, v := range values {
+		if strings.TrimSpace(v) != "" {
+			return v
+		}
+	}
+	return ""
 }
 
 func splitList(raw string) []string {

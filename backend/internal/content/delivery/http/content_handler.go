@@ -33,6 +33,10 @@ type UpdateNewsSettingsRequest struct {
 	EmptyMessage  *string `json:"emptyMessage" binding:"omitempty,max=2000"`
 }
 
+type UpdateHeroSettingsRequest struct {
+	HeroYoutubeID string `json:"heroYoutubeId" binding:"required,max=500"`
+}
+
 func (h *ContentHandler) Subscribe(c *gin.Context) {
 	var req SubscribeRequest
 	if !response.BindJSON(c, &req) {
@@ -138,5 +142,42 @@ func (h *ContentHandler) ListSubscribers(c *gin.Context) {
 	response.Success(c, http.StatusOK, map[string]interface{}{
 		"subscribers": subs,
 		"total":       total,
+	})
+}
+
+func (h *ContentHandler) GetPublicHomepage(c *gin.Context) {
+	id, err := h.usecase.GetHeroYoutubeID(c.Request.Context())
+	if err != nil {
+		response.FromError(c, err)
+		return
+	}
+	response.Success(c, http.StatusOK, map[string]interface{}{
+		"heroYoutubeId": id,
+	})
+}
+
+func (h *ContentHandler) GetHeroSettings(c *gin.Context) {
+	id, err := h.usecase.GetHeroYoutubeID(c.Request.Context())
+	if err != nil {
+		response.FromError(c, err)
+		return
+	}
+	response.Success(c, http.StatusOK, map[string]interface{}{
+		"heroYoutubeId": id,
+	})
+}
+
+func (h *ContentHandler) UpdateHeroSettings(c *gin.Context) {
+	var req UpdateHeroSettingsRequest
+	if !response.BindJSON(c, &req) {
+		return
+	}
+	id, err := h.usecase.UpdateHeroYoutubeID(c.Request.Context(), req.HeroYoutubeID)
+	if err != nil {
+		response.FromError(c, err)
+		return
+	}
+	response.Success(c, http.StatusOK, map[string]interface{}{
+		"heroYoutubeId": id,
 	})
 }

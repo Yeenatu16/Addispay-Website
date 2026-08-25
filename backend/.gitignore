@@ -4,3 +4,11 @@
 uploads/**
 !uploads/**/
 !uploads/**/.gitkeep
+
+# One-time seed PDFs (large binaries). Seed logic still runs if present.
+seed/documents/**
+!seed/documents/.gitkeep
+
+# One-time brochure seed images.
+seed/brochure/**
+!seed/brochure/.gitkeep

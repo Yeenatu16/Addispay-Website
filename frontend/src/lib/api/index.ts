@@ -10,7 +10,9 @@ import type {
   ApplicationSubmission,
   ArticleDraft,
   AuditLogPage,
+  DocumentDraft,
   HomepageNews,
+  HomepageSettings,
   InvitationPreview,
   JobApplication,
   JobDraft,
@@ -20,6 +22,9 @@ import type {
   NewsArticle,
   NewsListPage,
   NewsSettings,
+  OfficialDocument,
+  BrochureDraft,
+  BrochureImage,
   PublicationStatus,
   Role,
   SubscriberListPage,
@@ -97,6 +102,19 @@ export const content = {
 
   contact: (input: { fullName: string; email: string; reason: string; message: string }) =>
     apiRequest<MessageResult>('/content/contact', { method: 'POST', body: input }),
+
+  homepage: (revalidate = 60) =>
+    apiRequest<HomepageSettings>('/content/homepage', { revalidate }),
+};
+
+export const documents = {
+  list: (revalidate = 60) =>
+    apiRequest<{ documents: OfficialDocument[] }>('/documents', { revalidate }).then((r) => r.documents),
+};
+
+export const brochure = {
+  list: (revalidate = 60) =>
+    apiRequest<{ images: BrochureImage[] }>('/brochure', { revalidate }).then((r) => r.images),
 };
 
 /* ------------------------------------------- admin: news (Super Admin, Marketer) */
@@ -216,4 +234,72 @@ export const adminTeam = {
 
   cancelInvitation: (id: string) =>
     apiRequest<MessageResult>(`/admin/invitations/${id}`, { method: 'DELETE', auth: true }),
+};
+
+/* ---------------------- admin: documents + homepage (Super Admin only) */
+
+export const adminDocuments = {
+  list: () =>
+    apiRequest<{ documents: OfficialDocument[] }>('/admin/documents', {
+      auth: true,
+      cache: 'no-store',
+    }).then((r) => r.documents),
+
+  categories: () =>
+    apiRequest<{ categories: string[] }>('/admin/documents/categories', {
+      auth: true,
+      cache: 'no-store',
+    }).then((r) => r.categories),
+
+  create: (draft: DocumentDraft) =>
+    apiRequest<OfficialDocument>('/admin/documents', { method: 'POST', body: draft, auth: true }),
+
+  update: (id: string, draft: Partial<DocumentDraft>) =>
+    apiRequest<OfficialDocument>(`/admin/documents/${id}`, {
+      method: 'PUT',
+      body: draft,
+      auth: true,
+    }),
+
+  remove: (id: string) =>
+    apiRequest<MessageResult>(`/admin/documents/${id}`, { method: 'DELETE', auth: true }),
+
+  upload: (file: File) =>
+    apiUpload<UploadResult>('/admin/documents/upload', file, { auth: true }),
+};
+
+export const adminHomepage = {
+  getSettings: () =>
+    apiRequest<HomepageSettings>('/admin/homepage/settings', { auth: true, cache: 'no-store' }),
+
+  updateSettings: (heroYoutubeId: string) =>
+    apiRequest<HomepageSettings>('/admin/homepage/settings', {
+      method: 'PUT',
+      body: { heroYoutubeId },
+      auth: true,
+    }),
+};
+
+export const adminBrochure = {
+  list: () =>
+    apiRequest<{ images: BrochureImage[] }>('/admin/brochure', {
+      auth: true,
+      cache: 'no-store',
+    }).then((r) => r.images),
+
+  create: (draft: BrochureDraft) =>
+    apiRequest<BrochureImage>('/admin/brochure', { method: 'POST', body: draft, auth: true }),
+
+  update: (id: string, draft: Partial<BrochureDraft>) =>
+    apiRequest<BrochureImage>(`/admin/brochure/${id}`, {
+      method: 'PUT',
+      body: draft,
+      auth: true,
+    }),
+
+  remove: (id: string) =>
+    apiRequest<MessageResult>(`/admin/brochure/${id}`, { method: 'DELETE', auth: true }),
+
+  upload: (file: File) =>
+    apiUpload<UploadResult>('/admin/brochure/upload', file, { auth: true }),
 };

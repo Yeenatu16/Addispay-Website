@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"errors"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -158,6 +159,96 @@ func (u *contentUsecase) UpdateNewsSettings(ctx context.Context, homepageLimit *
 		}
 	}
 	return nil
+}
+
+func (u *contentUsecase) GetHeroYoutubeID(ctx context.Context) (string, error) {
+	setting, err := u.repo.GetSetting(ctx, domain.SettingHeroYoutubeID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return domain.DefaultHeroYoutubeID, nil
+		}
+		return "", apperr.Internal(err)
+	}
+	id := sanitize.Text(setting.Value)
+	if id == "" {
+		return domain.DefaultHeroYoutubeID, nil
+	}
+	return id, nil
+}
+
+func (u *contentUsecase) UpdateHeroYoutubeID(ctx context.Context, youtubeIDOrURL string) (string, error) {
+	id, err := extractYouTubeID(sanitize.Text(youtubeIDOrURL))
+	if err != nil {
+		return "", err
+	}
+	if err := u.repo.UpsertSetting(ctx, domain.SettingHeroYoutubeID, id); err != nil {
+		return "", apperr.Internal(err)
+	}
+	return id, nil
+}
+
+// extractYouTubeID accepts a raw 11-char ID or common YouTube URL forms.
+func extractYouTubeID(raw string) (string, error) {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return "", apperr.BadRequest("youtube video id or URL is required")
+	}
+
+	if isYouTubeID(raw) {
+		return raw, nil
+	}
+
+	// Normalize protocol-relative and bare hosts.
+	candidate := raw
+	if strings.HasPrefix(candidate, "//") {
+		candidate = "https:" + candidate
+	}
+	if !strings.Contains(candidate, "://") && (strings.Contains(candidate, "youtube.com") || strings.Contains(candidate, "youtu.be")) {
+		candidate = "https://" + candidate
+	}
+
+	if u, err := url.Parse(candidate); err == nil {
+		host := strings.ToLower(u.Host)
+		switch {
+		case strings.Contains(host, "youtu.be"):
+			id := strings.Trim(strings.TrimPrefix(u.Path, "/"), "/")
+			if i := strings.IndexAny(id, "?&/"); i >= 0 {
+				id = id[:i]
+			}
+			if isYouTubeID(id) {
+				return id, nil
+			}
+		case strings.Contains(host, "youtube.com"), strings.Contains(host, "youtube-nocookie.com"):
+			if v := u.Query().Get("v"); isYouTubeID(v) {
+				return v, nil
+			}
+			parts := strings.Split(strings.Trim(u.Path, "/"), "/")
+			for i, p := range parts {
+				if (p == "embed" || p == "shorts" || p == "live" || p == "v") && i+1 < len(parts) {
+					id := parts[i+1]
+					if isYouTubeID(id) {
+						return id, nil
+					}
+				}
+			}
+		}
+	}
+
+	return "", apperr.BadRequest("provide a valid YouTube video ID or URL")
+}
+
+func isYouTubeID(id string) bool {
+	if len(id) != 11 {
+		return false
+	}
+	for _, r := range id {
+		switch {
+		case r >= 'a' && r <= 'z', r >= 'A' && r <= 'Z', r >= '0' && r <= '9', r == '-', r == '_':
+		default:
+			return false
+		}
+	}
+	return true
 }
 
 // NewsAuditAdapter implements news/domain.AuditLogger using content audit logs.

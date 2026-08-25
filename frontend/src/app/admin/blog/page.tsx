@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ImagePlus, LogOut, Mail, Newspaper, Plus, Save, Search, Settings2, Trash2 } from 'lucide-react';
+import { ImagePlus, Images, LogOut, Mail, Newspaper, Plus, Save, Search, Settings2, Trash2, Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { AdminGate } from '@/components/admin/AdminGate';
 import { RichTextEditor } from '@/components/admin/RichTextEditor';
@@ -20,7 +20,17 @@ import {
   Textarea,
 } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
-import { adminNews, errorMessage, mediaUrl, type ArticleDraft, type NewsArticle, type NewsletterSubscriber, type PublicationStatus } from '@/lib/api';
+import {
+  adminBrochure,
+  adminNews,
+  errorMessage,
+  mediaUrl,
+  type ArticleDraft,
+  type BrochureImage,
+  type NewsArticle,
+  type NewsletterSubscriber,
+  type PublicationStatus,
+} from '@/lib/api';
 import { articleCategory, articleReadTime, articleStatusTone, formatDate } from '@/lib/admin/utils';
 
 const DEFAULT_DRAFT: ArticleDraft = {
@@ -54,13 +64,15 @@ export default function BlogWriterDashboard() {
   const [subscribers, setSubscribers] = useState<NewsletterSubscriber[]>([]);
   const [subscriberTotal, setSubscriberTotal] = useState(0);
   const [subscriberPage, setSubscriberPage] = useState(1);
+  const [brochureImages, setBrochureImages] = useState<BrochureImage[]>([]);
+  const [brochureUploading, setBrochureUploading] = useState(false);
   const pageSize = 10;
   const subscriberPageSize = 8;
 
   async function load() {
     setLoading(true);
     try {
-      const [list, logs, cfg, subs] = await Promise.all([
+      const [list, logs, cfg, subs, brochure] = await Promise.all([
         adminNews.list({
           page,
           limit: pageSize,
@@ -70,6 +82,7 @@ export default function BlogWriterDashboard() {
         adminNews.auditLogs({ page: 1, limit: 6 }),
         adminNews.getSettings(),
         adminNews.subscribers({ page: subscriberPage, limit: subscriberPageSize }),
+        adminBrochure.list(),
       ]);
       setArticles(list.articles);
       setTotal(list.total);
@@ -77,6 +90,7 @@ export default function BlogWriterDashboard() {
       setSettings(cfg);
       setSubscribers(subs.subscribers);
       setSubscriberTotal(subs.total);
+      setBrochureImages(brochure);
       setError('');
     } catch (err) {
       setError(errorMessage(err));
@@ -163,6 +177,35 @@ export default function BlogWriterDashboard() {
       setError(errorMessage(err));
     } finally {
       setUploading(false);
+    }
+  }
+
+  async function onBrochureUpload(file: File | null) {
+    if (!file) return;
+    setBrochureUploading(true);
+    try {
+      const uploaded = await adminBrochure.upload(file);
+      await adminBrochure.create({
+        title: file.name.replace(/\.[^.]+$/, ''),
+        imageUrl: uploaded.url,
+        sortOrder: brochureImages.length + 1,
+        isPublished: true,
+      });
+      await load();
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setBrochureUploading(false);
+    }
+  }
+
+  async function removeBrochureImage(id: string) {
+    if (!window.confirm('Remove this brochure image from the public gallery?')) return;
+    try {
+      await adminBrochure.remove(id);
+      await load();
+    } catch (err) {
+      setError(errorMessage(err));
     }
   }
 
@@ -357,6 +400,61 @@ export default function BlogWriterDashboard() {
                 </div>
               </aside>
             </div>
+
+            <section className="overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-xs">
+              <div className="flex flex-col gap-3 border-b border-gray-100 p-5 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-2">
+                  <Images className="h-5 w-5 text-[#00A36D]" />
+                  <div>
+                    <h2 className="text-lg font-black">Brochure gallery</h2>
+                    <p className="text-xs text-gray-500">
+                      Images shown on the public /brochure page. Super Admin and Marketer can add or remove slides.
+                    </p>
+                  </div>
+                </div>
+                <label className="inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-[#00A36D] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-[#00A36D]/20 hover:bg-[#008959]">
+                  <Upload className="h-4 w-4" />
+                  {brochureUploading ? 'Uploading…' : 'Add image'}
+                  <input
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.webp"
+                    className="hidden"
+                    onChange={(e) => void onBrochureUpload(e.target.files?.[0] || null)}
+                  />
+                </label>
+              </div>
+              {brochureImages.length === 0 ? (
+                <div className="p-6">
+                  <EmptyState
+                    title="No brochure images"
+                    description="Upload JPG, PNG, or WebP images to populate the public brochure carousel."
+                  />
+                </div>
+              ) : (
+                <div className="grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-4">
+                  {brochureImages.map((image) => (
+                    <div key={image.id} className="overflow-hidden rounded-2xl border border-gray-100 bg-[#F8FDFB]">
+                      <img
+                        src={mediaUrl(image.imageUrl)}
+                        alt={image.title}
+                        className="h-36 w-full object-cover"
+                      />
+                      <div className="flex items-center justify-between gap-2 p-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-xs font-bold text-[#101828]">{image.title}</p>
+                          <Badge tone={image.isPublished ? 'success' : 'danger'}>
+                            {image.isPublished ? 'LIVE' : 'HIDDEN'}
+                          </Badge>
+                        </div>
+                        <Button variant="danger" size="sm" onClick={() => void removeBrochureImage(image.id)}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
           </div>
 
           <Modal open={editorOpen} onClose={resetEditor} size="2xl" title={editingId ? 'Edit article' : 'Create article'} description="Draft now or publish immediately. Publishing sends an email to newsletter subscribers.">

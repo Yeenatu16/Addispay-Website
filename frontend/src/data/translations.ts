@@ -276,8 +276,8 @@ export const translations: Record<Language, Record<string, string>> = {
     // Hero Section
     'hero.badge': 'በኢትዮጵያ ብሔራዊ ባንክ ፈቃድ ያለው የክፍያ ስርዓት',
     'hero.title_welcome': 'እንኳን ወደ',
-    'hero.title_brand': 'አዲስፔይ',
-    'hero.subtitle': 'የተሳለጠ የዲጂታል ንግድ መፍትሔዎ። ከየትኛውም የኢትዮጵያ ክፍል ክፍያዎችን በፍጥነት፣ በደህነነት እና በቀላሉ ይቀበሉ።',
+    'hero.title_brand': 'አዲስፔይ በሰላም መጡ',
+    'hero.subtitle': 'የተሳለጠ የዲጂታል ንግድ መፍትሔ እንሰጣለን። ከየትኛውም የኢትዮጵያ ክፍል ክፍያዎችን በፍጥነት እና ደህንነቱን በጠበቀ መልኩ በቀላሉ ይቀበሉ።',
     'hero.cta_signup': 'በነጻ ይመዝገቡ',
     'hero.cta_demo': 'ቪዲዮ ይመልከቱ',
     'hero.app_store': 'ያውርዱ ከ',
@@ -299,7 +299,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'hero.sim_ref': 'ማጣቀሻ፡ AP-984210',
 
     // Partners Marquee
-    'partners.heading': 'ከቀዳሚ የኢትዮጵያ ባንኮች እና ዲጂታል ክፍያ መረቦች ጋር አብሮ የሚሰራ',
+    'partners.heading': 'ከቀዳሚ የኢትዮጵያ ባንኮች እና ዲጂታል ክፍያ ዝዴዎችን ጋር አብሮ የሚሰራ',
 
     // Products Section
     'products.badge': 'የእኛ ምርቶች',

@@ -189,8 +189,61 @@ export interface UploadResult {
   filename: string;
   path?: string;
   optimizedSize?: number;
+  fileSize?: string;
 }
 
 export interface MessageResult {
   message: string;
+}
+
+export type DocumentCategory = string;
+
+export interface OfficialDocument {
+  id: string;
+  title: string;
+  category: string;
+  description: string;
+  fileUrl: string;
+  fileSize: string;
+  dateLabel: string;
+  pages: number;
+  sortOrder: number;
+  isPublished: boolean;
+  createdById: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DocumentDraft {
+  title: string;
+  category: string;
+  description: string;
+  fileUrl: string;
+  fileSize: string;
+  dateLabel?: string;
+  pages?: number;
+  sortOrder?: number;
+  isPublished?: boolean;
+}
+
+export interface HomepageSettings {
+  heroYoutubeId: string;
+}
+
+export interface BrochureImage {
+  id: string;
+  title: string;
+  imageUrl: string;
+  sortOrder: number;
+  isPublished: boolean;
+  createdById: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BrochureDraft {
+  title?: string;
+  imageUrl: string;
+  sortOrder?: number;
+  isPublished?: boolean;
 }

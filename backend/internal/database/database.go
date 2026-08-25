@@ -10,8 +10,10 @@ import (
 	"gorm.io/gorm/logger"
 
 	authDomain "github.com/addispay/backend/internal/auth/domain"
+	brochureDomain "github.com/addispay/backend/internal/brochure/domain"
 	careersDomain "github.com/addispay/backend/internal/careers/domain"
 	contentDomain "github.com/addispay/backend/internal/content/domain"
+	documentsDomain "github.com/addispay/backend/internal/documents/domain"
 	newsDomain "github.com/addispay/backend/internal/news/domain"
 )
 
@@ -54,5 +56,7 @@ func AutoMigrate(db *gorm.DB) error {
 		&contentDomain.ContactMessage{},
 		&contentDomain.AuditLog{},
 		&contentDomain.SiteSetting{},
+		&documentsDomain.OfficialDocument{},
+		&brochureDomain.BrochureImage{},
 	)
 }

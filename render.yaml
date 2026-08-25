@@ -1,0 +1,11 @@
+# Optional Render Blueprint (paid / not required)
+#
+# Prefer the free manual setup in docs/RENDER.md:
+#   1) PostgreSQL
+#   2) Web Service  (API)
+#   3) Static Site  (frontend)
+#
+# Keep this file only if you later enable Blueprint on a paid plan.
+
+databases: []
+services: []

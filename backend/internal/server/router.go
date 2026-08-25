@@ -6,8 +6,10 @@ import (
 
 	authDelivery "github.com/addispay/backend/internal/auth/delivery/http"
 	"github.com/addispay/backend/internal/auth/domain"
+	brochureDelivery "github.com/addispay/backend/internal/brochure/delivery/http"
 	careersDelivery "github.com/addispay/backend/internal/careers/delivery/http"
 	contentDelivery "github.com/addispay/backend/internal/content/delivery/http"
+	documentsDelivery "github.com/addispay/backend/internal/documents/delivery/http"
 	newsDelivery "github.com/addispay/backend/internal/news/delivery/http"
 	"github.com/gin-gonic/gin"
 )
@@ -21,12 +23,13 @@ func NewRouter(
 	newsH *newsDelivery.NewsHandler,
 	careersH *careersDelivery.CareerHandler,
 	contentH *contentDelivery.ContentHandler,
+	documentsH *documentsDelivery.DocumentHandler,
+	brochureH *brochureDelivery.BrochureHandler,
 ) *gin.Engine {
 	r := gin.Default()
 	r.Use(SecurityHeaders())
 	r.Use(CORS(corsOrigins))
 
-	// Serve uploaded cover images
 	r.Static("/uploads", filepath.Clean(uploadDir))
 
 	v1 := r.Group("/api/v1")
@@ -35,7 +38,6 @@ func NewRouter(
 			c.JSON(http.StatusOK, gin.H{"status": "UP", "engine": "GORM"})
 		})
 
-		// Auth (public)
 		v1.POST("/auth/login", authH.Login)
 		v1.POST("/auth/register", authH.Register)
 		v1.POST("/auth/forgot-password", authH.ForgotPassword)
@@ -43,7 +45,6 @@ func NewRouter(
 		v1.GET("/auth/invitations", authH.GetInvitation)
 		v1.POST("/auth/accept-invitation", authH.AcceptInvitation)
 
-		// Public website APIs
 		v1.GET("/news/homepage", newsH.GetHomepageNews)
 		v1.GET("/news", newsH.GetNewsListing)
 		v1.GET("/news/:slug", newsH.GetArticleBySlug)
@@ -54,15 +55,16 @@ func NewRouter(
 
 		v1.POST("/content/subscribe", contentH.Subscribe)
 		v1.POST("/content/contact", contentH.ContactUs)
+		v1.GET("/content/homepage", contentH.GetPublicHomepage)
 
-		// Protected admin routes
+		v1.GET("/documents", documentsH.ListPublic)
+		v1.GET("/brochure", brochureH.ListPublic)
+
 		admin := v1.Group("admin")
 		admin.Use(authDelivery.GinAuthMiddleware(jwtSecret, users))
 		{
-			// Session restore / role discovery for any authenticated administrator
 			admin.GET("/me", authH.Me)
 
-			// News — Super Admin + Marketer
 			newsAdmin := admin.Group("")
 			newsAdmin.Use(authDelivery.RequireRoles(domain.RoleSuperAdmin, domain.RoleMarketer))
 			{
@@ -77,9 +79,14 @@ func NewRouter(
 				newsAdmin.PUT("/news/settings", contentH.UpdateNewsSettings)
 				newsAdmin.GET("/news/audit-logs", contentH.ListNewsAuditLogs)
 				newsAdmin.GET("/news/subscribers", contentH.ListSubscribers)
+
+				newsAdmin.GET("/brochure", brochureH.ListAdmin)
+				newsAdmin.POST("/brochure", brochureH.Create)
+				newsAdmin.PUT("/brochure/:id", brochureH.Update)
+				newsAdmin.DELETE("/brochure/:id", brochureH.Delete)
+				newsAdmin.POST("/brochure/upload", brochureH.Upload)
 			}
 
-			// Careers — Super Admin + HR (Career Manager)
 			careersAdmin := admin.Group("")
 			careersAdmin.Use(authDelivery.RequireRoles(domain.RoleSuperAdmin, domain.RoleHR))
 			{
@@ -95,7 +102,6 @@ func NewRouter(
 				careersAdmin.GET("/careers/audit-logs", contentH.ListCareersAuditLogs)
 			}
 
-			// User / invitation management — Super Admin only
 			super := admin.Group("")
 			super.Use(authDelivery.RequireRoles(domain.RoleSuperAdmin))
 			{
@@ -106,6 +112,16 @@ func NewRouter(
 				super.GET("/users", authH.ListAdministrators)
 				super.POST("/users/:id/revoke", authH.RevokeAdministrator)
 				super.POST("/users/:id/restore", authH.RestoreAdministrator)
+
+				super.GET("/documents", documentsH.ListAdmin)
+				super.GET("/documents/categories", documentsH.ListCategories)
+				super.POST("/documents", documentsH.Create)
+				super.PUT("/documents/:id", documentsH.Update)
+				super.DELETE("/documents/:id", documentsH.Delete)
+				super.POST("/documents/upload", documentsH.Upload)
+
+				super.GET("/homepage/settings", contentH.GetHeroSettings)
+				super.PUT("/homepage/settings", contentH.UpdateHeroSettings)
 			}
 		}
 	}

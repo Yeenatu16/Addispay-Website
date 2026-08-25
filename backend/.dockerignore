@@ -1,0 +1,9 @@
+.env
+uploads/**
+!uploads/**/
+!uploads/**/.gitkeep
+seed/documents/**
+!seed/documents/.gitkeep
+seed/brochure/**
+!seed/brochure/.gitkeep
+*.md

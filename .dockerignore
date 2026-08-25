@@ -1,0 +1,26 @@
+# Local / secret env files
+.env
+.env.local
+**/.env
+**/.env.local
+
+# Node / Go
+**/node_modules/
+**/.next/
+**/dist/
+**/coverage/
+
+# Backend runtime
+backend/uploads/**
+!backend/uploads/**/
+!backend/uploads/**/.gitkeep
+backend/seed/documents/**
+!backend/seed/documents/.gitkeep
+backend/seed/brochure/**
+!backend/seed/brochure/.gitkeep
+
+# OS / editor
+.DS_Store
+*.log
+.idea/
+.vscode/

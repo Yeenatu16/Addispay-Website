@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -18,9 +19,19 @@ import (
 	careerRepo "github.com/addispay/backend/internal/careers/repository"
 	careerUseCase "github.com/addispay/backend/internal/careers/usecase"
 
+	brochureDelivery "github.com/addispay/backend/internal/brochure/delivery/http"
+	brochureRepo "github.com/addispay/backend/internal/brochure/repository"
+	brochureSeed "github.com/addispay/backend/internal/brochure/seed"
+	brochureUseCase "github.com/addispay/backend/internal/brochure/usecase"
+
 	contentDelivery "github.com/addispay/backend/internal/content/delivery/http"
 	contentRepo "github.com/addispay/backend/internal/content/repository"
 	contentUseCase "github.com/addispay/backend/internal/content/usecase"
+
+	documentsDelivery "github.com/addispay/backend/internal/documents/delivery/http"
+	documentsRepo "github.com/addispay/backend/internal/documents/repository"
+	documentsSeed "github.com/addispay/backend/internal/documents/seed"
+	documentsUseCase "github.com/addispay/backend/internal/documents/usecase"
 
 	newsDelivery "github.com/addispay/backend/internal/news/delivery/http"
 	newsRepo "github.com/addispay/backend/internal/news/repository"
@@ -45,6 +56,24 @@ func main() {
 
 	if err := database.AutoMigrate(db); err != nil {
 		log.Fatalf("Database migration failed: %v", err)
+	}
+
+	seedDirs := []string{
+		filepath.Join("..", "frontend", "public", "documents"),
+		filepath.Join("seed", "documents"),
+		"./seed/documents",
+	}
+	if err := documentsSeed.OfficialDocuments(db, cfg.UploadDir, seedDirs); err != nil {
+		log.Printf("documents seed warning: %v", err)
+	}
+
+	brochureSeedDirs := []string{
+		filepath.Join("..", "frontend", "public", "images", "documents"),
+		filepath.Join("seed", "brochure"),
+		"./seed/brochure",
+	}
+	if err := brochureSeed.BrochureImages(db, cfg.UploadDir, brochureSeedDirs); err != nil {
+		log.Printf("brochure seed warning: %v", err)
 	}
 
 	uRepo := authRepo.NewUserRepository(db)
@@ -76,7 +105,15 @@ func main() {
 	cHandler := careersDelivery.NewCareerHandler(cUsecase, cfg.UploadDir)
 	cHandler.SetUserNameResolver(authDelivery.ActorName)
 
-	router := server.NewRouter(cfg.JWTSecret, cfg.UploadDir, cfg.CORSAllowedOrigins, uRepo, aHandler, nHandler, cHandler, cntHandler)
+	dRepo := documentsRepo.NewDocumentRepository(db)
+	dUsecase := documentsUseCase.NewDocumentUsecase(dRepo)
+	dHandler := documentsDelivery.NewDocumentHandler(dUsecase, cfg.UploadDir)
+
+	bRepo := brochureRepo.NewBrochureRepository(db)
+	bUsecase := brochureUseCase.NewBrochureUsecase(bRepo)
+	bHandler := brochureDelivery.NewBrochureHandler(bUsecase, cfg.UploadDir)
+
+	router := server.NewRouter(cfg.JWTSecret, cfg.UploadDir, cfg.CORSAllowedOrigins, uRepo, aHandler, nHandler, cHandler, cntHandler, dHandler, bHandler)
 
 	srv := &http.Server{
 		Addr:              ":" + cfg.Port,

@@ -73,6 +73,77 @@ npm run dev
 http://localhost:3000
 ```
 
+## Docker deployment
+
+The repo includes a production-oriented Compose stack: Postgres, Go API, and Next.js.
+
+1. Copy env defaults and set secrets:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with production URLs, DB password, JWT secret, and SMTP. See `.env.example` for the full list.
+
+2. Build and start everything:
+
+```bash
+docker compose up --build -d
+```
+
+3. Open:
+
+- Website: http://localhost:3000
+- API health: http://localhost:8080/api/v1/health
+
+4. First Super Admin (only when the database has no users):
+
+```bash
+curl -X POST http://localhost:8080/api/v1/auth/register \
+  -H 'Content-Type: application/json' \
+  -d '{"fullName":"Super Admin","email":"admin@example.com","password":"ChangeMe123!","role":"Super_Admin"}'
+```
+
+5. Stop:
+
+```bash
+docker compose down
+```
+
+Uploaded files persist in the `backend_uploads` volume; database data persists in `postgres_data`.
+
+## Deploy on Render (free, no Blueprint)
+
+Create **three** resources manually (Blueprint not required):
+
+1. **PostgreSQL** — database  
+2. **Web Service** — Go API (`backend/Dockerfile`)  
+3. **Static Site** — frontend (`frontend/`, publish `out/`)
+
+Full click-by-click guide: **[docs/RENDER.md](docs/RENDER.md)**
+
+Short version:
+
+1. Create Postgres → copy Internal Database URL.  
+2. Create API Web Service (Docker, context `backend`) + disk at `/var/data` → set `DATABASE_URL`, JWT, SMTP, `UPLOAD_DIR=/var/data/uploads`.  
+3. Create Static Site (root `frontend`):
+   - Build: `npm ci && npm run build:static`
+   - Publish: `out`
+   - Env: `NEXT_OUTPUT=export`, `NEXT_PUBLIC_API_BASE_URL=https://<api>.onrender.com/api/v1`  
+4. Set API `FRONTEND_URL` + `CORS_ALLOWED_ORIGINS` to the Static Site URL; redeploy API.  
+5. Rebuild Static Site if URLs changed.  
+6. Register first Super Admin via `POST /api/v1/auth/register`.
+
+### End-to-end smoke test
+
+With local API + frontend running:
+
+```bash
+E2E_SUPER_EMAIL=you@example.com E2E_SUPER_PASSWORD='your-password' \
+E2E_MARKETER_EMAIL=marketer@example.com E2E_MARKETER_PASSWORD='your-password' \
+python3 scripts/e2e_test.py
+```
+
 ## Frontend Build and Lint
 
 To verify the frontend build and lint configuration:
@@ -118,3 +189,5 @@ go test ./...
 - The current frontend uses Tailwind CSS with `@tailwindcss/postcss` and default Tailwind v4 configuration.
 - The backend is designed as a Go API server; additional routes should be added under `backend/internal/*/delivery`.
 - For local development, run backend first, then frontend.
+- Docker image builds need outbound access to Docker Hub (`golang`, `node`, `postgres`, `debian` base images).
+- Frontend Docker builds set `output: "standalone"` and bake `NEXT_PUBLIC_API_BASE_URL` at image build time — rebuild the frontend image if the public API URL changes.

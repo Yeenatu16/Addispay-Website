@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowRight, Play, Smartphone, ShieldCheck, Volume2, VolumeX } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
+import { content } from '@/lib/api';
+import { youtubeThumbnailUrl } from '@/lib/youtube';
 
-/** AddisPay overview — https://youtu.be/oHFAOehZBRc */
-const HERO_VIDEO_ID = 'oHFAOehZBRc';
+/** Fallback if the homepage settings API is unreachable. */
+const DEFAULT_HERO_VIDEO_ID = 'oHFAOehZBRc';
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -29,7 +31,32 @@ const copyItem = {
 export const Hero: React.FC = () => {
   const { t } = useLanguage();
   const [isMuted, setIsMuted] = useState(true);
+  const [videoId, setVideoId] = useState(DEFAULT_HERO_VIDEO_ID);
+  const [videoReady, setVideoReady] = useState(false);
+  const [thumbSrc, setThumbSrc] = useState(youtubeThumbnailUrl(DEFAULT_HERO_VIDEO_ID, 'maxresdefault'));
   const reduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    let cancelled = false;
+    content
+      .homepage(60)
+      .then((settings) => {
+        if (!cancelled && settings.heroYoutubeId) {
+          setVideoId(settings.heroYoutubeId);
+        }
+      })
+      .catch(() => {
+        /* keep default video if API is unavailable */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    setVideoReady(false);
+    setThumbSrc(youtubeThumbnailUrl(videoId, 'maxresdefault'));
+  }, [videoId]);
 
   return (
     <section className="relative overflow-hidden border-b border-gray-100 bg-[#F8FDFB] px-4 pt-10 pb-20 sm:px-6 lg:px-12 lg:pt-16 lg:pb-28">
@@ -129,12 +156,25 @@ export const Hero: React.FC = () => {
         >
           <div className="hero-video-glow relative w-full max-w-[720px] lg:max-w-none">
             <div className="relative aspect-video w-full overflow-hidden rounded-3xl border-4 border-[#101828] bg-[#101828] shadow-2xl shadow-[#00A36D]/25 transition-transform duration-500 hover:scale-[1.015] motion-reduce:transition-none motion-reduce:hover:scale-100">
+              {!videoReady && (
+                <img
+                  src={thumbSrc}
+                  alt=""
+                  className="absolute inset-0 z-[1] h-full w-full object-cover"
+                  onError={() => setThumbSrc(youtubeThumbnailUrl(videoId, 'hqdefault'))}
+                />
+              )}
+
               <iframe
-                src={`https://www.youtube-nocookie.com/embed/${HERO_VIDEO_ID}?autoplay=1&mute=${isMuted ? 1 : 0}&loop=1&playlist=${HERO_VIDEO_ID}&controls=1&modestbranding=1&rel=0`}
+                key={videoId}
+                src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=${isMuted ? 1 : 0}&loop=1&playlist=${videoId}&controls=1&modestbranding=1&rel=0`}
                 title="AddisPay platform overview"
-                className="pointer-events-auto h-full w-full rounded-2xl object-cover"
+                className={`pointer-events-auto relative z-[2] h-full w-full rounded-2xl object-cover transition-opacity duration-300 ${
+                  videoReady ? 'opacity-100' : 'opacity-0'
+                }`}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
+                onLoad={() => setVideoReady(true)}
               />
 
               <div className="pointer-events-auto absolute top-3 right-3 z-10">

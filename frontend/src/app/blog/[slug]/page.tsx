@@ -14,10 +14,16 @@ interface PageProps {
 }
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://addispay.et';
+const isStaticExport = process.env.NEXT_OUTPUT === 'export';
 
 export async function generateStaticParams() {
-  const { articles } = await news.list({ page: 1, limit: 50 });
-  return articles.map((post) => ({ slug: post.slug }));
+  try {
+    const { articles } = await news.list({ page: 1, limit: 50 });
+    return articles.map((post) => ({ slug: post.slug }));
+  } catch {
+    // Static export requires at least one path; placeholder is never linked.
+    return isStaticExport ? [{ slug: '_placeholder' }] : [];
+  }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -61,8 +67,13 @@ export default async function BlogPostPage({ params }: PageProps) {
     notFound();
   }
 
-  const { articles } = await news.list({ page: 1, limit: 3 });
-  const relatedPosts = articles.filter((p) => p.id !== post.id).slice(0, 2);
+  let relatedPosts: Awaited<ReturnType<typeof news.list>>['articles'] = [];
+  try {
+    const { articles } = await news.list({ page: 1, limit: 3 });
+    relatedPosts = articles.filter((p) => p.id !== post.id).slice(0, 2);
+  } catch {
+    relatedPosts = [];
+  }
   const articlePath = `/blog/${post.slug}`;
   const articleUrl = `${SITE_URL}${articlePath}`;
 
