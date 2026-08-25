@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"log"
 	"net/url"
 	"strings"
 	"time"
@@ -226,6 +227,7 @@ func (u *authUsecase) InviteAdmin(ctx context.Context, invitedBy uuid.UUID, emai
 
 	inviteURL := u.buildURL("/admin/accept-invitation", rawToken)
 	if err := u.mailer.SendAdminInvitation(ctx, email, role, inviteURL); err != nil {
+		log.Printf("[invite] failed to send invitation email to %s: %v", email, err)
 		_ = u.repo.RevokeInvitation(ctx, invite.ID)
 		return nil, apperr.BadRequest("could not send the invitation email; check SMTP configuration")
 	}

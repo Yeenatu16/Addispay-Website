@@ -87,8 +87,9 @@ func LoadConfig() *Config {
 		SMTPHost:     getEnv("SMTP_HOST", ""),
 		SMTPPort:     getEnv("SMTP_PORT", "587"),
 		SMTPUsername: getEnv("SMTP_USERNAME", ""),
-		SMTPPassword: getEnv("SMTP_PASSWORD", ""),
-		SMTPFrom:     getEnv("SMTP_FROM", ""),
+		// Gmail App Passwords are often pasted with spaces; strip them.
+		SMTPPassword: strings.ReplaceAll(getEnv("SMTP_PASSWORD", ""), " ", ""),
+		SMTPFrom:     strings.TrimSpace(getEnv("SMTP_FROM", "")),
 	}
 }
 
