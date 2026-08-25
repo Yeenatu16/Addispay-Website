@@ -20,11 +20,14 @@ RUN apt-get update \
 WORKDIR /app
 COPY --from=builder /out/api /app/api
 COPY --from=builder /src/seed /app/seed
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 
-RUN mkdir -p /app/uploads/news /app/uploads/cv /app/uploads/documents /app/uploads/brochure \
+RUN chmod +x /app/docker-entrypoint.sh \
+  && mkdir -p /app/uploads/news /app/uploads/cv /app/uploads/documents /app/uploads/brochure \
   && chown -R addispay:addispay /app
 
-USER addispay
+# Start as root so we can chown Render disk mounts, then drop to addispay.
+USER root
 ENV PORT=8080 \
     UPLOAD_DIR=/app/uploads \
     DB_SSLMODE=disable \
@@ -34,4 +37,4 @@ EXPOSE 8080
 HEALTHCHECK --interval=15s --timeout=5s --start-period=20s --retries=5 \
   CMD curl -fsS "http://127.0.0.1:${PORT}/api/v1/health" || exit 1
 
-CMD ["/app/api"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]

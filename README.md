@@ -125,7 +125,7 @@ Full click-by-click guide: **[docs/RENDER.md](docs/RENDER.md)**
 Short version:
 
 1. Create Postgres → copy Internal Database URL.  
-2. Create API Web Service (Docker, context `backend`) + disk at `/var/data` → set `DATABASE_URL`, JWT, SMTP, `UPLOAD_DIR=/var/data/uploads`.  
+2. Create API Web Service (Docker, context `backend`) → set `DATABASE_URL`, JWT, SMTP, `UPLOAD_DIR=/app/uploads` (no Persistent Disk on free plan).  
 3. Create Static Site (root `frontend`):
    - Build: `npm ci && npm run build:static`
    - Publish: `out`

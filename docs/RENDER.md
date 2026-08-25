@@ -17,7 +17,7 @@ Browser
   │         │
   │         └─ fetch ──►  Web Service (addispay-api)  ──►  PostgreSQL
   │                              │
-  │                              └─ /uploads (Persistent Disk)
+  │                              └─ /app/uploads (ephemeral on free plan)
 ```
 
 ---
@@ -55,10 +55,7 @@ Push this project to GitHub/GitLab so Render can build from it.
 | Instance type | **Free** |
 | Health Check Path | `/api/v1/health` |
 
-3. **Disk** (required for PDFs / brochure images):
-   - Name: `uploads`
-   - Mount path: `/var/data`
-   - Size: `1 GB`
+3. **Disk** — skip on the free plan (Persistent Disks are paid).
 
 4. **Environment** variables:
 
@@ -66,7 +63,7 @@ Push this project to GitHub/GitLab so Render can build from it.
 |-----|--------|
 | `DATABASE_URL` | paste **Internal Database URL** |
 | `DB_SSLMODE` | `require` |
-| `UPLOAD_DIR` | `/var/data/uploads` |
+| `UPLOAD_DIR` | `/app/uploads` |
 | `GIN_MODE` | `release` |
 | `ADDISPAY_JWT_SUPER_SECRET_KEY_2026` | long random string (Generate) |
 | `FRONTEND_URL` | temporarily `https://placeholder` — update in Step 4 |
@@ -76,6 +73,10 @@ Push this project to GitHub/GitLab so Render can build from it.
 | `SMTP_USERNAME` | your Gmail |
 | `SMTP_PASSWORD` | Gmail App Password |
 | `SMTP_FROM` | `AddisPay <your@gmail.com>` |
+
+> **Free plan:** do **not** attach a Persistent Disk and do **not** set `/var/data`.  
+> Use `UPLOAD_DIR=/app/uploads`. Files work, but they are wiped when the service redeploys or restarts.  
+> Upgrade later if you need durable uploads.
 
 5. **Create Web Service** → wait until healthy  
 6. Copy the API URL, e.g. `https://addispay-api.onrender.com`  
@@ -158,7 +159,7 @@ Then open:
 - [ ] `GET …/api/v1/health` → UP  
 - [ ] Homepage / brochure / documents load from API  
 - [ ] Admin login works  
-- [ ] Upload a brochure image + PDF; restart API; files still there (disk)  
+- [ ] Upload a brochure image + PDF (OK on free plan; files may disappear after redeploy)  
 - [ ] SMTP invite / reset works  
 
 ---
