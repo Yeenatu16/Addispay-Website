@@ -1,0 +1,26 @@
+---
+title: "Render.com Cloud Deployment"
+description: "Deploying frontend, Go backend, and managed PostgreSQL via Render.com blueprint (render.yaml)."
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Render.com Cloud Deployment
+
+The repository includes a production-ready **Infrastructure as Code** blueprint in [`render.yaml`](file:///home/latexjo/Projects/released/Addispay-Website/render.yaml).
+
+---
+
+## ☁️ Services in `render.yaml`
+
+1. **`addispay-db`**: Managed PostgreSQL database (`plan: free` or standard) with persistent SSD storage.
+2. **`addispay-api`**: Go web service running `backend/Dockerfile` with mounted persistent disk `/uploads` for media assets.
+3. **`addispay-frontend`**: Next.js 16 standalone web service running `frontend/Dockerfile`.
+
+---
+
+## 🚀 One-Click Deploy
+
+1. Connect your GitHub repository in the [Render Dashboard](https://dashboard.render.com).
+2. Select **Blueprints → New Blueprint Instance** and pick `render.yaml`.
+3. Fill required secret environment variables (`JWT_SECRET`, `SMTP_PASSWORD`) and click **Apply**.

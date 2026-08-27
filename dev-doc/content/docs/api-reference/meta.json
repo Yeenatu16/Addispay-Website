@@ -1,0 +1,10 @@
+{
+  "title": "API Reference",
+  "icon": "Code2",
+  "pages": [
+    "overview",
+    "public-endpoints",
+    "admin-endpoints",
+    "api-client"
+  ]
+}

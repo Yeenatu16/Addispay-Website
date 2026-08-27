@@ -1,0 +1,9 @@
+{
+  "title": "Deployment & DevOps",
+  "icon": "Cloud",
+  "pages": [
+    "local-development",
+    "docker-setup",
+    "render-deployment"
+  ]
+}

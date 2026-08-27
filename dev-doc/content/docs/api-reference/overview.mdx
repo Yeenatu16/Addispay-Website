@@ -1,0 +1,41 @@
+---
+title: "REST API Overview & Conventions"
+description: "Base URLs, JSON response envelope, error structures, and authentication headers."
+---
+
+import { EndpointBadge } from '@/components/dev-doc/EndpointBadge';
+
+# REST API Conventions
+
+The AddisPay Go backend provides a RESTful HTTP API mounted at `/api/v1`.
+
+---
+
+## 🌐 Base URLs
+
+| Environment | Base URL |
+| :--- | :--- |
+| **Local Development** | `http://localhost:8080/api/v1` |
+| **Production** | `https://api.addispay.et/api/v1` |
+
+---
+
+## 📦 Response Envelopes
+
+### Success (`200 OK` / `201 Created`)
+
+```json
+{
+  "status": "SUCCESS",
+  "data": { ... }
+}
+```
+
+### Error (`4xx` / `5xx`)
+
+```json
+{
+  "status": "ERROR",
+  "error": "Resource not found or invalid parameters"
+}
+```

@@ -1,0 +1,38 @@
+---
+title: "Bilingual Internationalization (EN / AM)"
+description: "English and Amharic (አማርኛ) translation architecture with LanguageContext and path preservation."
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Bilingual Localization (English & Amharic)
+
+To support businesses and consumers across Ethiopia, the website supports full real-time bilingual switching between **English (`en`)** and **Amharic (`am` / አማርኛ)**.
+
+---
+
+## Architecture
+
+- **Context Provider**: [`src/context/LanguageContext.tsx`](file:///home/latexjo/Projects/released/Addispay-Website/frontend/src/context/LanguageContext.tsx) manages active language state and persists user preferences in `localStorage`.
+- **Translations Dictionary**: [`src/data/translations.ts`](file:///home/latexjo/Projects/released/Addispay-Website/frontend/src/data/translations.ts) defines strongly typed translation keys covering navigation, hero text, CTA banners, feature cards, and footer links.
+- **Language Switcher Widget**: Embedded in both desktop header and mobile drawer navigation with flag indicators (`🇺🇸 English` / `🇪🇹 አማርኛ`).
+
+---
+
+## Usage in Components
+
+```tsx
+import { useLanguage } from '@/context/LanguageContext';
+
+export function CallToAction() {
+  const { t, language } = useLanguage();
+
+  return (
+    <div>
+      <h2>{t('cta.title')}</h2>
+      <p>{t('cta.subtitle')}</p>
+      <button>{t('cta.button')}</button>
+    </div>
+  );
+}
+```

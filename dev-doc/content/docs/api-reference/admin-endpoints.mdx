@@ -1,0 +1,66 @@
+---
+title: "Admin Protected Endpoints"
+description: "Role-protected administrative endpoints requiring JWT Bearer authorization."
+---
+
+import { EndpointBadge } from '@/components/dev-doc/EndpointBadge';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Admin Protected Endpoints
+
+All endpoints below require an `Authorization: Bearer <token>` header obtained from `POST /api/v1/auth/login`.
+
+---
+
+## 🔒 Authentication & Sessions
+- <EndpointBadge method="POST" path="/api/v1/auth/login" />: Login with email & password.
+- <EndpointBadge method="POST" path="/api/v1/auth/register" />: Bootstrap initial Super Admin.
+- <EndpointBadge method="POST" path="/api/v1/auth/forgot-password" />: Request password reset email.
+- <EndpointBadge method="POST" path="/api/v1/auth/reset-password" />: Complete password reset with token.
+- <EndpointBadge method="GET" path="/api/v1/auth/invitations?token=..." />: Resolve invitation preview.
+- <EndpointBadge method="POST" path="/api/v1/auth/accept-invitation" />: Accept invite and activate account.
+- <EndpointBadge method="GET" path="/api/v1/admin/me" />: Return authenticated user session profile.
+
+---
+
+## 📰 News Administration (`Role: SuperAdmin | Marketer`)
+- <EndpointBadge method="GET" path="/api/v1/admin/news/articles" />: List all articles (including drafts).
+- <EndpointBadge method="GET" path="/api/v1/admin/news/articles/:id" />: Fetch single admin article.
+- <EndpointBadge method="POST" path="/api/v1/admin/news/articles" />: Create new article.
+- <EndpointBadge method="PUT" path="/api/v1/admin/news/articles/:id" />: Update existing article.
+- <EndpointBadge method="DELETE" path="/api/v1/admin/news/articles/:id" />: Permanently delete article.
+- <EndpointBadge method="POST" path="/api/v1/admin/news/upload" />: Upload and compress cover image to WebP.
+- <EndpointBadge method="GET" path="/api/v1/admin/news/settings" />: Get news settings.
+- <EndpointBadge method="PUT" path="/api/v1/admin/news/settings" />: Update news settings.
+- <EndpointBadge method="GET" path="/api/v1/admin/news/audit-logs" />: Get news audit trail.
+- <EndpointBadge method="GET" path="/api/v1/admin/news/subscribers" />: List newsletter subscribers.
+
+---
+
+## 💼 Careers Administration (`Role: SuperAdmin | HR`)
+- <EndpointBadge method="GET" path="/api/v1/admin/careers/jobs" />: List all jobs.
+- <EndpointBadge method="GET" path="/api/v1/admin/careers/jobs/:id" />: Get single job.
+- <EndpointBadge method="POST" path="/api/v1/admin/careers/jobs" />: Create job posting.
+- <EndpointBadge method="PUT" path="/api/v1/admin/careers/jobs/:id" />: Update job posting.
+- <EndpointBadge method="DELETE" path="/api/v1/admin/careers/jobs/:id" />: Delete job posting.
+- <EndpointBadge method="GET" path="/api/v1/admin/careers/applications" />: List candidate applications.
+- <EndpointBadge method="PUT" path="/api/v1/admin/careers/applications/:id/status" />: Update candidate status.
+- <EndpointBadge method="GET" path="/api/v1/admin/careers/audit-logs" />: Get careers audit trail.
+
+---
+
+## 👑 Super Admin Management (`Role: SuperAdmin`)
+- <EndpointBadge method="POST" path="/api/v1/admin/invitations" />: Send team invitation.
+- <EndpointBadge method="GET" path="/api/v1/admin/invitations" />: List active invitations.
+- <EndpointBadge method="DELETE" path="/api/v1/admin/invitations/:id" />: Cancel invitation.
+- <EndpointBadge method="GET" path="/api/v1/admin/users" />: List all system administrators.
+- <EndpointBadge method="POST" path="/api/v1/admin/users/:id/revoke" />: Revoke admin account.
+- <EndpointBadge method="POST" path="/api/v1/admin/users/:id/restore" />: Restore admin account.
+- <EndpointBadge method="GET" path="/api/v1/admin/documents" />: List admin documents.
+- <EndpointBadge method="GET" path="/api/v1/admin/documents/categories" />: List document categories.
+- <EndpointBadge method="POST" path="/api/v1/admin/documents" />: Create document record.
+- <EndpointBadge method="PUT" path="/api/v1/admin/documents/:id" />: Update document.
+- <EndpointBadge method="DELETE" path="/api/v1/admin/documents/:id" />: Delete document.
+- <EndpointBadge method="POST" path="/api/v1/admin/documents/upload" />: Upload official PDF file.
+- <EndpointBadge method="GET" path="/api/v1/admin/homepage/settings" />: Get hero settings.
+- <EndpointBadge method="PUT" path="/api/v1/admin/homepage/settings" />: Update hero settings.

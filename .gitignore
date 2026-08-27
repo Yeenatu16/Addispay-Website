@@ -1,6 +1,7 @@
 # Node & Next.js
 node_modules/
 .next/
+.source/
 out/
 coverage/
 .env*

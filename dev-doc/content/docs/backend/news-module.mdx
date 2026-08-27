@@ -1,0 +1,33 @@
+---
+title: "News Feed & Image Processing"
+description: "News feed CRUD, instant publishing, WebP image optimization, and HTML sanitization."
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# News Feed & Media Processing
+
+The `internal/news` package fulfills SRS requirements **FR-ADM-002** through **FR-ADM-007** for publishing company updates, press releases, and announcements.
+
+---
+
+## ⚡ Instant Publishing (FR-ADM-003)
+
+When an administrator publishes an article (`status: "PUBLISHED"`), it is immediately served on the public homepage (`GET /api/v1/news/homepage`) and blog listing (`GET /api/v1/news`) without requiring application redeployment, server restart, or manual cache flushing.
+
+---
+
+## 🖼️ WebP Image Optimization Pipeline (`image.go`)
+
+When cover images are uploaded (`POST /api/v1/admin/news/upload`):
+
+1. **Format Validation**: Accepts JPEG, PNG, or WebP.
+2. **Dimension Constraints**: Verifies max upload size (10MB) and aspect ratio.
+3. **WebP Compression**: Converts and recompresses the image to modern WebP format with quality optimization.
+4. **Storage**: Saved to `backend/uploads/` and served statically via Gin (`r.Static("/uploads", ...)`).
+
+---
+
+## 🛡️ HTML Sanitization (`internal/sanitize/html.go`)
+
+All rich text article content submitted via WYSIWYG editors is passed through `bluemonday` HTML sanitization to strip dangerous `<script>`, `<iframe>`, and `onload` handlers before database insertion.

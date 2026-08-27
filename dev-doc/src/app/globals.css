@@ -1,0 +1,92 @@
+@import "tailwindcss";
+@import "fumadocs-ui/css/neutral.css";
+@import "fumadocs-ui/css/preset.css";
+
+@source "../../../node_modules/fumadocs-ui/dist/**/*.js";
+@source "../../../content/docs/**/*.{md,mdx}";
+
+@layer base {
+  :root {
+    /* Fonts */
+    --font-heading: var(--font-outfit), system-ui, -apple-system, sans-serif;
+    --font-body: var(--font-lexend), system-ui, -apple-system, sans-serif;
+
+    /* Muted Brand Tokens (Light Mode) */
+    --background: #F8FAFC;
+    --foreground: #1E293B;
+
+    --primary: #1D7A56;
+    --primary-hover: #176547;
+    --primary-light: #EBF7F2;
+
+    --muted-bg: #F1F5F9;
+    --muted-fg: #64748B;
+    --subtle-border: #E2E8F0;
+
+    /* Fumadocs Theme Tokens - Soft Muted Sage Emerald */
+    --fd-primary: 156 62% 30%;
+    --fd-primary-foreground: 0 0% 100%;
+    --fd-background: 210 40% 98%;
+    --fd-foreground: 222 30% 18%;
+    --fd-muted: 210 28% 95%;
+    --fd-muted-foreground: 215 16% 45%;
+    --fd-border: 214 20% 90%;
+    --fd-accent: 156 30% 94%;
+    --fd-accent-foreground: 156 62% 28%;
+    --fd-ring: 156 62% 30%;
+  }
+
+  .dark {
+    /* Muted Brand Tokens (Dark Mode) */
+    --background: #0D1117;
+    --foreground: #E2E8F0;
+
+    --primary: #2BA375;
+    --primary-hover: #36B885;
+    --primary-light: #13241D;
+
+    --muted-bg: #161D27;
+    --muted-fg: #94A3B8;
+    --subtle-border: #242E3D;
+
+    /* Fumadocs Dark Mode Tokens */
+    --fd-primary: 156 55% 42%;
+    --fd-primary-foreground: 0 0% 100%;
+    --fd-background: 220 30% 7%;
+    --fd-foreground: 214 32% 91%;
+    --fd-muted: 218 24% 12%;
+    --fd-muted-foreground: 215 16% 62%;
+    --fd-border: 218 20% 16%;
+    --fd-accent: 218 24% 13%;
+    --fd-accent-foreground: 156 55% 50%;
+    --fd-ring: 156 55% 42%;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-body);
+    letter-spacing: -0.01em;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.02em;
+    color: var(--foreground);
+  }
+}
+
+/* Refined styling for prose elements */
+.prose {
+  font-family: var(--font-body);
+}
+
+.prose h1, .prose h2, .prose h3, .prose h4 {
+  font-family: var(--font-heading);
+}
+
+/* Subtle code blocks */
+pre {
+  border: 1px solid var(--subtle-border);
+  border-radius: 0.875rem !important;
+}

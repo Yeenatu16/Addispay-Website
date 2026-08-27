@@ -1,0 +1,34 @@
+---
+title: "Authentication & Users Module"
+description: "JWT Bearer authentication, user registration bootstrap, invitations, and SMTP password reset."
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Authentication & User Management
+
+The `internal/auth` package handles administrative authentication, JWT token generation, role verification, and SMTP transactional emails.
+
+---
+
+## 🔑 Authentication Architecture
+
+- **Token Algorithm**: `HS256` signed JWT with 4-hour expiration (`JWT_EXPIRY=4h`).
+- **Password Hashing**: `bcrypt` with cost factor 12.
+- **Dynamic Role Check**: Even if a JWT is valid, the middleware queries the database on every request to ensure the user's `isActive` flag is true and role permissions are current.
+
+---
+
+## 👥 Supported Roles
+
+1. `RoleSuperAdmin` (`SUPER_ADMIN`): Full unrestricted administrative authority.
+2. `RoleMarketer` (`MARKETER` / Content Manager): Manages news articles, brochures, hero settings, and subscribers.
+3. `RoleHR` (`HR` / Career Manager): Manages job openings and candidate applications.
+
+---
+
+## 📨 Invitation & Password Reset Workflows
+
+1. **Super Admin Invite (`POST /api/v1/admin/invitations`)**: Creates an invitation record with a 48-hour secure token and sends an invitation email via SMTP.
+2. **Accept Invitation (`POST /api/v1/auth/accept-invitation`)**: Candidate sets their password and full name, activating their administrative user account.
+3. **Password Reset (`POST /api/v1/auth/forgot-password` & `/reset-password`)**: Dispatches a one-time 15-minute token to the administrator's email.

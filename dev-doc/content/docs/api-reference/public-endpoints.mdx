@@ -1,0 +1,41 @@
+---
+title: "Public REST Endpoints"
+description: "Public endpoints: Health, News feed, Careers, Documents, Brochures, Contact, and Newsletter."
+---
+
+import { EndpointBadge } from '@/components/dev-doc/EndpointBadge';
+
+# Public Endpoints Reference
+
+---
+
+## 1. System Health
+<EndpointBadge method="GET" path="/api/v1/health" />
+Returns `{ "status": "UP", "engine": "GORM" }`.
+
+---
+
+## 2. Dynamic News Feed
+- <EndpointBadge method="GET" path="/api/v1/news/homepage" />: Latest 3 published news articles for homepage.
+- <EndpointBadge method="GET" path="/api/v1/news?page=1&limit=10&search=keyword" />: Paginated news listing.
+- <EndpointBadge method="GET" path="/api/v1/news/:slug" />: Fetch article detail by slug.
+
+---
+
+## 3. Careers & Candidate Applications
+- <EndpointBadge method="GET" path="/api/v1/careers" />: List all active open job postings.
+- <EndpointBadge method="POST" path="/api/v1/careers/apply" />: Submit job application.
+- <EndpointBadge method="POST" path="/api/v1/careers/upload-cv" />: Upload candidate CV file (multipart form).
+
+---
+
+## 4. Document & Brochure Library
+- <EndpointBadge method="GET" path="/api/v1/documents" />: List official PDF reports and audit charters.
+- <EndpointBadge method="GET" path="/api/v1/brochure" />: List public marketing brochures.
+
+---
+
+## 5. Communications
+- <EndpointBadge method="POST" path="/api/v1/content/subscribe" />: Subscribe email to newsletter.
+- <EndpointBadge method="POST" path="/api/v1/content/contact" />: Submit contact message.
+- <EndpointBadge method="GET" path="/api/v1/content/homepage" />: Get public hero settings.

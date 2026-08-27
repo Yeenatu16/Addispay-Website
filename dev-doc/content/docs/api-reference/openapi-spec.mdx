@@ -1,0 +1,42 @@
+---
+title: OpenAPI 3.1.0 Specification
+description: Download or inspect the complete machine-readable AddisPay OpenAPI specification.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# OpenAPI 3.1.0 Specification
+
+AddisPay provides a complete, machine-readable **OpenAPI 3.1.0 specification** describing all REST endpoints, schemas, parameters, and authentication methods.
+
+---
+
+## Live OpenAPI Endpoint
+
+Access the live JSON specification directly from our developer API route:
+
+```http
+GET /api/dev-doc/openapi.json
+```
+
+```bash
+# Fetch and inspect with cURL
+curl -s https://api.addispay.et/api/dev-doc/openapi.json | jq .info
+```
+
+---
+
+## Using with Developer Tools
+
+You can import this specification URL into your favorite API development tools:
+
+- **Postman**: Click **Import → Link** and paste `/api/dev-doc/openapi.json`.
+- **Insomnia**: Select **Create → Import from URL**.
+- **OpenAPI Generator**: Generate client SDKs in any programming language:
+
+```bash
+npx @openapitools/openapi-generator-cli generate \
+  -i https://api.addispay.et/api/dev-doc/openapi.json \
+  -g typescript-axios \
+  -o ./src/api-client
+```

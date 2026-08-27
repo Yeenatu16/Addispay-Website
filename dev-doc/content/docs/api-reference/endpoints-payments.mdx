@@ -1,0 +1,50 @@
+---
+title: Payment Endpoints Reference
+description: Complete REST API specification for payment creation, direct debits, QR codes, status verification, and refunds.
+---
+
+import { EndpointBadge } from '@/components/dev-doc/EndpointBadge';
+import { ApiPlayground } from '@/components/dev-doc/ApiPlayground';
+
+# Payment Endpoints Reference
+
+---
+
+## 1. Create Checkout Session
+<EndpointBadge method="POST" path="/api/v1/payments/checkout" />
+
+**Description:** Creates a payment session and returns a customer redirect URL.
+
+---
+
+## 2. Direct Charge
+<EndpointBadge method="POST" path="/api/v1/payments/direct-charge" />
+
+**Description:** Triggers a server-to-server debit prompt (Telebirr USSD / CBE Birr / Awash Pay).
+
+---
+
+## 3. Generate Dynamic EthQR
+<EndpointBadge method="POST" path="/api/v1/payments/qr/generate" />
+
+**Description:** Generates an NBE EthQR standard QR code payload and image.
+
+---
+
+## 4. Query Payment Status
+<EndpointBadge method="GET" path="/api/v1/payments/{transactionId}/status" />
+
+**Description:** Queries real-time processing and settlement status.
+
+---
+
+## 5. Process Refund
+<EndpointBadge method="POST" path="/api/v1/payments/{transactionId}/refund" />
+
+**Description:** Reverses funds back to customer payment rail.
+
+---
+
+## Live Interactive Console
+
+<ApiPlayground defaultPresetIndex={0} />

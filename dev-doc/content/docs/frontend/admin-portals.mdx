@@ -1,0 +1,50 @@
+---
+title: "Admin Portals & Role Gatekeeper"
+description: "Super Admin (/admin/super), Blog Writer (/admin/blog), and Career Writer (/admin/careers) dashboards."
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Admin CMS Dashboards & Role Gatekeeper
+
+The AddisPay CMS provides dedicated, role-specific administration views fulfilling the SRS requirements for content separation.
+
+---
+
+## 🚪 Gatekeeper Routing Architecture (`/admin`)
+
+When an authenticated administrator visits `/admin`, [`src/app/admin/page.tsx`](file:///home/latexjo/Projects/released/Addispay-Website/frontend/src/app/admin/page.tsx) automatically reads the active session role and directs them to their specialized portal:
+
+```text
+                                  ┌──► Super Admin ────► /admin/super
+                                  │
+User visits /admin ──► AdminGate ──┼──► Marketer ───────► /admin/blog
+                                  │
+                                  └──► HR / Recruiter ──► /admin/careers
+```
+
+---
+
+## 🎛️ Dedicated Portal Views
+
+### 1. Super Admin Dashboard (`/admin/super`)
+- **Combined View**: Shows Blog articles, Job postings, Team members, and Hero settings on a single unified interface without requiring constant tab switches.
+- **Team Permissions**: Invite new administrators (`RoleSuperAdmin`, `RoleMarketer`, `RoleHR`), revoke user tokens, and restore active accounts.
+- **Official Documents**: Upload and categorize official PDF licenses and assembly reports.
+
+### 2. Blog Writer Portal (`/admin/blog`)
+- **Dedicated Scope**: Displays only the news article creation, draft management, and publishing tools.
+- **Rich Text Editor**: Integrated WYSIWYG editor with live HTML sanitization (`sanitizeHtml.ts`).
+- **Cover Image Upload**: Direct upload to backend image optimization pipeline (`POST /api/v1/admin/news/upload`).
+
+### 3. Career Writer Portal (`/admin/careers`)
+- **Dedicated Scope**: Displays only open job position management and candidate application reviews.
+- **Application Status Pipeline**: Change candidate statuses (`PENDING`, `REVIEWING`, `ACCEPTED`, `REJECTED`).
+- **CV File Access**: Direct link to download and review candidate résumés.
+
+---
+
+## 🔐 Auth & Role Context (`src/context/`)
+
+- [`AuthContext.tsx`](file:///home/latexjo/Projects/released/Addispay-Website/frontend/src/context/AuthContext.tsx): Stores JWT token in secure cookies/localStorage, handles login/logout lifecycles, and checks session validity with `GET /api/v1/admin/me`.
+- [`AdminContext.tsx`](file:///home/latexjo/Projects/released/Addispay-Website/frontend/src/context/AdminContext.tsx): Provides quick demo role switching buttons during local development and testing.

@@ -1,0 +1,36 @@
+---
+title: "Content, Subscriptions & Audit Module"
+description: "Newsletter subscribers, contact inquiries, hero settings, and immutable audit trails."
+---
+
+import { EndpointBadge } from '@/components/dev-doc/EndpointBadge';
+
+# Content, Subscribers & Audit Trails
+
+The `internal/content` package manages communication channels, public homepage configuration, and administrative audit logging.
+
+---
+
+## 📬 Newsletter Subscriptions (`POST /api/v1/content/subscribe`)
+
+- Collects subscriber emails from the website footer.
+- Deduplicates email addresses and marks active subscribers.
+- Lists active subscriber count in admin dashboard (`GET /api/v1/admin/news/subscribers`).
+
+---
+
+## 💬 Contact Us Inquiries (`POST /api/v1/content/contact`)
+
+- Captures inquiries submitted via the Contact form (`/contact`).
+- Dispatches notification emails to `info@addispay.co` and `support@addispay.et`.
+
+---
+
+## 🛡️ Audit Logs (`internal/content/domain/content.go`)
+
+Every administrative action creates an immutable audit record capturing:
+- `userId`: Identifier of the acting administrator.
+- `action`: E.g. `CREATE_NEWS`, `UPDATE_JOB_STATUS`, `DELETE_DOCUMENT`, `INVITE_ADMIN`.
+- `ipAddress`: Client IP address parsed from `X-Forwarded-For` or remote connection.
+- `userAgent`: Browser / client runtime identifier.
+- `createdAt`: ISO 8601 timestamp.

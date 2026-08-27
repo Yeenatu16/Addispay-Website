@@ -1,0 +1,12 @@
+{
+  "title": "Frontend (Next.js 16)",
+  "icon": "Layout",
+  "pages": [
+    "overview",
+    "design-system",
+    "pages-routes",
+    "interactive-widgets",
+    "i18n-localization",
+    "admin-portals"
+  ]
+}

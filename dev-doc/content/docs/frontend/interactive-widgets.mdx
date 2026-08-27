@@ -1,0 +1,45 @@
+---
+title: "Interactive Widgets & Components"
+description: "Interactive features: Live Payment Simulator, Partners Marquee, CV Uploader, and PDF Viewer."
+---
+
+# Interactive Frontend Widgets
+
+The AddisPay website includes several bespoke interactive client widgets designed to engage visitors and provide realistic demonstrations of Ethiopian digital payment rails.
+
+---
+
+## 1. 💳 Live Payment Simulator (`src/components/Home/Hero.tsx`)
+
+Embedded directly inside the homepage Hero section, the **Live Payment Simulator** allows potential merchants to test how customer transactions behave across three key rails:
+
+1. **Telebirr**: Simulates entering a mobile phone number (`09...`), triggering an instant USSD PIN push, and receiving payment confirmation.
+2. **CBE Birr**: Simulates account-to-account push notifications and transaction validation.
+3. **Visa / Mastercard**: Simulates card number entry, expiry, CVV, and 3DS OTP confirmation.
+
+---
+
+## 2. 🏦 Partner Logos Marquee (`src/components/Home/PartnersMarquee.tsx`)
+
+An infinite CSS-animated marquee featuring major Ethiopian commercial banks and payment networks:
+- **Telebirr (Ethio Telecom)**
+- **Commercial Bank of Ethiopia (CBE)**
+- **Awash Bank**
+- **Dashen Bank**
+- **Bank of Abyssinia**
+- **EthSwitch National Switch**
+
+---
+
+## 3. 📄 Candidate CV Upload Selector (`src/app/careers/page.tsx`)
+
+A custom file selection and validation widget for job applicants:
+- Accepts `.pdf`, `.doc`, `.docx` files up to 10MB.
+- Shows selected filename with clear/reset button.
+- Submits file to backend `POST /api/v1/careers/upload-cv` and attaches the generated URL to the application payload.
+
+---
+
+## 4. 📑 PDF Document Viewer Modal (`src/app/documents/page.tsx`)
+
+Allows users to inspect official NBE licenses, annual reports, and shareholder charters directly in an overlaid modal without forcing immediate file downloads.

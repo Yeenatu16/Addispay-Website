@@ -1,0 +1,30 @@
+---
+title: Terminal Endpoints Reference
+description: Complete REST API specification for SoftPOS provisioning, EMV tap authorization, and batch settlements.
+---
+
+import { EndpointBadge } from '@/components/dev-doc/EndpointBadge';
+import { ApiPlayground } from '@/components/dev-doc/ApiPlayground';
+
+# Terminal & SoftPOS Endpoints
+
+---
+
+## 1. Provision SoftPOS Terminal
+<EndpointBadge method="POST" path="/api/v1/terminals/provision" />
+
+---
+
+## 2. Authorize Contactless Tap
+<EndpointBadge method="POST" path="/api/v1/terminals/softpos/authorize" />
+
+---
+
+## 3. Settle Terminal Batch
+<EndpointBadge method="POST" path="/api/v1/terminals/{terminalId}/settle-batch" />
+
+---
+
+## Interactive SoftPOS Simulator
+
+<ApiPlayground defaultPresetIndex={6} />

@@ -1,0 +1,66 @@
+---
+title: "Frontend Architecture & Tech Stack"
+description: "Overview of Next.js 16 App Router, Tailwind CSS 4, Framer Motion, and directory layout."
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Frontend Architecture
+
+The AddisPay frontend is built with modern web technologies engineered for fast initial load times, high SEO compliance, responsive mobile rendering, and seamless internationalization.
+
+---
+
+## 🛠️ Technology Stack
+
+| Technology | Project Version | Purpose |
+| :--- | :--- | :--- |
+| **Next.js** | `16.3.0` (App Router) | Server-Side Rendering (SSR), Server Components, Static Export support. |
+| **React** | `19.2.8` | Component model, Concurrent features, Action hooks. |
+| **Tailwind CSS** | `4.3.3` | Modern CSS-first tokenized styling with custom theme layers. |
+| **Framer Motion** | `13.0.0` | Fluid scroll reveal animations, interactive micro-interactions, modal transitions. |
+| **Lucide React** | `1.31.0` | Accessible vector icon set used across navigation and UI cards. |
+| **next-intl** | `4.13.5` | Translation provider and route parameter localization. |
+
+---
+
+## 📁 Source Directory Layout (`frontend/src/`)
+
+```text
+src/
+├── app/                      # Next.js App Router route hierarchy
+│   ├── layout.tsx            # Global HTML shell, SEO schemas, Context wrappers
+│   ├── globals.css           # Tailwind 4 imports, theme tokens, keyframe animations
+│   ├── page.tsx              # Homepage with hero, simulator, products, news, FAQ
+│   ├── products/             # Products showcase page
+│   ├── about/                # Company mission, leadership, and NBE license info
+│   ├── blog/                 # News articles listing & dynamic slug /blog/[slug]
+│   ├── careers/              # Open job positions & candidate application modal
+│   ├── documents/            # Official PDF document library with category filter
+│   ├── brochure/             # Marketing brochure gallery
+│   ├── contact/              # Interactive contact inquiry form
+│   ├── faq/                  # Interactive expandable FAQs
+│   ├── merchant-agreement/   # Legal Merchant Service Agreement
+│   └── admin/                # Gatekeeper & split dashboards (/super, /blog, /careers)
+│
+├── components/
+│   ├── ui/                   # Reusable Design System: Button, Card, Modal, Input, etc.
+│   ├── layout/               # Header, Navbar, Footer, MobileNav, Breadcrumbs
+│   ├── Home/                 # Hero, Live Payment Simulator, Partners Marquee, ProductsGrid
+│   ├── Blog/                 # Article card, blog filtering, social sharing
+│   ├── Contact/              # Contact form component
+│   └── admin/                # AdminGate, RichTextEditor, InvitationsTable
+│
+├── context/
+│   ├── AuthContext.tsx       # JWT authentication & session token state
+│   ├── LanguageContext.tsx   # Bilingual language switching (English / Amharic)
+│   └── AdminContext.tsx      # Admin role switching & mock demo helpers
+│
+├── data/
+│   └── translations.ts       # Bilingual dictionary (English & Amharic translations)
+│
+└── lib/
+    ├── api/                  # API client functions (health, auth, news, careers, content)
+    ├── sanitizeHtml.ts       # Client-side HTML sanitizer for blog rich text
+    └── youtube.ts            # Video helper for brochure gallery
+```

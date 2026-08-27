@@ -1,0 +1,27 @@
+---
+title: "Role & Permission Matrix"
+description: "Role-Based Access Control (RBAC) permissions matrix across Super Admin, Marketer, and HR roles."
+---
+
+# Role-Based Access Control (RBAC) Matrix
+
+The system enforces strict permission checks on all protected routes and API endpoints.
+
+---
+
+## 👥 Role Permissions Matrix
+
+| Resource / Capability | `SUPER_ADMIN` | `MARKETER` (Content) | `HR` (Careers) | Public User |
+| :--- | :---: | :---: | :---: | :---: |
+| **View Published News & Articles** | ✅ | ✅ | ✅ | ✅ |
+| **Create / Edit / Delete News Articles** | ✅ | ✅ | ❌ | ❌ |
+| **Upload News Cover Images (WebP)** | ✅ | ✅ | ❌ | ❌ |
+| **View / Manage Newsletter Subscribers** | ✅ | ✅ | ❌ | ❌ |
+| **View Open Careers & Apply** | ✅ | ✅ | ✅ | ✅ |
+| **Upload Candidate CVs** | ✅ | ✅ | ✅ | ✅ |
+| **Create / Edit / Delete Job Postings** | ✅ | ❌ | ✅ | ❌ |
+| **Review Applications & Change Status** | ✅ | ❌ | ✅ | ❌ |
+| **Manage Official PDF Documents** | ✅ | ❌ | ❌ | ❌ (View only) |
+| **Manage Marketing Brochures** | ✅ | ✅ | ❌ | ❌ (View only) |
+| **Invite / Revoke Administrators** | ✅ | ❌ | ❌ | ❌ |
+| **Inspect System Security Audit Logs** | ✅ | ❌ | ❌ | ❌ |

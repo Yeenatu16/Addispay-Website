@@ -1,0 +1,29 @@
+---
+title: "Official Documents Library Module"
+description: "PDF document uploads, NBE licenses, audit reports, and category management."
+---
+
+import { EndpointBadge } from '@/components/dev-doc/EndpointBadge';
+
+# Official PDF Document Library
+
+The `internal/documents` package powers the public official document repository on [`/documents`](file:///home/latexjo/Projects/released/Addispay-Website/frontend/src/app/documents/page.tsx).
+
+---
+
+## 📑 Document Structure
+
+- `id` (UUID Primary Key)
+- `title` (e.g. *NBE Payment System Operator License*)
+- `category` (*Licenses*, *Audit & Financials*, *Governance*, *General Assemblies*)
+- `fileUrl` (Path to stored PDF file in `/uploads/documents/`)
+- `fileSizeBytes`, `publishedDate`
+
+---
+
+## 🔒 Category & Document Management
+
+Super Admins can:
+1. Upload new official PDF reports (`POST /api/v1/admin/documents/upload`).
+2. Create document records with category assignments (`POST /api/v1/admin/documents`).
+3. Delete expired documents (`DELETE /api/v1/admin/documents/:id`).

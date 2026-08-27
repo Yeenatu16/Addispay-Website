@@ -1,0 +1,37 @@
+---
+title: "Careers & Job Applications Module"
+description: "Job openings management, candidate application intake, CV upload, and status transitions."
+---
+
+import { EndpointBadge } from '@/components/dev-doc/EndpointBadge';
+
+# Careers & Candidate Applications
+
+The `internal/careers` package manages the AddisPay recruitment portal, allowing HR administrators to create job postings and process candidate submissions.
+
+---
+
+## 💼 Domain Models
+
+### 1. Job Posting (`domain.JobPosting`)
+- `id` (UUID Primary Key)
+- `title`, `department`, `location`, `type` (`FULL_TIME`, `PART_TIME`, `CONTRACT`, `INTERNSHIP`)
+- `description`, `requirements` (HTML Rich Text)
+- `status` (`ACTIVE`, `CLOSED`)
+- `createdById` (Foreign Key to `users`)
+
+### 2. Job Application (`domain.JobApplication`)
+- `id` (UUID Primary Key)
+- `jobId` (Foreign Key to `job_postings` with `ON DELETE CASCADE`)
+- `fullName`, `email`, `phone`, `coverLetter`, `cvUrl`
+- `status` (`PENDING`, `REVIEWING`, `ACCEPTED`, `REJECTED`)
+- `appliedAt` (Timestamp)
+
+---
+
+## 📎 Candidate CV Upload (`POST /api/v1/careers/upload-cv`)
+
+Accepts multipart form file uploads:
+- Max Size: 10MB
+- Allowed MIME types: `application/pdf`, `application/msword`, `application/vnd.openxmlformats-officedocument.wordprocessingml.document`
+- Storage: Saved to `backend/uploads/cvs/` with collision-resistant UUID filenames.

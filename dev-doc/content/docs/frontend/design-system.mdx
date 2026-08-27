@@ -1,0 +1,117 @@
+---
+title: "Design System & UI Components"
+description: "Modular component library: Buttons, Cards, Modals, Forms, Typography, Badges, and Skeletons."
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+# Design System & UI Components
+
+A modular, accessible design system is implemented in [`src/components/ui/`](file:///home/latexjo/Projects/released/Addispay-Website/frontend/src/components/ui/index.tsx) with custom CSS tokens in `src/app/globals.css`.
+
+---
+
+## 🎨 Color Palette & Brand Tokens
+
+| Token | Hex Value | Role in Interface |
+| :--- | :--- | :--- |
+| **Primary (Emerald)** | `#00A36D` | Main brand color, call-to-action buttons, active navigation, links. |
+| **Primary Dark** | `#008959` | Hover states and focused ring borders. |
+| **Primary Light** | `#E5F5EE` | Subtle badge backgrounds, highlight pills, card tints. |
+| **Secondary (Gold)** | `#F5A414` | Badges, accents, star ratings, CTA highlights. |
+| **Slate Dark** | `#0F172A` / `#101828` | Headings, hero background, high-contrast dark elements. |
+| **Muted Grey** | `#6A7282` | Body description text, form labels, footer copyright. |
+
+---
+
+## 🧱 Component Catalog
+
+### 1. Buttons (`Button.tsx`)
+Supports multiple visual variants, sizes, icon alignments, and loading states:
+
+- **Variants**: `primary`, `secondary`, `outline`, `ghost`, `danger`, `gold`.
+- **Sizes**: `sm` (compact), `md` (standard), `lg` (prominent), `xl` (hero action).
+- **Props**: `isLoading` (renders spinner and disables clicks), `leftIcon`, `rightIcon`, `fullWidth`.
+
+```tsx
+import { Button } from '@/components/ui';
+import { ArrowRight, Download } from 'lucide-react';
+
+<Button variant="primary" size="lg" rightIcon={<ArrowRight className="w-4 h-4" />}>
+  Get Started Now
+</Button>
+
+<Button variant="outline" isLoading={submitting}>
+  Submitting Application
+</Button>
+```
+
+---
+
+### 2. Cards (`Card.tsx`)
+Composable container with multiple visual styles:
+- **Variants**: `default`, `bordered`, `glass` (backdrop blur), `gradient`, `interactive` (hover elevation).
+- **Sub-components**: `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`, `CardFooter`.
+
+```tsx
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui';
+
+<Card variant="interactive">
+  <CardHeader>
+    <CardTitle>Telebirr Integration</CardTitle>
+    <CardDescription>Instant mobile checkout for 45M+ users</CardDescription>
+  </CardHeader>
+  <CardContent>
+    <p className="text-sm text-gray-600">Supports USSD STK Push, H5 web redirect, and dynamic QR.</p>
+  </CardContent>
+</Card>
+```
+
+---
+
+### 3. Accessible Dialogs (`Modal.tsx`)
+Overlaid modal dialog with backdrop blur, **Framer Motion** entrance/exit transitions, keyboard `Escape` listener, and focus lock:
+- **Sub-components**: `ModalHeader`, `ModalBody`, `ModalFooter`.
+
+```tsx
+<Modal isOpen={isApplyModalOpen} onClose={() => setIsApplyModalOpen(false)} title="Apply for Job">
+  <ModalBody>
+    <form onSubmit={handleJobSubmit} className="space-y-4">
+      {/* Form controls */}
+    </form>
+  </ModalBody>
+  <ModalFooter>
+    <Button variant="ghost" onClick={() => setIsApplyModalOpen(false)}>Cancel</Button>
+    <Button variant="primary" type="submit">Submit Application</Button>
+  </ModalFooter>
+</Modal>
+```
+
+---
+
+### 4. Form Controls (`Input.tsx`, `Select.tsx`, `Textarea.tsx`, `Switch.tsx`)
+Custom form elements with built-in label text, helper captions, error validation states, and focus rings:
+
+```tsx
+<Input
+  label="Full Name"
+  placeholder="e.g. Almaz Bekele"
+  required
+  error={formErrors.fullName}
+  helperText="Enter your name as it appears on your ID"
+/>
+```
+
+---
+
+### 5. Status Badges (`Badge.tsx`)
+Semantic badges for publication statuses, transaction states, and department tags:
+- **Variants**: `primary`, `secondary`, `success`, `warning`, `danger`, `gold`.
+- **Props**: `dot` (displays live status dot indicator).
+
+---
+
+### 6. Empty & Error States (`EmptyState.tsx`, `ErrorState.tsx`)
+- **EmptyState**: Fulfills SRS **FR-DYN-004** (*"No news available at this time"*), rendering friendly illustration icons and optional action CTAs.
+- **ErrorState**: Error recovery card with automatic retry action triggers and dismissible banners.

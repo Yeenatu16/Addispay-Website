@@ -1,0 +1,545 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AddisPay Developer Platform API",
+    "version": "1.0.0",
+    "description": "Comprehensive REST APIs for the AddisPay Ethiopian National Payment Gateway & CMS Platform (NBE License NPS/PSO/007/2022). Supports Hosted Checkout, Direct Debit (Telebirr USSD, CBE Birr, Awash Pay, Amole), Dynamic EthQR, Android SoftPOS, Webhooks, Settlements, and Admin Content Management.",
+    "contact": {
+      "name": "AddisPay Developer Support",
+      "email": "support@addispay.et",
+      "url": "https://addispay.et"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.addispay.et/api/v1",
+      "description": "Production Environment"
+    },
+    {
+      "url": "https://sandbox.addispay.et/api/v1",
+      "description": "Sandbox / Testing Environment"
+    },
+    {
+      "url": "/api/dev-doc/simulate",
+      "description": "Interactive Documentation Simulator"
+    }
+  ],
+  "paths": {
+    "/payments/checkout": {
+      "post": {
+        "summary": "Create Hosted Checkout Session",
+        "description": "Initializes an AddisPay hosted checkout session and returns a secure payment redirect URL for the customer.",
+        "tags": ["Payments & Checkout"],
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["amount", "currency", "orderId", "returnUrl"],
+                "properties": {
+                  "amount": { "type": "number", "example": 1500.00, "description": "Transaction amount in ETB or USD" },
+                  "currency": { "type": "string", "enum": ["ETB", "USD"], "default": "ETB" },
+                  "orderId": { "type": "string", "example": "ORD-2026-88412", "description": "Merchant unique order identifier" },
+                  "description": { "type": "string", "example": "E-Commerce Purchase: Order #88412" },
+                  "returnUrl": { "type": "string", "format": "uri", "example": "https://merchant.example.com/checkout/complete" },
+                  "cancelUrl": { "type": "string", "format": "uri", "example": "https://merchant.example.com/checkout/cancel" },
+                  "webhookUrl": { "type": "string", "format": "uri", "example": "https://merchant.example.com/api/webhooks/addispay" },
+                  "customer": {
+                    "type": "object",
+                    "properties": {
+                      "name": { "type": "string", "example": "Almaz Bekele" },
+                      "email": { "type": "string", "format": "email", "example": "almaz@example.com" },
+                      "phoneNumber": { "type": "string", "example": "+251911223344" }
+                    }
+                  },
+                  "metadata": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "example": { "branchId": "BOLE-04", "posUser": "cashier_3" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Checkout session successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "SUCCESS" },
+                    "code": { "type": "integer", "example": 200 },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "sessionId": { "type": "string", "example": "chk_sess_9a8b7c6d5e4f3a2b" },
+                        "checkoutUrl": { "type": "string", "example": "https://checkout.addispay.et/pay/chk_sess_9a8b7c6d5e4f3a2b" },
+                        "transactionId": { "type": "string", "example": "TXN_ETB_20260827_88412" },
+                        "expiresAt": { "type": "string", "format": "date-time", "example": "2026-08-27T18:25:00Z" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/direct-charge": {
+      "post": {
+        "summary": "Direct Server-to-Server Payment",
+        "description": "Debits funds directly from a mobile wallet (Telebirr USSD push, CBE Birr prompt, Awash Pay, Amole) or card token.",
+        "tags": ["Payments & Checkout"],
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["amount", "currency", "paymentMethod", "customerPhone"],
+                "properties": {
+                  "amount": { "type": "number", "example": 500.00 },
+                  "currency": { "type": "string", "enum": ["ETB"], "default": "ETB" },
+                  "paymentMethod": { "type": "string", "enum": ["TELEBIRR_USSD", "CBE_BIRR", "AWASH_PAY", "AMOLE_DASHEN", "CARD_TOKEN"] },
+                  "customerPhone": { "type": "string", "example": "+251911223344" },
+                  "orderId": { "type": "string", "example": "DIR-77491" },
+                  "narration": { "type": "string", "example": "Subscription Renewal Aug 2026" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Direct charge initiated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "PENDING" },
+                    "code": { "type": "integer", "example": 200 },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "transactionId": { "type": "string", "example": "TXN_DIR_20260827_77491" },
+                        "message": { "type": "string", "example": "USSD STK Push prompt sent to +251911223344. Awaiting customer PIN authorization." },
+                        "status": { "type": "string", "example": "PENDING" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/qr/generate": {
+      "post": {
+        "summary": "Generate Dynamic EthQR / Telebirr QR",
+        "description": "Generates an NBE-compliant EthQR and Telebirr interoperable dynamic QR code payload with instant base64 visual output.",
+        "tags": ["Payments & Checkout"],
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["amount", "orderId"],
+                "properties": {
+                  "amount": { "type": "number", "example": 450.00 },
+                  "orderId": { "type": "string", "example": "QR-88219" },
+                  "storeName": { "type": "string", "example": "Addis Mart Bole" },
+                  "expiryMinutes": { "type": "integer", "default": 15 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "QR Code generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "SUCCESS" },
+                    "code": { "type": "integer", "example": 200 },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "qrString": { "type": "string", "example": "00020101021226580010ET.ETHIO.ETHQR0116ADDISPAY88219020477215204581453032305406450.005802ET5914Addis Mart Bole6011Addis Ababa6304E8A2" },
+                        "qrCodeDataUrl": { "type": "string", "example": "data:image/svg+xml;base64,..." },
+                        "transactionId": { "type": "string", "example": "TXN_QR_20260827_88219" },
+                        "expiresAt": { "type": "string", "example": "2026-08-27T18:30:00Z" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/{transactionId}/status": {
+      "get": {
+        "summary": "Query Payment Status",
+        "description": "Retrieves the real-time processing status of any transaction by transaction ID or merchant order reference.",
+        "tags": ["Payments & Checkout"],
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "transactionId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "example": "TXN_ETB_20260827_88412"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transaction details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "SUCCESS" },
+                    "code": { "type": "integer", "example": 200 },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "transactionId": { "type": "string", "example": "TXN_ETB_20260827_88412" },
+                        "orderId": { "type": "string", "example": "ORD-2026-88412" },
+                        "amount": { "type": "number", "example": 1500.00 },
+                        "currency": { "type": "string", "example": "ETB" },
+                        "status": { "type": "string", "enum": ["PENDING", "COMPLETED", "FAILED", "REFUNDED", "EXPIRED"], "example": "COMPLETED" },
+                        "paymentMethod": { "type": "string", "example": "TELEBIRR" },
+                        "payerAccount": { "type": "string", "example": "0911***344" },
+                        "rrn": { "type": "string", "example": "884129910243" },
+                        "settledAt": { "type": "string", "example": "2026-08-27T18:12:04Z" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/{transactionId}/refund": {
+      "post": {
+        "summary": "Initiate Refund",
+        "description": "Executes a full or partial refund to the customer's original payment rail (Telebirr, Bank Account, or Card).",
+        "tags": ["Payments & Checkout"],
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "transactionId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "example": "TXN_ETB_20260827_88412"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["amount", "reason"],
+                "properties": {
+                  "amount": { "type": "number", "example": 1500.00 },
+                  "reason": { "type": "string", "example": "Customer returned merchandise within 7 days" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Refund processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "SUCCESS" },
+                    "code": { "type": "integer", "example": 200 },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "refundId": { "type": "string", "example": "REF_20260827_00912" },
+                        "originalTransactionId": { "type": "string", "example": "TXN_ETB_20260827_88412" },
+                        "amount": { "type": "number", "example": 1500.00 },
+                        "status": { "type": "string", "example": "COMPLETED" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/merchants/balances": {
+      "get": {
+        "summary": "Get Merchant Balances",
+        "description": "Returns current available, pending, and reserved balances across ETB and USD wallets.",
+        "tags": ["Merchant Account & Settlement"],
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Account balances",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "SUCCESS" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "etb": {
+                          "type": "object",
+                          "properties": {
+                            "available": { "type": "number", "example": 458900.50 },
+                            "pending": { "type": "number", "example": 12400.00 },
+                            "currency": { "type": "string", "example": "ETB" }
+                          }
+                        },
+                        "usd": {
+                          "type": "object",
+                          "properties": {
+                            "available": { "type": "number", "example": 18240.00 },
+                            "pending": { "type": "number", "example": 950.00 },
+                            "currency": { "type": "string", "example": "USD" }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/merchants/payouts": {
+      "post": {
+        "summary": "Trigger Settlement Payout",
+        "description": "Requests an instant transfer from AddisPay balance to an Ethiopian Commercial Bank Account (CBE, Awash, Dashen, etc.) or Telebirr Merchant Account.",
+        "tags": ["Merchant Account & Settlement"],
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["amount", "destinationBank", "accountNumber", "accountName"],
+                "properties": {
+                  "amount": { "type": "number", "example": 50000.00 },
+                  "destinationBank": { "type": "string", "example": "COMMERCIAL_BANK_OF_ETHIOPIA" },
+                  "accountNumber": { "type": "string", "example": "1000123456789" },
+                  "accountName": { "type": "string", "example": "Addis Mart Retail PLC" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payout initiated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "SUCCESS" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "payoutId": { "type": "string", "example": "PO_20260827_441" },
+                        "amount": { "type": "number", "example": 50000.00 },
+                        "status": { "type": "string", "example": "PROCESSING" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/terminals/softpos/authorize": {
+      "post": {
+        "summary": "Process SoftPOS NFC Contactless Payment",
+        "description": "Performs EMV Level 2 kernel contactless transaction processing for Android SoftPOS terminals.",
+        "tags": ["Terminals & SoftPOS"],
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["terminalId", "amount", "emvPayload"],
+                "properties": {
+                  "terminalId": { "type": "string", "example": "TERM-SPOS-0084" },
+                  "amount": { "type": "number", "example": 890.00 },
+                  "emvPayload": { "type": "string", "example": "9F2608...9F2701809F10...9F3704..." },
+                  "currency": { "type": "string", "default": "ETB" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Contactless tap authorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "SUCCESS" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "authCode": { "type": "string", "example": "AP78921" },
+                        "rrn": { "type": "string", "example": "202608270014" },
+                        "terminalId": { "type": "string", "example": "TERM-SPOS-0084" },
+                        "cardMask": { "type": "string", "example": "4111********1111" },
+                        "status": { "type": "string", "example": "APPROVED" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "Admin & Merchant Login",
+        "description": "Authenticates an administrator or merchant user and returns a 4-hour JWT Bearer token with RBAC roles.",
+        "tags": ["Authentication & Admin CMS"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "format": "email", "example": "admin@addispay.et" },
+                  "password": { "type": "string", "format": "password", "example": "••••••••••••" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authentication successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "SUCCESS" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "token": { "type": "string", "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." },
+                        "user": {
+                          "type": "object",
+                          "properties": {
+                            "id": { "type": "string", "example": "8f88a8e1-92b4-4e4b-b0b1-8b2b64d0d001" },
+                            "email": { "type": "string", "example": "admin@addispay.et" },
+                            "fullName": { "type": "string", "example": "Eyuel G. (Super Admin)" },
+                            "role": { "type": "string", "example": "SUPER_ADMIN" }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/news/homepage": {
+      "get": {
+        "summary": "Get Homepage News Feed",
+        "description": "Retrieves the latest 3 published announcements and news articles for public display.",
+        "tags": ["Authentication & Admin CMS"],
+        "responses": {
+          "200": {
+            "description": "List of published news",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "SUCCESS" },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "title": { "type": "string", "example": "AddisPay Expands Interoperable QR Payments Across 12 Ethiopian Banks" },
+                          "slug": { "type": "string", "example": "addispay-expands-interoperable-qr" },
+                          "coverImageUrl": { "type": "string", "example": "/uploads/news_qr.webp" },
+                          "publishedAt": { "type": "string", "example": "2026-08-20T09:00:00Z" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Pass your AddisPay Secret Key `sk_live_...` or JWT token in the Authorization header: `Bearer <token>`"
+      },
+      "SignatureAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-AddisPay-Signature",
+        "description": "HMAC-SHA256 timestamped signature for tamper-proof API and webhook security"
+      }
+    }
+  }
+}

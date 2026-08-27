@@ -1,0 +1,28 @@
+---
+title: "Functional Requirements Traceability"
+description: "Traceability matrix mapping SRS requirements (FR-ADM, FR-DYN, FR-CAR) to implementation."
+---
+
+# SRS Requirements Traceability
+
+This matrix maps each requirement from the AddisPay Software Requirements Specification (SRS) to its concrete implementation across the frontend and backend.
+
+---
+
+## 📋 Requirements Mapping
+
+| SRS Requirement ID | Requirement Description | Implementation Location |
+| :--- | :--- | :--- |
+| **`FR-ADM-001`** | Secure Administrator Authentication | `backend/internal/auth`, `frontend/src/app/admin/login/page.tsx` |
+| **`FR-ADM-002`** | News Article Creation with Rich Text & Cover Image | `backend/internal/news`, `frontend/src/app/admin/blog/page.tsx` |
+| **`FR-ADM-003`** | Instant Publishing without Server Restart | `backend/internal/news/delivery/http`, GORM instant status query |
+| **`FR-ADM-004`** | News Article Modification & Updates | `PUT /api/v1/admin/news/articles/:id` |
+| **`FR-ADM-005`** | News Article Deletion & Media Purge | `DELETE /api/v1/admin/news/articles/:id` |
+| **`FR-ADM-006`** | Draft vs Published Visibility Toggling | `PublicationStatusDraft` vs `PublicationStatusPublished` |
+| **`FR-ADM-007`** | News Feed Display on Public Homepage | `GET /api/v1/news/homepage`, `frontend/src/components/Home/BlogNewsSection.tsx` |
+| **`FR-DYN-001`** | Chronological Ordering (Latest First) | `ORDER BY published_at DESC, created_at DESC` |
+| **`FR-DYN-002`** | Title & Excerpt Display on Cards | `NewsArticle.title`, `NewsArticle.shortDescription` |
+| **`FR-DYN-003`** | Read More Navigation to Full Article | `Link href="/blog/[slug]"` |
+| **`FR-DYN-004`** | Graceful Empty State Handling | `src/components/ui/EmptyState.tsx` (*"No news available at this time."*) |
+| **`FR-CAR-001`** | Career Job Postings & CV Upload | `backend/internal/careers`, `frontend/src/app/careers/page.tsx` |
+| **`FR-DOC-001`** | Official PDF Document Library | `backend/internal/documents`, `frontend/src/app/documents/page.tsx` |

@@ -1,0 +1,35 @@
+---
+title: Merchant & Settlement Endpoints Reference
+description: Complete REST API specification for balances, automated payouts, transactions, and disputes.
+---
+
+import { EndpointBadge } from '@/components/dev-doc/EndpointBadge';
+import { ApiPlayground } from '@/components/dev-doc/ApiPlayground';
+
+# Merchant & Settlement Endpoints
+
+---
+
+## 1. Retrieve Account Balances
+<EndpointBadge method="GET" path="/api/v1/merchants/balances" />
+
+---
+
+## 2. Trigger Bank Settlement Payout
+<EndpointBadge method="POST" path="/api/v1/merchants/payouts" />
+
+---
+
+## 3. List Transactions
+<EndpointBadge method="GET" path="/api/v1/merchants/transactions" />
+
+---
+
+## 4. Submit Dispute Evidence
+<EndpointBadge method="POST" path="/api/v1/merchants/disputes/{disputeId}/evidence" />
+
+---
+
+## Live Interactive Console
+
+<ApiPlayground defaultPresetIndex={5} />

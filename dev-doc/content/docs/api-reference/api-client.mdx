@@ -1,0 +1,42 @@
+---
+title: "Frontend API Client SDK"
+description: "Type-safe fetch client, auth token injection, multipart upload, and error unmarshaling."
+---
+
+# Frontend API Client (`src/lib/api/`)
+
+The frontend application communicates with the Go backend through a type-safe API client located in [`src/lib/api/`](file:///home/latexjo/Projects/released/Addispay-Website/frontend/src/lib/api/index.ts).
+
+---
+
+## 🛠️ Core Helpers (`src/lib/api/client.ts`)
+
+- `apiRequest<T>(path, options)`: Handles JSON serialization, query parameter formatting, and JWT Bearer header injection when `auth: true`.
+- `apiUpload<T>(path, file)`: Performs multipart/form-data POST requests for image and PDF file uploads.
+- `mediaUrl(path)`: Transforms relative upload paths (`/uploads/...`) into absolute URLs pointing to the Go server origin.
+- `errorMessage(err)`: Unmarshals backend error responses (`ApiError`) into user-friendly localized error strings.
+
+---
+
+## 💻 Usage Example
+
+```typescript
+import { news, careers, auth, errorMessage } from '@/lib/api';
+
+// 1. Fetch homepage news articles
+const { articles } = await news.homepage();
+
+// 2. Submit candidate application with uploaded CV
+try {
+  const upload = await careers.uploadCv(selectedFile);
+  const application = await careers.apply({
+    jobId: currentJob.id,
+    fullName: 'Almaz Bekele',
+    email: 'almaz@example.com',
+    phone: '+251911223344',
+    cvUrl: upload.url,
+  });
+} catch (err) {
+  console.error(errorMessage(err));
+}
+```

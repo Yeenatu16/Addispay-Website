@@ -1,0 +1,58 @@
+---
+title: "Local Development Setup"
+description: "How to run the Go backend and Next.js frontend together with environment configuration."
+---
+
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+# Local Development Setup
+
+Follow these steps to run the complete AddisPay web application locally.
+
+---
+
+<Steps>
+
+### Step 1: Clone & Configure Backend
+
+```bash
+cd backend
+cp .env.example .env
+```
+
+Edit `backend/.env` with your PostgreSQL database credentials:
+
+```ini
+PORT=8080
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/addispay?sslmode=disable
+JWT_SECRET=super-secret-development-key-32-chars-min
+FRONTEND_URL=http://localhost:3000
+```
+
+Start the backend:
+```bash
+go run ./cmd/api
+```
+
+---
+
+### Step 2: Configure & Start Frontend
+
+```bash
+cd ../frontend
+cp .env.example .env.local
+```
+
+Edit `frontend/.env.local`:
+```ini
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8080/api/v1
+```
+
+Run development server:
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+</Steps>

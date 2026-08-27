@@ -1,0 +1,12 @@
+{
+  "title": "AddisPay Website Documentation",
+  "pages": [
+    "index",
+    "architecture",
+    "frontend",
+    "backend",
+    "api-reference",
+    "srs-requirements",
+    "deployment-devops"
+  ]
+}

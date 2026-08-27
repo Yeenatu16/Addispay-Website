@@ -1,0 +1,71 @@
+---
+title: "Backend Architecture & Setup"
+description: "Go 1.26+ Clean Architecture, Gin HTTP Router, GORM ORM, PostgreSQL, and Dependency Injection."
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Go Backend Architecture
+
+The AddisPay backend is a high-performance REST API developed in **Go 1.26+** utilizing the **Gin web framework** and **GORM ORM** for PostgreSQL data access.
+
+---
+
+## 📦 Package Structure (`backend/`)
+
+```text
+backend/
+├── cmd/api/main.go              # Application entrypoint & Dependency Injection wiring
+├── .env / .env.example          # Runtime environment variables
+├── uploads/                     # Uploaded media (news images, PDF documents, candidate CVs)
+└── internal/
+    ├── config/                  # Environment variable configuration loading
+    ├── database/                # GORM PostgreSQL connection & AutoMigrate
+    ├── response/                # Standardized JSON response helpers
+    ├── server/
+    │   ├── router.go            # Gin route definitions & middleware pipeline
+    │   ├── cors.go              # CORS configuration
+    │   └── security.go          # Security headers (CSP, HSTS, X-Content-Type)
+    ├── auth/                    # Users, JWT HS256, Invitations, Password Reset, Mailer
+    ├── news/                    # News articles CRUD, draft/published, WebP compression
+    ├── careers/                 # Job postings CRUD, candidate applications, CV upload
+    ├── documents/               # Official PDF document library & categories
+    ├── brochure/                # Marketing brochure gallery & uploads
+    └── content/                 # Newsletter, Contact inquiries, Hero settings, Audit logs
+```
+
+---
+
+## ⚡ Quick Start
+
+```bash
+cd backend
+
+# 1. Install Go dependencies
+go mod tidy
+
+# 2. Start PostgreSQL (e.g. via Docker Compose or local instance)
+# 3. Run the API server
+go run ./cmd/api
+```
+
+### Health Check
+
+```bash
+curl http://localhost:8080/api/v1/health
+```
+
+```json
+{
+  "status": "UP",
+  "engine": "GORM"
+}
+```
+
+---
+
+## 🛡️ Security Middleware
+
+1. **SecurityHeaders (`internal/server/security.go`)**: Sets `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, and `Permissions-Policy`.
+2. **CORS (`internal/server/cors.go`)**: Configured with strict origin allowlists matching production domains (`https://addispay.et`) and local development origins (`http://localhost:3000`).
+3. **GinAuthMiddleware (`internal/auth/delivery/http/middleware.go`)**: Validates the JWT Bearer token and performs a live database lookup to ensure the user account is active and has not been revoked.

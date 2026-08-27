@@ -1,0 +1,84 @@
+---
+title: "AddisPay Website Overview"
+description: "Comprehensive technical documentation for the AddisPay public web platform, admin CMS, and Go backend API."
+icon: "BookOpen"
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# AddisPay Website Platform Documentation
+
+Welcome to the internal engineering documentation for the **AddisPay Website Repository**. This platform comprises the public marketing website, interactive payment simulator, merchant onboarding gateway, candidate application portal, official document repository, and a multi-role administrative content management system (CMS) backed by a high-performance **Go REST API**.
+
+---
+
+## 🏛️ Project Architecture at a Glance
+
+The AddisPay web platform is architected as a modular monorepo containing:
+
+1. **Frontend (`frontend/`)**: Built on **Next.js 16.3.0 (App Router)**, **React 19.2.8**, **Tailwind CSS 4**, and **Framer Motion**. It supports server-side rendering (SSR), static export mode, bilingual internationalization (English & Amharic), accessible design system tokens, and interactive client widgets.
+2. **Backend (`backend/`)**: Built in **Go 1.26+** using the **Gin HTTP framework**, **GORM ORM**, and **PostgreSQL**. Structured using **Clean Architecture** (`Delivery -> Usecase -> Repository -> Database`) with JWT Bearer authentication, WebP image processing, and transactional integrity.
+3. **Dedicated Documentation (`dev-doc/`)**: Standalone **Fumadocs** documentation suite with full-text search, component API docs, and endpoint specifications.
+
+```text
+Addispay-Website/
+├── backend/                  # Go REST API, GORM ORM, PostgreSQL database
+│   ├── cmd/api/main.go       # Dependency injection wiring & HTTP server
+│   └── internal/             # Auth, News, Careers, Documents, Brochures, Content
+├── frontend/                 # Next.js 16 App Router public website & admin portal
+│   ├── src/app/              # Public pages & /admin multi-role dashboard
+│   ├── src/components/       # Design system, layout, widgets, rich text editor
+│   ├── src/context/          # AuthContext, LanguageContext, AdminContext
+│   └── src/lib/api/          # Type-safe API client functions
+└── dev-doc/                  # Dedicated documentation web application (Fumadocs)
+```
+
+---
+
+## 👥 Team Task Allocation & Delivery Scope
+
+According to the project Kanban board and AddisPay Software Requirements Specification (SRS):
+
+| Engineer / Scope | Assigned Responsibilities | Status |
+| :--- | :--- | :--- |
+| **Eyuel (EG)** | Design System, Global Layout, Homepage Framework, Responsive Design, Performance Optimization | **Completed** |
+| **Kibrom (KG)** | Business & Product Sections, Company Pages, Brochure & Documents Library | **Completed & Integrated** |
+| **Lidet (LA)** | Dynamic News Feed Section, Blog Article Details, Subscriber Notifications | **Completed & Integrated** |
+
+---
+
+## 📚 Documentation Sections
+
+<Cards>
+  <Card
+    title="System Architecture"
+    description="Fullstack Clean Architecture, PostgreSQL database ER diagrams, and security models."
+    href="/docs/architecture"
+  />
+  <Card
+    title="Frontend Documentation"
+    description="Design system UI components, App Router pages, Amharic i18n, and Admin portals."
+    href="/docs/frontend/overview"
+  />
+  <Card
+    title="Backend Documentation"
+    description="Go API Clean Architecture, JWT authentication, news, careers, and document modules."
+    href="/docs/backend/overview"
+  />
+  <Card
+    title="REST API Reference"
+    description="Comprehensive HTTP endpoints reference, request/response models, and frontend API client."
+    href="/docs/api-reference/overview"
+  />
+  <Card
+    title="SRS & Requirements"
+    description="Software Requirements Specification traceability matrix and RBAC role definitions."
+    href="/docs/srs-requirements/functional-requirements"
+  />
+  <Card
+    title="Deployment & DevOps"
+    description="Docker Compose multi-container setup and Render.com cloud deployment blueprint."
+    href="/docs/deployment-devops/local-development"
+  />
+</Cards>

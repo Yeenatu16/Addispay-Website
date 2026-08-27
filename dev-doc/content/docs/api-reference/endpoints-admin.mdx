@@ -1,0 +1,71 @@
+---
+title: Admin CMS Endpoints Reference
+description: Complete REST API specification for Go backend administration endpoints.
+---
+
+import { EndpointBadge } from '@/components/dev-doc/EndpointBadge';
+
+# Admin CMS Endpoints Reference
+
+---
+
+## Authentication & Sessions
+- <EndpointBadge method="POST" path="/api/v1/auth/login" />
+- <EndpointBadge method="POST" path="/api/v1/auth/register" />
+- <EndpointBadge method="POST" path="/api/v1/auth/forgot-password" />
+- <EndpointBadge method="POST" path="/api/v1/auth/reset-password" />
+- <EndpointBadge method="GET" path="/api/v1/auth/invitations" />
+- <EndpointBadge method="POST" path="/api/v1/auth/accept-invitation" />
+- <EndpointBadge method="GET" path="/api/v1/admin/me" />
+
+---
+
+## News CMS
+- <EndpointBadge method="GET" path="/api/v1/admin/news/articles" />
+- <EndpointBadge method="GET" path="/api/v1/admin/news/articles/{id}" />
+- <EndpointBadge method="POST" path="/api/v1/admin/news/articles" />
+- <EndpointBadge method="PUT" path="/api/v1/admin/news/articles/{id}" />
+- <EndpointBadge method="DELETE" path="/api/v1/admin/news/articles/{id}" />
+- <EndpointBadge method="POST" path="/api/v1/admin/news/upload" />
+- <EndpointBadge method="GET" path="/api/v1/admin/news/settings" />
+- <EndpointBadge method="PUT" path="/api/v1/admin/news/settings" />
+- <EndpointBadge method="GET" path="/api/v1/admin/news/audit-logs" />
+- <EndpointBadge method="GET" path="/api/v1/admin/news/subscribers" />
+
+---
+
+## Careers CMS
+- <EndpointBadge method="GET" path="/api/v1/admin/careers/jobs" />
+- <EndpointBadge method="GET" path="/api/v1/admin/careers/jobs/{id}" />
+- <EndpointBadge method="POST" path="/api/v1/admin/careers/jobs" />
+- <EndpointBadge method="PUT" path="/api/v1/admin/careers/jobs/{id}" />
+- <EndpointBadge method="DELETE" path="/api/v1/admin/careers/jobs/{id}" />
+- <EndpointBadge method="GET" path="/api/v1/admin/careers/applications" />
+- <EndpointBadge method="PUT" path="/api/v1/admin/careers/applications/{id}/status" />
+- <EndpointBadge method="GET" path="/api/v1/admin/careers/audit-logs" />
+
+---
+
+## Documents & Brochures
+- <EndpointBadge method="GET" path="/api/v1/admin/documents" />
+- <EndpointBadge method="POST" path="/api/v1/admin/documents" />
+- <EndpointBadge method="PUT" path="/api/v1/admin/documents/{id}" />
+- <EndpointBadge method="DELETE" path="/api/v1/admin/documents/{id}" />
+- <EndpointBadge method="POST" path="/api/v1/admin/documents/upload" />
+- <EndpointBadge method="GET" path="/api/v1/admin/brochure" />
+- <EndpointBadge method="POST" path="/api/v1/admin/brochure" />
+- <EndpointBadge method="PUT" path="/api/v1/admin/brochure/{id}" />
+- <EndpointBadge method="DELETE" path="/api/v1/admin/brochure/{id}" />
+- <EndpointBadge method="POST" path="/api/v1/admin/brochure/upload" />
+
+---
+
+## Super Admin Management
+- <EndpointBadge method="POST" path="/api/v1/admin/invitations" />
+- <EndpointBadge method="GET" path="/api/v1/admin/invitations" />
+- <EndpointBadge method="DELETE" path="/api/v1/admin/invitations/{id}" />
+- <EndpointBadge method="GET" path="/api/v1/admin/users" />
+- <EndpointBadge method="POST" path="/api/v1/admin/users/{id}/revoke" />
+- <EndpointBadge method="POST" path="/api/v1/admin/users/{id}/restore" />
+- <EndpointBadge method="GET" path="/api/v1/admin/homepage/settings" />
+- <EndpointBadge method="PUT" path="/api/v1/admin/homepage/settings" />

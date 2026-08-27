@@ -1,0 +1,27 @@
+---
+title: "Pages & Route Hierarchy"
+description: "Public Next.js App Router pages: Home, Products, About, News, Careers, Documents, and Legal."
+---
+
+# Pages & Route Hierarchy
+
+The public website consists of 14 key routes optimized for user conversion and search engine discoverability.
+
+---
+
+## 🗺️ Public Routes Catalog
+
+| Route Path | File Location | Purpose & Features |
+| :--- | :--- | :--- |
+| **`/`** | `src/app/page.tsx` | Main landing page featuring Hero, Live Payment Simulator, Products Grid, Business highlights, Customer stories, Blog news feed, and FAQ. |
+| **`/products`** | `src/app/products/page.tsx` | Comprehensive product catalog (Hosted Checkout, SoftPOS, EthQR, Payment Gateway APIs, Subscriptions). |
+| **`/about`** | `src/app/about/page.tsx` | Company history, NBE PSO license credentials, executive leadership, vision & mission. |
+| **`/blog`** | `src/app/blog/page.tsx` | Dynamic news feed with category filtering, search, and pagination. |
+| **`/blog/[slug]`** | `src/app/blog/[slug]/page.tsx` | Full-content rich text article view with social media sharing (`ShareArticleButton.tsx`) and related news cards. |
+| **`/careers`** | `src/app/careers/page.tsx` | Open job positions list with department filters, CV file upload (`upload-cv`), and direct application modal. |
+| **`/documents`** | `src/app/documents/page.tsx` | Official PDF library (audit reports, shareholder reports, board charters, NBE licenses) with category filtering and inline preview. |
+| **`/brochure`** | `src/app/brochure/page.tsx` | Downloadable marketing brochures and video gallery. |
+| **`/contact`** | `src/app/contact/page.tsx` | Interactive contact form with category selector, map location, and office details. |
+| **`/faq`** / **`/faqs`** | `src/app/faq/page.tsx` | Searchable accordion FAQ covering onboarding, technical integration, pricing, and settlements. |
+| **`/merchant-agreement`**| `src/app/merchant-agreement/page.tsx` | Full Merchant Service Agreement contract terms and compliance requirements. |
+| **`/login`** | `src/app/login/page.tsx` | Merchant portal redirect gatekeeper. |

@@ -1,0 +1,8 @@
+{
+  "title": "SRS & Requirements",
+  "icon": "CheckSquare",
+  "pages": [
+    "functional-requirements",
+    "role-matrix"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "title": "Backend (Go API)",
+  "icon": "Server",
+  "pages": [
+    "overview",
+    "auth-module",
+    "news-module",
+    "careers-module",
+    "documents-module",
+    "brochures-module",
+    "content-module"
+  ]
+}

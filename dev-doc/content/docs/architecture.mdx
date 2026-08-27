@@ -1,0 +1,131 @@
+---
+title: "Fullstack Architecture & Database Schema"
+description: "End-to-end architecture: Next.js App Router frontend, Clean Architecture Go API, and PostgreSQL schema."
+icon: "Layers"
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Architecture & Database Schema
+
+The AddisPay web platform operates as a decoupled, fullstack web application consisting of a Next.js 16 frontend talking to a Go REST API over HTTP/JSON.
+
+---
+
+## 🏗️ Fullstack System Topology
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│             Frontend (Next.js 16 + React 19)                │
+│  • Public Pages: Home, Products, About, Blog, Careers, Docs │
+│  • Admin Portals: /admin/super, /admin/blog, /admin/careers │
+│  • Context: LanguageContext (EN/AM), AuthContext, AdminCtx  │
+│  • API Client: src/lib/api/ (Type-safe Fetch Wrapper)       │
+└──────────────────────────────┬──────────────────────────────┘
+                               │ HTTP / JSON
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│                 Go REST API (Gin Engine)                    │
+│  • Security: CORS, Content-Security-Policy, HSTS, X-Frame   │
+│  • Auth Middleware: JWT Bearer (HS256) + Realtime Role Check│
+│  • Static File Server: /uploads/ (News WebP, Candidate CVs) │
+└──────────────────────────────┬──────────────────────────────┘
+                               │
+            ┌──────────────────┴──────────────────┐
+            ▼                                     ▼
+┌─────────────────────────────┐       ┌─────────────────────────────┐
+│    Clean Architecture       │       │    PostgreSQL Database      │
+│  • Delivery (HTTP Handlers) │       │  • AutoMigrated GORM Tables │
+│  • Usecase (Business Logic) │◄─────►│  • UUID Primary Keys        │
+│  • Repository (GORM Queries)│       │  • Foreign Key Constraints  │
+└─────────────────────────────┘       └─────────────────────────────┘
+```
+
+---
+
+## 📐 Backend Clean Architecture Flow
+
+Each business domain in `backend/internal/` strictly follows clean separation of concerns:
+
+```text
+Request ──► HTTP Handler ──► Usecase (Domain Logic) ──► Repository (GORM) ──► PostgreSQL
+```
+
+1. **Delivery (`internal/<domain>/delivery/http`)**: Parses JSON / multipart form inputs, validates fields, and maps domain errors to standard HTTP status codes.
+2. **Domain (`internal/<domain>/domain`)**: Defines core entity structs, interfaces, and business errors.
+3. **Usecase (`internal/<domain>/usecase`)**: Implements business rules (e.g. slug generation, image compression, password hashing, audit log generation).
+4. **Repository (`internal/<domain>/repository`)**: GORM database queries, transactions, and pagination.
+
+---
+
+## 🗄️ PostgreSQL Database ER Diagram
+
+All primary keys use UUIDs (`gen_random_uuid()`). Tables are auto-migrated on startup via GORM:
+
+```text
+┌───────────────────────────┐         ┌───────────────────────────┐
+│           users           │         │   password_reset_tokens   │
+├───────────────────────────┤         ├───────────────────────────┤
+│ id (PK, UUID)             │◄───┐    │ id (PK, UUID)             │
+│ email (Unique)            │    └────│ userId (FK)               │
+│ passwordHash              │         │ token (Unique)            │
+│ fullName                  │         │ expiresAt                 │
+│ role (SuperAdmin/Marketer)│         └───────────────────────────┘
+│ isActive                  │
+│ createdAt / updatedAt     │         ┌───────────────────────────┐
+└─────────────┬─────────────┘         │     admin_invitations     │
+              │                       ├───────────────────────────┤
+              ├──────────────────────►│ id (PK, UUID)             │
+              │                       │ email (Unique)            │
+              │                       │ role                      │
+              │                       │ token (Unique)            │
+              │                       │ invitedById (FK)          │
+              │                       └───────────────────────────┘
+              │
+              │                       ┌───────────────────────────┐
+              ├──────────────────────►│       news_articles       │
+              │                       ├───────────────────────────┤
+              │                       │ id (PK, UUID)             │
+              │                       │ title                     │
+              │                       │ slug (Unique, Indexed)    │
+              │                       │ shortDescription          │
+              │                       │ content (HTML RichText)   │
+              │                       │ coverImageUrl             │
+              │                       │ status (Draft/Published)  │
+              │                       │ publishedAt               │
+              │                       │ authorId (FK)             │
+              │                       └───────────────────────────┘
+              │
+              │                       ┌───────────────────────────┐
+              ├──────────────────────►│       job_postings        │
+              │                       ├───────────────────────────┤
+              │                       │ id (PK, UUID)             │
+              │                       │ title, department         │
+              │                       │ location, type            │
+              │                       │ description, requirements │
+              │                       │ status (Active/Closed)    │
+              │                       │ createdById (FK)          │
+              │                       └─────────────┬─────────────┘
+              │                                     │ 1
+              │                                     │
+              │                                     ▼ N (CASCADE)
+              │                       ┌───────────────────────────┐
+              │                       │     job_applications      │
+              │                       ├───────────────────────────┤
+              │                       │ id (PK, UUID)             │
+              │                       │ jobId (FK)                │
+              │                       │ fullName, email, phone    │
+              │                       │ coverLetter, cvUrl        │
+              │                       │ status (Pending/Review)   │
+              │                       └───────────────────────────┘
+              │
+              │                       ┌───────────────────────────┐
+              └──────────────────────►│        audit_logs         │
+                                      ├───────────────────────────┤
+                                      │ id (PK, UUID)             │
+                                      │ userId (FK)               │
+                                      │ action, targetResource    │
+                                      │ ipAddress, userAgent      │
+                                      │ createdAt                 │
+                                      └───────────────────────────┘
+```
