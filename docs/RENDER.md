@@ -50,8 +50,8 @@ Push this project to GitHub/GitLab so Render can build from it.
 | Name | `addispay-api` |
 | Language / Runtime | **Docker** |
 | Root Directory | *(leave empty)* |
-| Dockerfile Path | `backend/Dockerfile` |
-| Docker Context | `backend` |
+| Dockerfile Path | `backend/Dockerfile` (or `Dockerfile`) |
+| Docker Context | *(leave empty / default)* |
 | Instance type | **Free** |
 | Health Check Path | `/api/v1/health` |
 

@@ -5,10 +5,10 @@ WORKDIR /src
 ENV GOTOOLCHAIN=auto \
     CGO_ENABLED=0
 
-COPY go.mod go.sum ./
+COPY backend/go.mod backend/go.sum ./
 RUN go mod download
 
-COPY . .
+COPY backend/ .
 RUN go build -ldflags="-s -w" -o /out/api ./cmd/api
 
 FROM debian:bookworm-slim AS runtime
