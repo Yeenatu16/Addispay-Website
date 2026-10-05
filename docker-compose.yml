@@ -42,7 +42,8 @@ services:
       SMTP_USERNAME: ${SMTP_USERNAME:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_FROM: ${SMTP_FROM:-}
-      GIN_MODE: ${GIN_MODE:-release}    volumes:
+      GIN_MODE: ${GIN_MODE:-release}
+    volumes:
       - backend_uploads:/app/uploads
     ports:
       - "${BACKEND_PORT:-8080}:8080"
