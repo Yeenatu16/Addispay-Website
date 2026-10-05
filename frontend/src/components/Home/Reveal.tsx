@@ -1,7 +1,8 @@
 'use client';
 
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import type { ReactNode } from 'react';
+import { useSafeReducedMotion } from '@/lib/useSafeReducedMotion';
 
 type Direction = 'up' | 'left' | 'scale';
 
@@ -22,7 +23,7 @@ export function Reveal({
   delay?: number;
   className?: string;
 }) {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useSafeReducedMotion();
 
   if (reduceMotion) return <div className={className}>{children}</div>;
 

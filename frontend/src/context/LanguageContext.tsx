@@ -1,5 +1,4 @@
 'use client';
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Language, translations, LANGUAGES, LanguageOption } from '@/data/translations';
 

@@ -2,29 +2,27 @@
 
 Go API for the AddisPay public website and admin content management.
 
-| Item | Value |
-|------|--------|
-| Module | `github.com/addispay/backend` |
-| Runtime | Go 1.26+ |
-| HTTP | Gin |
-| ORM | GORM + PostgreSQL |
-| Base URL | `http://localhost:8000/api/v1` |
-| Auth | JWT Bearer (`HS256`, 4h expiry; role/`isActive` re-checked each request) |
+| Item     | Value                                                                    |
+| -------- | ------------------------------------------------------------------------ |
+| Module   | `github.com/addispay/backend`                                            |
+| Runtime  | Go 1.26+                                                                 |
+| HTTP     | Gin                                                                      |
+| ORM      | GORM + PostgreSQL                                                        |
+| Base URL | `http://localhost:8080/api/v1`                                           |
+| Auth     | JWT Bearer (`HS256`, 4h expiry; role/`isActive` re-checked each request) |
 
 ## Quick start
 
-```bash
+````bash
 cd backend
 # Create .env from the Environment section below
 go mod tidy
 go run ./cmd/api
-```
 
 Health check:
 
 ```bash
 curl http://localhost:8000/api/v1/health
-```
 
 ---
 
@@ -74,7 +72,7 @@ flowchart TB
   NewsH --> NewsUC --> NewsRepo --> DB
   CareerH --> CareerUC --> CareerRepo --> DB
   ContentH --> ContentUC --> ContentRepo --> DB
-```
+````
 
 ### Package layout
 
@@ -223,59 +221,59 @@ erDiagram
 
 #### `users`
 
-| Column | Type | Constraints | JSON |
-|--------|------|-------------|------|
-| `id` | UUID | PK, default `gen_random_uuid()` | `id` |
-| `email` | varchar(255) | unique, not null | `email` |
-| `password_hash` | varchar(255) | not null | *(omitted)* |
-| `full_name` | varchar(255) | not null | `fullName` |
-| `role` | varchar(50) | not null, default `Marketer` | `role` |
-| `is_active` | boolean | default `true` | `isActive` |
-| `created_at` | timestamp | auto | `createdAt` |
-| `updated_at` | timestamp | auto | `updatedAt` |
+| Column          | Type         | Constraints                     | JSON        |
+| --------------- | ------------ | ------------------------------- | ----------- |
+| `id`            | UUID         | PK, default `gen_random_uuid()` | `id`        |
+| `email`         | varchar(255) | unique, not null                | `email`     |
+| `password_hash` | varchar(255) | not null                        | _(omitted)_ |
+| `full_name`     | varchar(255) | not null                        | `fullName`  |
+| `role`          | varchar(50)  | not null, default `Marketer`    | `role`      |
+| `is_active`     | boolean      | default `true`                  | `isActive`  |
+| `created_at`    | timestamp    | auto                            | `createdAt` |
+| `updated_at`    | timestamp    | auto                            | `updatedAt` |
 
 **Roles:** `Super_Admin` · `Marketer` · `HR`
 
 #### `password_reset_tokens`
 
-| Column | Type | Constraints | JSON |
-|--------|------|-------------|------|
-| `id` | UUID | PK | `id` |
-| `user_id` | UUID | not null, indexed → `users.id` | `userId` |
-| `token_hash` | varchar(64) | unique, not null (SHA-256 hex) | *(omitted)* |
-| `expires_at` | timestamp | not null, indexed | `expiresAt` |
-| `used_at` | timestamp | nullable | `usedAt` |
-| `created_at` | timestamp | | `createdAt` |
+| Column       | Type        | Constraints                    | JSON        |
+| ------------ | ----------- | ------------------------------ | ----------- |
+| `id`         | UUID        | PK                             | `id`        |
+| `user_id`    | UUID        | not null, indexed → `users.id` | `userId`    |
+| `token_hash` | varchar(64) | unique, not null (SHA-256 hex) | _(omitted)_ |
+| `expires_at` | timestamp   | not null, indexed              | `expiresAt` |
+| `used_at`    | timestamp   | nullable                       | `usedAt`    |
+| `created_at` | timestamp   |                                | `createdAt` |
 
 #### `admin_invitations`
 
-| Column | Type | Constraints | JSON |
-|--------|------|-------------|------|
-| `id` | UUID | PK | `id` |
-| `email` | varchar(255) | not null, indexed | `email` |
-| `role` | varchar(50) | not null (`Marketer` / `HR`) | `role` |
-| `token_hash` | varchar(64) | unique, not null | *(omitted)* |
-| `invited_by_id` | UUID | not null → `users.id` | `invitedById` |
-| `expires_at` | timestamp | not null | `expiresAt` |
-| `accepted_at` | timestamp | nullable | `acceptedAt` |
-| `revoked_at` | timestamp | nullable | `revokedAt` |
-| `created_at` | timestamp | | `createdAt` |
+| Column          | Type         | Constraints                  | JSON          |
+| --------------- | ------------ | ---------------------------- | ------------- |
+| `id`            | UUID         | PK                           | `id`          |
+| `email`         | varchar(255) | not null, indexed            | `email`       |
+| `role`          | varchar(50)  | not null (`Marketer` / `HR`) | `role`        |
+| `token_hash`    | varchar(64)  | unique, not null             | _(omitted)_   |
+| `invited_by_id` | UUID         | not null → `users.id`        | `invitedById` |
+| `expires_at`    | timestamp    | not null                     | `expiresAt`   |
+| `accepted_at`   | timestamp    | nullable                     | `acceptedAt`  |
+| `revoked_at`    | timestamp    | nullable                     | `revokedAt`   |
+| `created_at`    | timestamp    |                              | `createdAt`   |
 
 #### `news_articles`
 
-| Column | Type | Constraints | JSON |
-|--------|------|-------------|------|
-| `id` | UUID | PK | `id` |
-| `title` | varchar(255) | not null | `title` |
-| `slug` | varchar(255) | unique, not null | `slug` |
-| `short_description` | text | not null | `shortDescription` |
-| `full_content` | text | not null | `fullContent` |
-| `cover_image_url` | varchar(500) | optional | `coverImageUrl` |
-| `status` | varchar(50) | default `DRAFT` | `status` |
-| `is_featured` | boolean | default false, indexed | `isFeatured` |
-| `author_id` | UUID | not null → `users.id` | `authorId` |
-| `published_at` | timestamp | nullable | `publishedAt` |
-| `created_at` / `updated_at` | timestamp | | `createdAt` / `updatedAt` |
+| Column                      | Type         | Constraints            | JSON                      |
+| --------------------------- | ------------ | ---------------------- | ------------------------- |
+| `id`                        | UUID         | PK                     | `id`                      |
+| `title`                     | varchar(255) | not null               | `title`                   |
+| `slug`                      | varchar(255) | unique, not null       | `slug`                    |
+| `short_description`         | text         | not null               | `shortDescription`        |
+| `full_content`              | text         | not null               | `fullContent`             |
+| `cover_image_url`           | varchar(500) | optional               | `coverImageUrl`           |
+| `status`                    | varchar(50)  | default `DRAFT`        | `status`                  |
+| `is_featured`               | boolean      | default false, indexed | `isFeatured`              |
+| `author_id`                 | UUID         | not null → `users.id`  | `authorId`                |
+| `published_at`              | timestamp    | nullable               | `publishedAt`             |
+| `created_at` / `updated_at` | timestamp    |                        | `createdAt` / `updatedAt` |
 
 **Status:** `DRAFT` · `PUBLISHED`
 
@@ -283,70 +281,70 @@ Slug is generated from title (`lower` + spaces → `-`).
 
 #### `job_postings`
 
-| Column | Type | Constraints | JSON |
-|--------|------|-------------|------|
-| `id` | UUID | PK | `id` |
-| `title` | varchar(255) | not null | `title` |
-| `department` | varchar(255) | not null | `department` |
-| `location` | varchar(255) | not null | `location` |
-| `job_type` | varchar(50) | default `FULL_TIME` | `jobType` |
-| `description` | text | not null | `description` |
-| `requirements` | text | not null | `requirements` |
-| `is_open` | boolean | default `true` | `isOpen` |
-| `created_by_id` | UUID | not null → `users.id` | `createdById` |
-| `created_at` / `updated_at` | timestamp | | `createdAt` / `updatedAt` |
+| Column                      | Type         | Constraints           | JSON                      |
+| --------------------------- | ------------ | --------------------- | ------------------------- |
+| `id`                        | UUID         | PK                    | `id`                      |
+| `title`                     | varchar(255) | not null              | `title`                   |
+| `department`                | varchar(255) | not null              | `department`              |
+| `location`                  | varchar(255) | not null              | `location`                |
+| `job_type`                  | varchar(50)  | default `FULL_TIME`   | `jobType`                 |
+| `description`               | text         | not null              | `description`             |
+| `requirements`              | text         | not null              | `requirements`            |
+| `is_open`                   | boolean      | default `true`        | `isOpen`                  |
+| `created_by_id`             | UUID         | not null → `users.id` | `createdById`             |
+| `created_at` / `updated_at` | timestamp    |                       | `createdAt` / `updatedAt` |
 
 **Job types:** `FULL_TIME` · `PART_TIME` · `REMOTE`
 
 #### `job_applications`
 
-| Column | Type | Constraints | JSON |
-|--------|------|-------------|------|
-| `id` | UUID | PK | `id` |
-| `job_id` | UUID | not null, indexed, CASCADE delete | `jobId` |
-| `full_name` | varchar(255) | not null | `fullName` |
-| `email` | varchar(255) | not null | `email` |
-| `phone_number` | varchar(50) | not null | `phoneNumber` |
-| `cover_letter` | text | not null | `coverLetter` |
-| `cv_url` | varchar(500) | not null | `cvUrl` |
-| `linkedin_url` | varchar(500) | optional | `linkedinUrl` |
-| `portfolio_url` | varchar(500) | optional | `portfolioUrl` |
-| `status` | varchar(50) | default `PENDING` | `status` |
-| `applied_at` | timestamp | | `appliedAt` |
+| Column          | Type         | Constraints                       | JSON           |
+| --------------- | ------------ | --------------------------------- | -------------- |
+| `id`            | UUID         | PK                                | `id`           |
+| `job_id`        | UUID         | not null, indexed, CASCADE delete | `jobId`        |
+| `full_name`     | varchar(255) | not null                          | `fullName`     |
+| `email`         | varchar(255) | not null                          | `email`        |
+| `phone_number`  | varchar(50)  | not null                          | `phoneNumber`  |
+| `cover_letter`  | text         | not null                          | `coverLetter`  |
+| `cv_url`        | varchar(500) | not null                          | `cvUrl`        |
+| `linkedin_url`  | varchar(500) | optional                          | `linkedinUrl`  |
+| `portfolio_url` | varchar(500) | optional                          | `portfolioUrl` |
+| `status`        | varchar(50)  | default `PENDING`                 | `status`       |
+| `applied_at`    | timestamp    |                                   | `appliedAt`    |
 
 **Application status:** `PENDING` · `REVIEWED` · `SHORTLISTED` · `REJECTED`
 
 #### `newsletter_subscribers`
 
-| Column | Type | Constraints | JSON |
-|--------|------|-------------|------|
-| `id` | UUID | PK | `id` |
-| `email` | varchar(255) | unique, not null | `email` |
-| `is_subscribed` | boolean | default `true` | `isSubscribed` |
-| `subscribed_at` | timestamp | | `subscribedAt` |
+| Column          | Type         | Constraints      | JSON           |
+| --------------- | ------------ | ---------------- | -------------- |
+| `id`            | UUID         | PK               | `id`           |
+| `email`         | varchar(255) | unique, not null | `email`        |
+| `is_subscribed` | boolean      | default `true`   | `isSubscribed` |
+| `subscribed_at` | timestamp    |                  | `subscribedAt` |
 
 #### `contact_messages`
 
-| Column | Type | Constraints | JSON |
-|--------|------|-------------|------|
-| `id` | UUID | PK | `id` |
-| `full_name` | varchar(255) | not null | `fullName` |
-| `email` | varchar(255) | not null | `email` |
-| `reason` | varchar(255) | not null | `reason` |
-| `message` | text | not null | `message` |
-| `created_at` | timestamp | | `createdAt` |
+| Column       | Type         | Constraints | JSON        |
+| ------------ | ------------ | ----------- | ----------- |
+| `id`         | UUID         | PK          | `id`        |
+| `full_name`  | varchar(255) | not null    | `fullName`  |
+| `email`      | varchar(255) | not null    | `email`     |
+| `reason`     | varchar(255) | not null    | `reason`    |
+| `message`    | text         | not null    | `message`   |
+| `created_at` | timestamp    |             | `createdAt` |
 
 #### `audit_logs`
 
-| Column | Type | Constraints | JSON |
-|--------|------|-------------|------|
-| `id` | UUID | PK | `id` |
-| `user_id` | UUID | not null | `userId` |
-| `user_name` | varchar(255) | not null | `userName` |
-| `action` | varchar(100) | not null | `action` |
-| `resource` | varchar(255) | not null | `resource` |
-| `details` | text | optional | `details` |
-| `created_at` | timestamp | | `createdAt` |
+| Column       | Type         | Constraints | JSON        |
+| ------------ | ------------ | ----------- | ----------- |
+| `id`         | UUID         | PK          | `id`        |
+| `user_id`    | UUID         | not null    | `userId`    |
+| `user_name`  | varchar(255) | not null    | `userName`  |
+| `action`     | varchar(100) | not null    | `action`    |
+| `resource`   | varchar(255) | not null    | `resource`  |
+| `details`    | text         | optional    | `details`   |
+| `created_at` | timestamp    |             | `createdAt` |
 
 > Migrated in DB; no HTTP routes expose audit logs yet.
 
@@ -389,45 +387,45 @@ flowchart LR
   end
 ```
 
-| Method | Path | Auth | Handler |
-|--------|------|------|---------|
-| `GET` | `/api/v1/health` | Public | Health |
-| `POST` | `/api/v1/auth/login` | Public | Login |
-| `POST` | `/api/v1/auth/register` | Public | Bootstrap first Super Admin only |
-| `POST` | `/api/v1/auth/forgot-password` | Public | Request password reset |
-| `POST` | `/api/v1/auth/reset-password` | Public | Reset password with token |
-| `GET` | `/api/v1/auth/invitations?token=` | Public | Preview invitation (email + role) |
-| `POST` | `/api/v1/auth/accept-invitation` | Public | Accept invite + set password |
-| `POST` | `/api/v1/admin/invitations` | Super Admin JWT | Invite Marketer / HR |
-| `GET` | `/api/v1/admin/invitations` | Super Admin JWT | List pending invitations |
-| `DELETE` | `/api/v1/admin/invitations/:id` | Super Admin JWT | Cancel invitation |
-| `GET` | `/api/v1/admin/users` | Super Admin JWT | List administrators |
-| `POST` | `/api/v1/admin/users/:id/revoke` | Super Admin JWT | Revoke access (`isActive=false`) |
-| `POST` | `/api/v1/admin/users/:id/restore` | Super Admin JWT | Restore access |
-| `GET` | `/api/v1/news/homepage` | Public | Homepage news |
-| `GET` | `/api/v1/news` | Public | News listing |
-| `GET` | `/api/v1/news/:slug` | Public | Article by slug |
-| `GET` | `/api/v1/careers` | Public | Open jobs |
-| `POST` | `/api/v1/careers/apply` | Public | Apply for job |
-| `POST` | `/api/v1/content/subscribe` | Public | Newsletter |
-| `POST` | `/api/v1/content/contact` | Public | Contact form |
-| `POST` | `/api/v1/admin/news/articles` | Super Admin / Marketer | Create article |
-| `GET` | `/api/v1/admin/news/articles` | Super Admin / Marketer | List all articles (incl. drafts) |
-| `GET` | `/api/v1/admin/news/articles/:id` | Super Admin / Marketer | Get article by ID |
-| `PUT` | `/api/v1/admin/news/articles/:id` | Super Admin / Marketer | Edit / publish / unpublish |
-| `DELETE` | `/api/v1/admin/news/articles/:id` | Super Admin / Marketer | Delete article |
-| `POST` | `/api/v1/admin/news/upload` | Super Admin / Marketer | Upload cover image |
-| `GET` | `/api/v1/admin/news/settings` | Super Admin / Marketer | Homepage limit + empty message |
-| `PUT` | `/api/v1/admin/news/settings` | Super Admin / Marketer | Update news settings |
-| `GET` | `/api/v1/admin/news/audit-logs` | Super Admin / Marketer | News activity audit trail |
-| `POST` | `/api/v1/admin/careers/jobs` | Super Admin / HR | Create job |
-| `GET` | `/api/v1/admin/careers/jobs` | Super Admin / HR | List all jobs (open + closed) |
-| `GET` | `/api/v1/admin/careers/jobs/:id` | Super Admin / HR | Get job by ID |
-| `PUT` | `/api/v1/admin/careers/jobs/:id` | Super Admin / HR | Update / open / close job |
-| `DELETE` | `/api/v1/admin/careers/jobs/:id` | Super Admin / HR | Delete job |
-| `GET` | `/api/v1/admin/careers/applications` | Super Admin / HR | List applications (`?jobId=` optional) |
-| `PUT` | `/api/v1/admin/careers/applications/:id/status` | Super Admin / HR | Update application status |
-| `GET` | `/api/v1/admin/careers/audit-logs` | Super Admin / HR | Careers audit trail |
+| Method   | Path                                            | Auth                   | Handler                                |
+| -------- | ----------------------------------------------- | ---------------------- | -------------------------------------- |
+| `GET`    | `/api/v1/health`                                | Public                 | Health                                 |
+| `POST`   | `/api/v1/auth/login`                            | Public                 | Login                                  |
+| `POST`   | `/api/v1/auth/register`                         | Public                 | Bootstrap first Super Admin only       |
+| `POST`   | `/api/v1/auth/forgot-password`                  | Public                 | Request password reset                 |
+| `POST`   | `/api/v1/auth/reset-password`                   | Public                 | Reset password with token              |
+| `GET`    | `/api/v1/auth/invitations?token=`               | Public                 | Preview invitation (email + role)      |
+| `POST`   | `/api/v1/auth/accept-invitation`                | Public                 | Accept invite + set password           |
+| `POST`   | `/api/v1/admin/invitations`                     | Super Admin JWT        | Invite Marketer / HR                   |
+| `GET`    | `/api/v1/admin/invitations`                     | Super Admin JWT        | List pending invitations               |
+| `DELETE` | `/api/v1/admin/invitations/:id`                 | Super Admin JWT        | Cancel invitation                      |
+| `GET`    | `/api/v1/admin/users`                           | Super Admin JWT        | List administrators                    |
+| `POST`   | `/api/v1/admin/users/:id/revoke`                | Super Admin JWT        | Revoke access (`isActive=false`)       |
+| `POST`   | `/api/v1/admin/users/:id/restore`               | Super Admin JWT        | Restore access                         |
+| `GET`    | `/api/v1/news/homepage`                         | Public                 | Homepage news                          |
+| `GET`    | `/api/v1/news`                                  | Public                 | News listing                           |
+| `GET`    | `/api/v1/news/:slug`                            | Public                 | Article by slug                        |
+| `GET`    | `/api/v1/careers`                               | Public                 | Open jobs                              |
+| `POST`   | `/api/v1/careers/apply`                         | Public                 | Apply for job                          |
+| `POST`   | `/api/v1/content/subscribe`                     | Public                 | Newsletter                             |
+| `POST`   | `/api/v1/content/contact`                       | Public                 | Contact form                           |
+| `POST`   | `/api/v1/admin/news/articles`                   | Super Admin / Marketer | Create article                         |
+| `GET`    | `/api/v1/admin/news/articles`                   | Super Admin / Marketer | List all articles (incl. drafts)       |
+| `GET`    | `/api/v1/admin/news/articles/:id`               | Super Admin / Marketer | Get article by ID                      |
+| `PUT`    | `/api/v1/admin/news/articles/:id`               | Super Admin / Marketer | Edit / publish / unpublish             |
+| `DELETE` | `/api/v1/admin/news/articles/:id`               | Super Admin / Marketer | Delete article                         |
+| `POST`   | `/api/v1/admin/news/upload`                     | Super Admin / Marketer | Upload cover image                     |
+| `GET`    | `/api/v1/admin/news/settings`                   | Super Admin / Marketer | Homepage limit + empty message         |
+| `PUT`    | `/api/v1/admin/news/settings`                   | Super Admin / Marketer | Update news settings                   |
+| `GET`    | `/api/v1/admin/news/audit-logs`                 | Super Admin / Marketer | News activity audit trail              |
+| `POST`   | `/api/v1/admin/careers/jobs`                    | Super Admin / HR       | Create job                             |
+| `GET`    | `/api/v1/admin/careers/jobs`                    | Super Admin / HR       | List all jobs (open + closed)          |
+| `GET`    | `/api/v1/admin/careers/jobs/:id`                | Super Admin / HR       | Get job by ID                          |
+| `PUT`    | `/api/v1/admin/careers/jobs/:id`                | Super Admin / HR       | Update / open / close job              |
+| `DELETE` | `/api/v1/admin/careers/jobs/:id`                | Super Admin / HR       | Delete job                             |
+| `GET`    | `/api/v1/admin/careers/applications`            | Super Admin / HR       | List applications (`?jobId=` optional) |
+| `PUT`    | `/api/v1/admin/careers/applications/:id/status` | Super Admin / HR       | Update application status              |
+| `GET`    | `/api/v1/admin/careers/audit-logs`              | Super Admin / HR       | Careers audit trail                    |
 
 ---
 
@@ -466,12 +464,12 @@ Authorization: Bearer <jwt>
 
 JWT claims (from login):
 
-| Claim | Meaning |
-|-------|---------|
-| `sub` | User UUID |
-| `email` | User email |
-| `role` | `Super_Admin` \| `Marketer` \| `HR` |
-| `exp` | Expiry (Unix, +4h) |
+| Claim   | Meaning                             |
+| ------- | ----------------------------------- |
+| `sub`   | User UUID                           |
+| `email` | User email                          |
+| `role`  | `Super_Admin` \| `Marketer` \| `HR` |
+| `exp`   | Expiry (Unix, +4h)                  |
 
 ---
 
@@ -525,10 +523,10 @@ JWT claims (from login):
 }
 ```
 
-| Status | When |
-|--------|------|
-| `400` | Invalid JSON |
-| `401` | Invalid email or password |
+| Status | When                      |
+| ------ | ------------------------- |
+| `400`  | Invalid JSON              |
+| `401`  | Invalid email or password |
 
 ---
 
@@ -547,9 +545,9 @@ Bootstraps the **first** Super Admin only. After that, Marketer / HR accounts ar
 }
 ```
 
-| Status | When |
-|--------|------|
-| `400` | Users already exist, wrong role, or invalid payload |
+| Status | When                                                |
+| ------ | --------------------------------------------------- |
+| `400`  | Users already exist, wrong role, or invalid payload |
 
 ---
 
@@ -586,10 +584,10 @@ Reset tokens:
 
 In local development without SMTP, `LogMailer` prints the reset link to the server logs.
 
-| Status | When |
-|--------|------|
-| `400` | Missing/invalid email payload |
-| `500` | Unexpected failure while creating/sending reset |
+| Status | When                                            |
+| ------ | ----------------------------------------------- |
+| `400`  | Missing/invalid email payload                   |
+| `500`  | Unexpected failure while creating/sending reset |
 
 ---
 
@@ -619,9 +617,9 @@ Password must be at least **8 characters**.
 }
 ```
 
-| Status | When |
-|--------|------|
-| `400` | Invalid/expired token, short password, or bad payload |
+| Status | When                                                  |
+| ------ | ----------------------------------------------------- |
+| `400`  | Invalid/expired token, short password, or bad payload |
 
 ---
 
@@ -751,8 +749,8 @@ Returns featured article + latest published articles (up to 4).
 {
   "success": true,
   "data": {
-    "featured": { },
-    "latest": [ ]
+    "featured": {},
+    "latest": []
   }
 }
 ```
@@ -763,11 +761,11 @@ Returns featured article + latest published articles (up to 4).
 
 **Query**
 
-| Param | Default | Description |
-|-------|---------|-------------|
-| `page` | `1` | Page number |
-| `limit` | `10` | Page size |
-| `search` | — | ILIKE on title / short description |
+| Param    | Default | Description                        |
+| -------- | ------- | ---------------------------------- |
+| `page`   | `1`     | Page number                        |
+| `limit`  | `10`    | Page size                          |
+| `search` | —       | ILIKE on title / short description |
 
 **Response `200`**
 
@@ -775,7 +773,7 @@ Returns featured article + latest published articles (up to 4).
 {
   "success": true,
   "data": {
-    "articles": [ ],
+    "articles": [],
     "total": 0
   }
 }
@@ -789,9 +787,9 @@ Only `PUBLISHED` articles are returned.
 
 **Response `200`** — `data` is a `NewsArticle`.
 
-| Status | When |
-|--------|------|
-| `404` | Article not found |
+| Status | When              |
+| ------ | ----------------- |
+| `404`  | Article not found |
 
 ---
 
@@ -857,7 +855,14 @@ Uploaded images are automatically optimized for web delivery: EXIF orientation i
 **Response `201`**
 
 ```json
-{ "success": true, "data": { "url": "/uploads/news/....jpg", "filename": "....jpg", "optimizedSize": 148213 } }
+{
+  "success": true,
+  "data": {
+    "url": "/uploads/news/....jpg",
+    "filename": "....jpg",
+    "optimizedSize": 148213
+  }
+}
 ```
 
 Use `data.url` as `coverImageUrl` when creating/updating articles. Files are served at `http://localhost:8000/uploads/...`.
@@ -884,16 +889,16 @@ Paginated audit trail (`page`, `limit`). Each log: admin id/name, action (`CREAT
 
 Requires JWT with role **Super_Admin** or **HR** (Career Manager).
 
-| Method | Path | Notes |
-|--------|------|--------|
-| `GET` | `/admin/careers/jobs` | All jobs |
-| `GET` | `/admin/careers/jobs/:id` | One job |
-| `POST` | `/admin/careers/jobs` | Create (open by default) |
-| `PUT` | `/admin/careers/jobs/:id` | Partial update; `isOpen: false` closes posting |
-| `DELETE` | `/admin/careers/jobs/:id` | Permanent delete (cascades applications) |
-| `GET` | `/admin/careers/applications?jobId=` | All apps, or filter by job |
-| `PUT` | `/admin/careers/applications/:id/status` | `{ "status": "REVIEWED" }` etc. |
-| `GET` | `/admin/careers/audit-logs` | CREATE / EDIT / CLOSE / OPEN / DELETE |
+| Method   | Path                                     | Notes                                          |
+| -------- | ---------------------------------------- | ---------------------------------------------- |
+| `GET`    | `/admin/careers/jobs`                    | All jobs                                       |
+| `GET`    | `/admin/careers/jobs/:id`                | One job                                        |
+| `POST`   | `/admin/careers/jobs`                    | Create (open by default)                       |
+| `PUT`    | `/admin/careers/jobs/:id`                | Partial update; `isOpen: false` closes posting |
+| `DELETE` | `/admin/careers/jobs/:id`                | Permanent delete (cascades applications)       |
+| `GET`    | `/admin/careers/applications?jobId=`     | All apps, or filter by job                     |
+| `PUT`    | `/admin/careers/applications/:id/status` | `{ "status": "REVIEWED" }` etc.                |
+| `GET`    | `/admin/careers/audit-logs`              | CREATE / EDIT / CLOSE / OPEN / DELETE          |
 
 **Create body**
 
@@ -948,9 +953,9 @@ Requires JWT with role **Super_Admin** or **HR** (Career Manager).
 
 **Response `201`** — `data` is the created `JobApplication` (`status: PENDING`).
 
-| Status | When |
-|--------|------|
-| `400` | Invalid payload, bad job ID, or job not open |
+| Status | When                                         |
+| ------ | -------------------------------------------- |
+| `400`  | Invalid payload, bad job ID, or job not open |
 
 ---
 
@@ -1037,38 +1042,38 @@ Upserts subscriber; re-subscribe sets `isSubscribed = true`.
 
 Create `backend/.env` (do not commit secrets):
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PORT` | `8000` | HTTP listen port |
-| `DB_HOST` | `localhost` | PostgreSQL host |
-| `DB_PORT` | `5432` | PostgreSQL port |
-| `DB_USER` | *(empty)* | DB user |
-| `DB_PASSWORD` | *(empty)* | DB password |
-| `DB_NAME` | *(empty)* | Database name |
-| `DB_SSLMODE` | `verify-full` | SSL mode (`disable` for local) |
-| `ADDISPAY_JWT_SUPER_SECRET_KEY_2026` | *(empty)* | JWT signing secret |
-| `FRONTEND_URL` | `http://localhost:3000` | Base URL for password-reset / invite links |
-| `UPLOAD_DIR` | `./uploads` | Upload path (reserved; unused by routes yet) |
-| `SMTP_HOST` | *(empty)* | SMTP server host (empty = LogMailer) |
-| `SMTP_PORT` | `587` | SMTP port (587 STARTTLS recommended) |
-| `SMTP_USERNAME` | *(empty)* | SMTP auth username |
-| `SMTP_PASSWORD` | *(empty)* | SMTP auth password / app password |
-| `SMTP_FROM` | *(empty)* | From header, e.g. `AddisPay <noreply@domain.com>` |
-| `FORCE_HTTPS` | `false` | When `true`, redirect if `X-Forwarded-Proto: http` (behind TLS proxy) |
+| Variable                             | Default                 | Description                                                           |
+| ------------------------------------ | ----------------------- | --------------------------------------------------------------------- |
+| `PORT`                               | `8000`                  | HTTP listen port                                                      |
+| `DB_HOST`                            | `localhost`             | PostgreSQL host                                                       |
+| `DB_PORT`                            | `5432`                  | PostgreSQL port                                                       |
+| `DB_USER`                            | _(empty)_               | DB user                                                               |
+| `DB_PASSWORD`                        | _(empty)_               | DB password                                                           |
+| `DB_NAME`                            | _(empty)_               | Database name                                                         |
+| `DB_SSLMODE`                         | `verify-full`           | SSL mode (`disable` for local)                                        |
+| `ADDISPAY_JWT_SUPER_SECRET_KEY_2026` | _(empty)_               | JWT signing secret                                                    |
+| `FRONTEND_URL`                       | `http://localhost:3000` | Base URL for password-reset / invite links                            |
+| `UPLOAD_DIR`                         | `./uploads`             | Upload path (reserved; unused by routes yet)                          |
+| `SMTP_HOST`                          | _(empty)_               | SMTP server host (empty = LogMailer)                                  |
+| `SMTP_PORT`                          | `587`                   | SMTP port (587 STARTTLS recommended)                                  |
+| `SMTP_USERNAME`                      | _(empty)_               | SMTP auth username                                                    |
+| `SMTP_PASSWORD`                      | _(empty)_               | SMTP auth password / app password                                     |
+| `SMTP_FROM`                          | _(empty)_               | From header, e.g. `AddisPay <noreply@domain.com>`                     |
+| `FORCE_HTTPS`                        | `false`                 | When `true`, redirect if `X-Forwarded-Proto: http` (behind TLS proxy) |
 
 ---
 
 ## NFR reliability & security (srs.txt §3.3–3.4)
 
-| ID | Status | Implementation |
-|----|--------|----------------|
-| NFR-REL-001 | Partial (ops) | `/health` probe + graceful shutdown (`SIGINT`/`SIGTERM`). 99.9% SLA still requires infra (LB, multi-instance, monitoring). |
-| NFR-REL-002 | Met | Typed `apperr` + `response.FromError` — clients get stable messages; internals are logged, not returned. |
-| NFR-SEC-001 | Partial (edge) | Security headers + optional `FORCE_HTTPS` / HSTS when proxy sets `X-Forwarded-Proto: https`. Terminate TLS at the reverse proxy/CDN. |
-| NFR-SEC-002 | Met | News HTML sanitized on write (safe tag allowlist); plain fields strip tags; frontend blog also sanitizes before `dangerouslySetInnerHTML`. |
-| NFR-SEC-003 | Met | Bearer JWT (not cookie sessions) — classic CSRF N/A. |
-| NFR-SEC-004 | Met | JWT + RBAC; each admin request reloads user and enforces `isActive` + current role (revoke is immediate). JWT TTL 4h. |
-| NFR-SEC-005 | Met | Gin `binding` tags + usecase validators (email, lengths, URLs); HTML/text sanitization before persistence. |
+| ID          | Status         | Implementation                                                                                                                             |
+| ----------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| NFR-REL-001 | Partial (ops)  | `/health` probe + graceful shutdown (`SIGINT`/`SIGTERM`). 99.9% SLA still requires infra (LB, multi-instance, monitoring).                 |
+| NFR-REL-002 | Met            | Typed `apperr` + `response.FromError` — clients get stable messages; internals are logged, not returned.                                   |
+| NFR-SEC-001 | Partial (edge) | Security headers + optional `FORCE_HTTPS` / HSTS when proxy sets `X-Forwarded-Proto: https`. Terminate TLS at the reverse proxy/CDN.       |
+| NFR-SEC-002 | Met            | News HTML sanitized on write (safe tag allowlist); plain fields strip tags; frontend blog also sanitizes before `dangerouslySetInnerHTML`. |
+| NFR-SEC-003 | Met            | Bearer JWT (not cookie sessions) — classic CSRF N/A.                                                                                       |
+| NFR-SEC-004 | Met            | JWT + RBAC; each admin request reloads user and enforces `isActive` + current role (revoke is immediate). JWT TTL 4h.                      |
+| NFR-SEC-005 | Met            | Gin `binding` tags + usecase validators (email, lengths, URLs); HTML/text sanitization before persistence.                                 |
 
 DSN timezone: `Africa/Addis_Ababa`.  
 Pool: max idle 10, max open 100, conn max lifetime 1h.
@@ -1169,16 +1174,16 @@ go run ./cmd/api
 5. Open Postman → create a collection **AddisPay API**.
 6. Collection variables (recommended):
 
-| Variable | Example |
-|----------|---------|
-| `baseUrl` | `http://localhost:8000/api/v1` |
-| `token` | *(empty — filled after login)* |
-| `articleId` | *(empty — filled after create)* |
-| `userId` | *(empty — from list users)* |
-| `inviteId` | *(empty — from invite response)* |
-| `inviteToken` | *(from email / server log)* |
-| `resetToken` | *(from email / server log)* |
-| `coverUrl` | *(from upload response)* |
+| Variable      | Example                          |
+| ------------- | -------------------------------- |
+| `baseUrl`     | `http://localhost:8000/api/v1`   |
+| `token`       | _(empty — filled after login)_   |
+| `articleId`   | _(empty — filled after create)_  |
+| `userId`      | _(empty — from list users)_      |
+| `inviteId`    | _(empty — from invite response)_ |
+| `inviteToken` | _(from email / server log)_      |
+| `resetToken`  | _(from email / server log)_      |
+| `coverUrl`    | _(from upload response)_         |
 
 Use `{{baseUrl}}` and `{{token}}` in requests below.
 
@@ -1186,12 +1191,12 @@ Use `{{baseUrl}}` and `{{token}}` in requests below.
 
 ### 1. Health
 
-| Field | Value |
-|-------|--------|
-| Method | `GET` |
-| URL | `{{baseUrl}}/health` |
-| Auth | none |
-| Body | none |
+| Field  | Value                |
+| ------ | -------------------- |
+| Method | `GET`                |
+| URL    | `{{baseUrl}}/health` |
+| Auth   | none                 |
+| Body   | none                 |
 
 **Expect `200`:** `{ "status": "UP", "engine": "GORM" }`
 
@@ -1201,12 +1206,12 @@ Use `{{baseUrl}}` and `{{token}}` in requests below.
 
 Only works when the `users` table is empty.
 
-| Field | Value |
-|-------|--------|
-| Method | `POST` |
-| URL | `{{baseUrl}}/auth/register` |
-| Headers | `Content-Type: application/json` |
-| Body (raw JSON) | see below |
+| Field           | Value                            |
+| --------------- | -------------------------------- |
+| Method          | `POST`                           |
+| URL             | `{{baseUrl}}/auth/register`      |
+| Headers         | `Content-Type: application/json` |
+| Body (raw JSON) | see below                        |
 
 ```json
 {
@@ -1229,10 +1234,10 @@ TRUNCATE TABLE password_reset_tokens, admin_invitations, users RESTART IDENTITY 
 
 ### 3. Auth — login (save JWT)
 
-| Field | Value |
-|-------|--------|
-| Method | `POST` |
-| URL | `{{baseUrl}}/auth/login` |
+| Field   | Value                            |
+| ------- | -------------------------------- |
+| Method  | `POST`                           |
+| URL     | `{{baseUrl}}/auth/login`         |
 | Headers | `Content-Type: application/json` |
 
 ```json
@@ -1268,11 +1273,11 @@ For every protected request below:
 
 ### 4. Auth — forgot password
 
-| Field | Value |
-|-------|--------|
-| Method | `POST` |
-| URL | `{{baseUrl}}/auth/forgot-password` |
-| Auth | none |
+| Field  | Value                              |
+| ------ | ---------------------------------- |
+| Method | `POST`                             |
+| URL    | `{{baseUrl}}/auth/forgot-password` |
+| Auth   | none                               |
 
 ```json
 { "email": "admin@addispay.com" }
@@ -1288,11 +1293,11 @@ For every protected request below:
 
 ### 5. Auth — reset password
 
-| Field | Value |
-|-------|--------|
-| Method | `POST` |
-| URL | `{{baseUrl}}/auth/reset-password` |
-| Auth | none |
+| Field  | Value                             |
+| ------ | --------------------------------- |
+| Method | `POST`                            |
+| URL    | `{{baseUrl}}/auth/reset-password` |
+| Auth   | none                              |
 
 ```json
 {
@@ -1309,11 +1314,11 @@ For every protected request below:
 
 Requires Super Admin Bearer token.
 
-| Field | Value |
-|-------|--------|
-| Method | `POST` |
-| URL | `{{baseUrl}}/admin/invitations` |
-| Auth | Bearer `{{token}}` |
+| Field  | Value                           |
+| ------ | ------------------------------- |
+| Method | `POST`                          |
+| URL    | `{{baseUrl}}/admin/invitations` |
+| Auth   | Bearer `{{token}}`              |
 
 ```json
 {
@@ -1329,9 +1334,9 @@ Copy invite token from email/log → `{{inviteToken}}` (link looks like `/accept
 
 Other invite endpoints:
 
-| Method | URL | Notes |
-|--------|-----|--------|
-| `GET` | `{{baseUrl}}/admin/invitations` | List pending |
+| Method   | URL                                          | Notes         |
+| -------- | -------------------------------------------- | ------------- |
+| `GET`    | `{{baseUrl}}/admin/invitations`              | List pending  |
 | `DELETE` | `{{baseUrl}}/admin/invitations/{{inviteId}}` | Cancel invite |
 
 ---
@@ -1340,21 +1345,21 @@ Other invite endpoints:
 
 **Preview**
 
-| Field | Value |
-|-------|--------|
-| Method | `GET` |
-| URL | `{{baseUrl}}/auth/invitations?token={{inviteToken}}` |
-| Auth | none |
+| Field  | Value                                                |
+| ------ | ---------------------------------------------------- |
+| Method | `GET`                                                |
+| URL    | `{{baseUrl}}/auth/invitations?token={{inviteToken}}` |
+| Auth   | none                                                 |
 
 **Expect `200`:** `{ email, role, expiresAt }`
 
 **Accept**
 
-| Field | Value |
-|-------|--------|
-| Method | `POST` |
-| URL | `{{baseUrl}}/auth/accept-invitation` |
-| Auth | none |
+| Field  | Value                                |
+| ------ | ------------------------------------ |
+| Method | `POST`                               |
+| URL    | `{{baseUrl}}/auth/accept-invitation` |
+| Auth   | none                                 |
 
 ```json
 {
@@ -1370,10 +1375,10 @@ Other invite endpoints:
 
 ### 8. Super Admin — list / revoke / restore users
 
-| Method | URL | Body |
-|--------|-----|------|
-| `GET` | `{{baseUrl}}/admin/users` | — |
-| `POST` | `{{baseUrl}}/admin/users/{{userId}}/revoke` | empty |
+| Method | URL                                          | Body  |
+| ------ | -------------------------------------------- | ----- |
+| `GET`  | `{{baseUrl}}/admin/users`                    | —     |
+| `POST` | `{{baseUrl}}/admin/users/{{userId}}/revoke`  | empty |
 | `POST` | `{{baseUrl}}/admin/users/{{userId}}/restore` | empty |
 
 Auth: Bearer Super Admin token.  
@@ -1386,15 +1391,15 @@ Cannot revoke yourself or another Super Admin. Revoked users fail login with “
 
 Auth: Super Admin **or** Marketer.
 
-| Field | Value |
-|-------|--------|
-| Method | `POST` |
-| URL | `{{baseUrl}}/admin/news/upload` |
-| Auth | Bearer `{{token}}` |
-| Body | **form-data** (not raw JSON) |
+| Field  | Value                           |
+| ------ | ------------------------------- |
+| Method | `POST`                          |
+| URL    | `{{baseUrl}}/admin/news/upload` |
+| Auth   | Bearer `{{token}}`              |
+| Body   | **form-data** (not raw JSON)    |
 
-| Key | Type | Value |
-|-----|------|--------|
+| Key    | Type | Value                                       |
+| ------ | ---- | ------------------------------------------- |
 | `file` | File | pick a `.jpg` / `.png` / `.webp` under 5 MB |
 
 **Expect `201`:**
@@ -1418,12 +1423,12 @@ Upload always stores optimized JPEG (≤1600px wide, quality 82).
 
 ### 10. News admin — create article
 
-| Field | Value |
-|-------|--------|
-| Method | `POST` |
-| URL | `{{baseUrl}}/admin/news/articles` |
-| Auth | Bearer `{{token}}` |
-| Headers | `Content-Type: application/json` |
+| Field   | Value                             |
+| ------- | --------------------------------- |
+| Method  | `POST`                            |
+| URL     | `{{baseUrl}}/admin/news/articles` |
+| Auth    | Bearer `{{token}}`                |
+| Headers | `Content-Type: application/json`  |
 
 ```json
 {
@@ -1446,14 +1451,14 @@ Use `"status": "DRAFT"` to keep it off the public site.
 
 All need Bearer Super Admin or Marketer.
 
-| Step | Method | URL | Body |
-|------|--------|-----|------|
-| List all | `GET` | `{{baseUrl}}/admin/news/articles?page=1&limit=20` | — |
-| Filter drafts | `GET` | `{{baseUrl}}/admin/news/articles?status=DRAFT` | — |
-| Search | `GET` | `{{baseUrl}}/admin/news/articles?search=launch` | — |
-| Get one | `GET` | `{{baseUrl}}/admin/news/articles/{{articleId}}` | — |
-| Edit / unpublish | `PUT` | `{{baseUrl}}/admin/news/articles/{{articleId}}` | see below |
-| Delete | `DELETE` | `{{baseUrl}}/admin/news/articles/{{articleId}}` | — |
+| Step             | Method   | URL                                               | Body      |
+| ---------------- | -------- | ------------------------------------------------- | --------- |
+| List all         | `GET`    | `{{baseUrl}}/admin/news/articles?page=1&limit=20` | —         |
+| Filter drafts    | `GET`    | `{{baseUrl}}/admin/news/articles?status=DRAFT`    | —         |
+| Search           | `GET`    | `{{baseUrl}}/admin/news/articles?search=launch`   | —         |
+| Get one          | `GET`    | `{{baseUrl}}/admin/news/articles/{{articleId}}`   | —         |
+| Edit / unpublish | `PUT`    | `{{baseUrl}}/admin/news/articles/{{articleId}}`   | see below |
+| Delete           | `DELETE` | `{{baseUrl}}/admin/news/articles/{{articleId}}`   | —         |
 
 **PUT body example (partial update):**
 
@@ -1465,19 +1470,19 @@ All need Bearer Super Admin or Marketer.
 }
 ```
 
-- `DRAFT` → `PUBLISHED` logs **PUBLISH** and sets `publishedAt` if empty.  
-- `PUBLISHED` → `DRAFT` logs **UNPUBLISH**.  
+- `DRAFT` → `PUBLISHED` logs **PUBLISH** and sets `publishedAt` if empty.
+- `PUBLISHED` → `DRAFT` logs **UNPUBLISH**.
 - Other field edits log **EDIT**.
 
 ---
 
 ### 12. News settings + audit logs
 
-| Method | URL | Body |
-|--------|-----|------|
-| `GET` | `{{baseUrl}}/admin/news/settings` | — |
-| `PUT` | `{{baseUrl}}/admin/news/settings` | JSON below |
-| `GET` | `{{baseUrl}}/admin/news/audit-logs?page=1&limit=20` | — |
+| Method | URL                                                 | Body       |
+| ------ | --------------------------------------------------- | ---------- |
+| `GET`  | `{{baseUrl}}/admin/news/settings`                   | —          |
+| `PUT`  | `{{baseUrl}}/admin/news/settings`                   | JSON below |
+| `GET`  | `{{baseUrl}}/admin/news/audit-logs?page=1&limit=20` | —          |
 
 ```json
 {
@@ -1492,11 +1497,11 @@ All need Bearer Super Admin or Marketer.
 
 ### 13. Public news APIs (no auth)
 
-| Method | URL | Expect |
-|--------|-----|--------|
-| `GET` | `{{baseUrl}}/news/homepage` | `featured`, `latest`, `emptyMessage` |
-| `GET` | `{{baseUrl}}/news?page=1&limit=10&search=launch` | `{ articles, total }` — published only |
-| `GET` | `{{baseUrl}}/news/{{slug}}` | single published article; drafts → `404` |
+| Method | URL                                              | Expect                                   |
+| ------ | ------------------------------------------------ | ---------------------------------------- |
+| `GET`  | `{{baseUrl}}/news/homepage`                      | `featured`, `latest`, `emptyMessage`     |
+| `GET`  | `{{baseUrl}}/news?page=1&limit=10&search=launch` | `{ articles, total }` — published only   |
+| `GET`  | `{{baseUrl}}/news/{{slug}}`                      | single published article; drafts → `404` |
 
 After creating a **PUBLISHED** featured article, homepage should show it under `featured`. Drafts never appear here.
 
@@ -1504,12 +1509,12 @@ After creating a **PUBLISHED** featured article, homepage should show it under `
 
 ### 14. Careers + content (public)
 
-| Method | URL | Body |
-|--------|-----|------|
-| `GET` | `{{baseUrl}}/careers` | — |
-| `POST` | `{{baseUrl}}/careers/apply` | JSON below |
+| Method | URL                             | Body                           |
+| ------ | ------------------------------- | ------------------------------ |
+| `GET`  | `{{baseUrl}}/careers`           | —                              |
+| `POST` | `{{baseUrl}}/careers/apply`     | JSON below                     |
 | `POST` | `{{baseUrl}}/content/subscribe` | `{ "email": "u@example.com" }` |
-| `POST` | `{{baseUrl}}/content/contact` | JSON below |
+| `POST` | `{{baseUrl}}/content/contact`   | JSON below                     |
 
 **Apply:**
 
@@ -1543,16 +1548,16 @@ After creating a **PUBLISHED** featured article, homepage should show it under `
 
 Auth: Super Admin **or** HR (Marketer gets `403`).
 
-| Step | Method | URL | Body |
-|------|--------|-----|------|
-| List jobs | `GET` | `{{baseUrl}}/admin/careers/jobs` | — |
-| Create | `POST` | `{{baseUrl}}/admin/careers/jobs` | JSON below |
-| Get one | `GET` | `{{baseUrl}}/admin/careers/jobs/{{jobId}}` | — |
-| Update / close | `PUT` | `{{baseUrl}}/admin/careers/jobs/{{jobId}}` | `{ "isOpen": false }` |
-| List applications | `GET` | `{{baseUrl}}/admin/careers/applications` or `?jobId={{jobId}}` | — |
-| Update app status | `PUT` | `{{baseUrl}}/admin/careers/applications/{{appId}}/status` | `{ "status": "SHORTLISTED" }` |
-| Careers audit | `GET` | `{{baseUrl}}/admin/careers/audit-logs?page=1&limit=20` | — |
-| Delete job | `DELETE` | `{{baseUrl}}/admin/careers/jobs/{{jobId}}` | — |
+| Step              | Method   | URL                                                            | Body                          |
+| ----------------- | -------- | -------------------------------------------------------------- | ----------------------------- |
+| List jobs         | `GET`    | `{{baseUrl}}/admin/careers/jobs`                               | —                             |
+| Create            | `POST`   | `{{baseUrl}}/admin/careers/jobs`                               | JSON below                    |
+| Get one           | `GET`    | `{{baseUrl}}/admin/careers/jobs/{{jobId}}`                     | —                             |
+| Update / close    | `PUT`    | `{{baseUrl}}/admin/careers/jobs/{{jobId}}`                     | `{ "isOpen": false }`         |
+| List applications | `GET`    | `{{baseUrl}}/admin/careers/applications` or `?jobId={{jobId}}` | —                             |
+| Update app status | `PUT`    | `{{baseUrl}}/admin/careers/applications/{{appId}}/status`      | `{ "status": "SHORTLISTED" }` |
+| Careers audit     | `GET`    | `{{baseUrl}}/admin/careers/audit-logs?page=1&limit=20`         | —                             |
+| Delete job        | `DELETE` | `{{baseUrl}}/admin/careers/jobs/{{jobId}}`                     | —                             |
 
 **Create body:**
 
@@ -1574,74 +1579,74 @@ After a public apply, list applications and update status. Audit should show `CR
 
 ### 16. RBAC smoke checks (recommended)
 
-| Actor token | Call | Expect |
-|-------------|------|--------|
-| Marketer | `POST /admin/news/articles` | `201` |
-| Marketer | `POST /admin/careers/jobs` | `403` |
-| Marketer | `POST /admin/invitations` | `403` |
-| HR | `POST /admin/careers/jobs` | `201` |
-| HR | `POST /admin/news/articles` | `403` |
-| Super Admin | all of the above | allowed |
+| Actor token | Call                        | Expect  |
+| ----------- | --------------------------- | ------- |
+| Marketer    | `POST /admin/news/articles` | `201`   |
+| Marketer    | `POST /admin/careers/jobs`  | `403`   |
+| Marketer    | `POST /admin/invitations`   | `403`   |
+| HR          | `POST /admin/careers/jobs`  | `201`   |
+| HR          | `POST /admin/news/articles` | `403`   |
+| Super Admin | all of the above            | allowed |
 
 ---
 
 ### Postman checklist (quick)
 
-1. Health  
-2. Register Super Admin → Login → save `token`  
-3. Upload cover → save `coverUrl`  
-4. Create published article → save `articleId` / slug  
-5. Public homepage + listing + by slug  
-6. Update / unpublish / republish / delete  
-7. Settings + audit logs  
-8. Invite Marketer → accept → login as Marketer → news only  
-9. Invite HR → careers create only  
-10. Revoke user → login fails  
+1. Health
+2. Register Super Admin → Login → save `token`
+3. Upload cover → save `coverUrl`
+4. Create published article → save `articleId` / slug
+5. Public homepage + listing + by slug
+6. Update / unpublish / republish / delete
+7. Settings + audit logs
+8. Invite Marketer → accept → login as Marketer → news only
+9. Invite HR → careers create only
+10. Revoke user → login fails
 
 ---
 
 ## News SRS compliance (FR-ADM-002 … FR-DYN-004)
 
-| Requirement | Status | Backend support |
-|-------------|--------|-----------------|
-| FR-ADM-002 Create article | Done | `POST /admin/news/articles` — title, shortDescription, fullContent, coverImageUrl, publishedAt, status |
-| FR-ADM-003 Instant publishing | Done | Published articles appear immediately via public news APIs |
-| FR-ADM-004 Draft management | Done | `status=DRAFT`; excluded from public list/homepage; editable via `PUT` |
-| FR-ADM-005 Edit news | Done | `PUT /admin/news/articles/:id` |
-| FR-ADM-006 Delete news | Done | `DELETE /admin/news/articles/:id` |
-| FR-ADM-007 Ordering + featured | Done | Ordered by `published_at DESC`; one featured via `isFeatured` |
-| FR-ADM-008 Rich text | Backend OK | Stores HTML/text in `fullContent` (editor is frontend) |
-| FR-ADM-009 Cover upload | Done | `POST /admin/news/upload` — JPG/PNG/WebP, max 5MB, auto-optimized (downscaled to ≤1600px, re-encoded JPEG q82) |
-| FR-ADM-010 Activity logging | Done | Create/Edit/Publish/Unpublish/Delete → `GET /admin/news/audit-logs` |
-| FR-DYN-001 Dynamic retrieval | Done | Public news APIs |
-| FR-DYN-002 Homepage news | Done | `GET /news/homepage` — featured + latest; limit configurable |
-| FR-DYN-003 News listing | Done | Pagination, search (title/short/full), sort by publish date desc |
-| FR-DYN-004 Empty state | Done | `emptyMessage` on homepage response + admin settings |
+| Requirement                    | Status     | Backend support                                                                                                |
+| ------------------------------ | ---------- | -------------------------------------------------------------------------------------------------------------- |
+| FR-ADM-002 Create article      | Done       | `POST /admin/news/articles` — title, shortDescription, fullContent, coverImageUrl, publishedAt, status         |
+| FR-ADM-003 Instant publishing  | Done       | Published articles appear immediately via public news APIs                                                     |
+| FR-ADM-004 Draft management    | Done       | `status=DRAFT`; excluded from public list/homepage; editable via `PUT`                                         |
+| FR-ADM-005 Edit news           | Done       | `PUT /admin/news/articles/:id`                                                                                 |
+| FR-ADM-006 Delete news         | Done       | `DELETE /admin/news/articles/:id`                                                                              |
+| FR-ADM-007 Ordering + featured | Done       | Ordered by `published_at DESC`; one featured via `isFeatured`                                                  |
+| FR-ADM-008 Rich text           | Backend OK | Stores HTML/text in `fullContent` (editor is frontend)                                                         |
+| FR-ADM-009 Cover upload        | Done       | `POST /admin/news/upload` — JPG/PNG/WebP, max 5MB, auto-optimized (downscaled to ≤1600px, re-encoded JPEG q82) |
+| FR-ADM-010 Activity logging    | Done       | Create/Edit/Publish/Unpublish/Delete → `GET /admin/news/audit-logs`                                            |
+| FR-DYN-001 Dynamic retrieval   | Done       | Public news APIs                                                                                               |
+| FR-DYN-002 Homepage news       | Done       | `GET /news/homepage` — featured + latest; limit configurable                                                   |
+| FR-DYN-003 News listing        | Done       | Pagination, search (title/short/full), sort by publish date desc                                               |
+| FR-DYN-004 Empty state         | Done       | `emptyMessage` on homepage response + admin settings                                                           |
 
 ### Careers + audit (FR-ADM-011 / FR-ADM-010)
 
-| Area | Status | Support |
-|------|--------|---------|
-| Create job | Done | `POST /admin/careers/jobs` |
-| Update job | Done | `PUT /admin/careers/jobs/:id` |
-| Delete job | Done | `DELETE /admin/careers/jobs/:id` |
-| List / get jobs (admin) | Done | `GET /admin/careers/jobs[+/:id]` |
-| Open/close posting | Done | `PUT` with `isOpen` |
-| Public list + apply | Done | `GET /careers`, `POST /careers/apply` |
-| Review applications | Done | `GET /admin/careers/applications`, `PUT .../status` |
-| Careers RBAC | Done | Super Admin + HR only |
-| News audit | Done | CREATE/EDIT/PUBLISH/UNPUBLISH/DELETE → `/admin/news/audit-logs` |
-| Careers audit | Done | CREATE/EDIT/CLOSE/OPEN/DELETE → `/admin/careers/audit-logs` |
+| Area                    | Status | Support                                                         |
+| ----------------------- | ------ | --------------------------------------------------------------- |
+| Create job              | Done   | `POST /admin/careers/jobs`                                      |
+| Update job              | Done   | `PUT /admin/careers/jobs/:id`                                   |
+| Delete job              | Done   | `DELETE /admin/careers/jobs/:id`                                |
+| List / get jobs (admin) | Done   | `GET /admin/careers/jobs[+/:id]`                                |
+| Open/close posting      | Done   | `PUT` with `isOpen`                                             |
+| Public list + apply     | Done   | `GET /careers`, `POST /careers/apply`                           |
+| Review applications     | Done   | `GET /admin/careers/applications`, `PUT .../status`             |
+| Careers RBAC            | Done   | Super Admin + HR only                                           |
+| News audit              | Done   | CREATE/EDIT/PUBLISH/UNPUBLISH/DELETE → `/admin/news/audit-logs` |
+| Careers audit           | Done   | CREATE/EDIT/CLOSE/OPEN/DELETE → `/admin/careers/audit-logs`     |
 
 ---
 
 ## Role-based access control
 
-| Role | News admin APIs | Careers admin APIs | Invite / revoke users |
-|------|-----------------|--------------------|------------------------|
-| `Super_Admin` | Yes | Yes | Yes |
-| `Marketer` | Yes | No (`403`) | No (`403`) |
-| `HR` | No (`403`) | Yes | No (`403`) |
+| Role          | News admin APIs | Careers admin APIs | Invite / revoke users |
+| ------------- | --------------- | ------------------ | --------------------- |
+| `Super_Admin` | Yes             | Yes                | Yes                   |
+| `Marketer`    | Yes             | No (`403`)         | No (`403`)            |
+| `HR`          | No (`403`)      | Yes                | No (`403`)            |
 
 Public website APIs (read news, list jobs, apply, contact, subscribe) remain open to everyone.
 
@@ -1651,8 +1656,8 @@ Unauthorized role → `403` `{ "success": false, "error": "Insufficient permissi
 
 ## Current gaps (for implementers)
 
-| Area | Status |
-|------|--------|
+| Area        | Status                       |
+| ----------- | ---------------------------- |
 | Get profile | Usecase exists; **no route** |
 
 ---

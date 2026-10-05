@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ArrowRight, Play, Smartphone, ShieldCheck, Volume2, VolumeX } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
+import { useSafeReducedMotion } from '@/lib/useSafeReducedMotion';
 import { content } from '@/lib/api';
 import { youtubeThumbnailUrl } from '@/lib/youtube';
 
@@ -34,7 +35,7 @@ export const Hero: React.FC = () => {
   const [videoId, setVideoId] = useState(DEFAULT_HERO_VIDEO_ID);
   const [videoReady, setVideoReady] = useState(false);
   const [thumbSrc, setThumbSrc] = useState(youtubeThumbnailUrl(DEFAULT_HERO_VIDEO_ID, 'maxresdefault'));
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useSafeReducedMotion();
 
   useEffect(() => {
     let cancelled = false;

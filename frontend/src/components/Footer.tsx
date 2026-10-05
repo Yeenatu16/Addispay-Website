@@ -330,7 +330,7 @@ export default function Footer() {
         {/* Bottom Rights & Merchant Agreement Badge */}
         <div className="pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-600 gap-4">
           <div className="flex flex-wrap items-center gap-4">
-            <p>© {new Date().getFullYear()} Addispay Financial Technology Share Company. All rights reserved.</p>
+            <p suppressHydrationWarning>© {new Date().getFullYear()} Addispay Financial Technology Share Company. All rights reserved.</p>
             <span className="hidden md:inline text-gray-300">·</span>
             <Link
               href="/merchant-agreement"

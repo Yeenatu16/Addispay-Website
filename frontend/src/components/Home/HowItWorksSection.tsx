@@ -12,8 +12,9 @@ import {
   ArrowRight,
   type LucideIcon,
 } from 'lucide-react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useLanguage } from '@/context/LanguageContext';
+import { useSafeReducedMotion } from '@/lib/useSafeReducedMotion';
 
 const SIGNUP_URL = 'https://uat.dashboard.addispay.et/signup';
 
@@ -31,7 +32,7 @@ const steps: { icon: LucideIcon; titleKey: string; descKey: string }[] = [
 
 export const HowItWorksSection: React.FC = () => {
   const { t } = useLanguage();
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useSafeReducedMotion();
 
   return (
     <section className="border-b border-gray-100 bg-[#F8FDFB] py-20 lg:py-28">

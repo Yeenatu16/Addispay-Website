@@ -2,9 +2,10 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ArrowRight, Globe, Smartphone, Landmark, Zap, BarChart3, Globe2, Star } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
+import { useSafeReducedMotion } from '@/lib/useSafeReducedMotion';
 import { Reveal } from '@/components/Home/Reveal';
 
 const EASE = [0.16, 1, 0.3, 1] as const;
@@ -21,7 +22,7 @@ const cardItem = {
 
 export const ProductsGrid: React.FC = () => {
   const { t } = useLanguage();
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useSafeReducedMotion();
 
   const products: Array<{
     icon: typeof Globe;

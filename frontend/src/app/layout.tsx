@@ -106,11 +106,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <head>
+    <html lang="en" suppressHydrationWarning>
+      <body className="min-h-screen flex flex-col font-sans antialiased" suppressHydrationWarning>
         <JsonLd data={organizationSchema} />
-      </head>
-      <body className="min-h-screen flex flex-col font-sans antialiased">
         <LanguageProvider>
           <AuthProvider>
             <Navbar />
